@@ -5,10 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Momentum · PT Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet">
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js"></script>
+
 <style>
 :root{
   --cream:#f7f3eb; --cream2:#f0ead8; --cream3:#e8e0cc;
@@ -618,7 +615,7 @@ canvas.mc-an-radar{display:block;margin:0 auto;}
     <div class="topbar-actions">
       <button class="btn-sm pri" onclick="navTo('mesociclo')">📋 Criar Mesociclo</button>
       <button class="btn-sm" onclick="navTo('generator')">⚡ Treino Rápido</button>
-      <button class="topbar-logout" onclick="sessionStorage.clear();authSignOut().catch(()=>{}).finally(()=>window.location.href='login.html')">Sair</button>
+      
     </div>
   </div>
   <div class="content">
@@ -3149,29 +3146,11 @@ function renderRitmoBadges() {
     el.style.justifyContent = 'flex-start';
   });
 }
-// ── Auth guard ────────────────────────────────────────
+// ── Inicialização direta (sem login) ──────────────────
 (function() {
-  function unlockApp() {
-    const ov = document.getElementById('app-loading');
-    if(ov) { ov.classList.add('out'); setTimeout(()=>ov.remove(), 500); }
-  }
-
-  // Demo mode (admin/admin)
-  const demoRole = sessionStorage.getItem('momentum_demo_role');
-  if(demoRole === 'admin') {
-    unlockApp();
-    bootstrapFromFirebase();
-    return;
-  }
-
-  // Firebase mode — timeout de segurança: 10s
-  const fallback = setTimeout(() => window.location.href = 'login.html', 10000);
-  onAuthReady(user => {
-    clearTimeout(fallback);
-    if(!user) { window.location.href = 'login.html'; return; }
-    unlockApp();
-    bootstrapFromFirebase();
-  });
+  const ov = document.getElementById('app-loading');
+  if(ov) { ov.classList.add('out'); setTimeout(()=>ov.remove(), 500); }
+  bootstrapFromFirebase();
 })();
 </script>
 <!-- Session Detail Modal -->
