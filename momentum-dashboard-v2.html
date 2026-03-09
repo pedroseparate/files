@@ -942,7 +942,8 @@ async function bootstrapFromFirebase() {
     renderSidebar();
     renderRitmoBadges();
     const firstId = Object.keys(STUDENTS)[0];
-    selectStudent(currentStudentId in STUDENTS ? currentStudentId : firstId);
+    if(firstId) selectStudent(currentStudentId in STUDENTS ? currentStudentId : firstId);
+    navTo('students');
 
   } catch(e) {
     console.error('[Momentum] Erro ao carregar Firebase:', e.message);
@@ -950,9 +951,8 @@ async function bootstrapFromFirebase() {
     if(list) list.innerHTML = `<div style="padding:12px;color:rgba(200,80,60,.7);font-size:9px;line-height:1.6">
       ⚠ Firebase não conectado.<br><span style="color:rgba(200,160,96,.35)">${e.message}</span><br><br>
       <span style="color:rgba(200,160,96,.4)">Configure o firebase-config.js<br>para carregar os alunos.</span></div>`;
-    // Still render the shell so navigation works
     renderSidebar();
-    renderRitmoBadges();
+    navTo('students');
   }
 }
 
@@ -3149,9 +3149,6 @@ function renderRitmoBadges() {
     el.style.justifyContent = 'flex-start';
   });
 }
-renderRitmoBadges();
-navTo('students');
-
 // ── Auth guard ────────────────────────────────────────
 (function() {
   function unlockApp() {
