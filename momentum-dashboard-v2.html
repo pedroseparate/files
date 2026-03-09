@@ -879,7 +879,7 @@ function renderSidebar() {
 // ── Bootstrap: Firebase é a única fonte de dados ─────────
 async function bootstrapFromFirebase() {
   try {
-    if(typeof db === 'undefined') throw new Error('Firebase não carregado');
+    if(typeof db === 'undefined' || db === null) throw new Error('Firebase não configurado');
 
     const [studentsSnap, sessionsSnap] = await Promise.all([
       db.collection('students').get(),
@@ -946,10 +946,13 @@ async function bootstrapFromFirebase() {
 
   } catch(e) {
     console.error('[Momentum] Erro ao carregar Firebase:', e.message);
-    // Mostra mensagem de erro na sidebar em vez de dados fantasma
     const list = document.getElementById('sb-students-list');
-    if(list) list.innerHTML = `<div style="padding:12px;color:rgba(200,80,60,.8);font-size:9px;line-height:1.5">
-      Erro ao conectar ao Firebase.<br>${e.message}</div>`;
+    if(list) list.innerHTML = `<div style="padding:12px;color:rgba(200,80,60,.7);font-size:9px;line-height:1.6">
+      ⚠ Firebase não conectado.<br><span style="color:rgba(200,160,96,.35)">${e.message}</span><br><br>
+      <span style="color:rgba(200,160,96,.4)">Configure o firebase-config.js<br>para carregar os alunos.</span></div>`;
+    // Still render the shell so navigation works
+    renderSidebar();
+    renderRitmoBadges();
   }
 }
 
