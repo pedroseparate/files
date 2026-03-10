@@ -283,6 +283,277 @@ async function init(){
 init();
 
 </script>
+<script type="module">
 
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+/* ================================
+FIREBASE
+================================ */
+
+const firebaseConfig = {
+ apiKey: "API_KEY",
+ authDomain: "PROJECT.firebaseapp.com",
+ projectId: "PROJECT_ID"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+
+/* ================================
+STATE
+================================ */
+
+const state = {
+ exercises: {},
+ sessions: [],
+ students: [],
+ metrics: null
+};
+
+
+/* ================================
+LOAD EXERCISES
+================================ */
+
+async function loadExercises(){
+
+ const snapshot = await getDocs(collection(db,"exercises"));
+
+ snapshot.forEach(doc => {
+   state.exercises[doc.id] = doc.data();
+ });
+
+}
+
+
+/* ================================
+LOAD SESSIONS
+================================ */
+
+async function loadSessions(){
+
+ const snapshot = await getDocs(collection(db,"sessions"));
+
+ state.sessions = snapshot.docs.map(doc => ({
+   id: doc.id,
+   ...doc.data()
+ }));
+
+}
+
+
+/* ================================
+LOAD STUDENTS
+================================ */
+
+async function loadStudents(){
+
+ const snapshot = await getDocs(collection(db,"students"));
+
+ state.students = snapshot.docs.map(doc => ({
+   id: doc.id,
+   ...doc.data()
+ }));
+
+}
+
+
+/* ================================
+CALCULAR DASHBOARD
+================================ */
+
+function calculateDashboard(){
+
+ const totals = {
+   IM:0,
+   DN:0,
+   CT:0,
+   SV:0
+ };
+
+ state.sessions.forEach(session => {
+
+   session.exercicios.forEach(ex => {
+
+     const base = state.exercises[ex.exercise_id];
+
+     if(!base) return;
+
+     const volume = ex.sets * ex.reps;
+
+     totals.IM += base.IM * volume;
+     totals.DN += base.DN * volume;
+     totals.CT += base.CT * volume;
+     totals.SV += base.SV * volume;
+
+   });
+
+ });
+
+ state.metrics = totals;
+
+ console.log("metrics", totals);
+
+}
+
+
+/* ================================
+INIT
+================================ */
+
+async function init(){
+
+ await loadExercises();
+
+ await loadSessions();
+
+ await loadStudents();
+
+ calculateDashboard();
+
+}
+
+init();
+
+</script>
+   <script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+/* ================================
+FIREBASE
+================================ */
+
+const firebaseConfig = {
+ apiKey: "API_KEY",
+ authDomain: "PROJECT.firebaseapp.com",
+ projectId: "PROJECT_ID"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+
+/* ================================
+STATE
+================================ */
+
+const state = {
+ exercises: {},
+ sessions: [],
+ students: [],
+ metrics: null
+};
+
+
+/* ================================
+LOAD EXERCISES
+================================ */
+
+async function loadExercises(){
+
+ const snapshot = await getDocs(collection(db,"exercises"));
+
+ snapshot.forEach(doc => {
+   state.exercises[doc.id] = doc.data();
+ });
+
+}
+
+
+/* ================================
+LOAD SESSIONS
+================================ */
+
+async function loadSessions(){
+
+ const snapshot = await getDocs(collection(db,"sessions"));
+
+ state.sessions = snapshot.docs.map(doc => ({
+   id: doc.id,
+   ...doc.data()
+ }));
+
+}
+
+
+/* ================================
+LOAD STUDENTS
+================================ */
+
+async function loadStudents(){
+
+ const snapshot = await getDocs(collection(db,"students"));
+
+ state.students = snapshot.docs.map(doc => ({
+   id: doc.id,
+   ...doc.data()
+ }));
+
+}
+
+
+/* ================================
+CALCULAR DASHBOARD
+================================ */
+
+function calculateDashboard(){
+
+ const totals = {
+   IM:0,
+   DN:0,
+   CT:0,
+   SV:0
+ };
+
+ state.sessions.forEach(session => {
+
+   session.exercicios.forEach(ex => {
+
+     const base = state.exercises[ex.exercise_id];
+
+     if(!base) return;
+
+     const volume = ex.sets * ex.reps;
+
+     totals.IM += base.IM * volume;
+     totals.DN += base.DN * volume;
+     totals.CT += base.CT * volume;
+     totals.SV += base.SV * volume;
+
+   });
+
+ });
+
+ state.metrics = totals;
+
+ console.log("metrics", totals);
+
+}
+
+
+/* ================================
+INIT
+================================ */
+
+async function init(){
+
+ await loadExercises();
+
+ await loadSessions();
+
+ await loadStudents();
+
+ calculateDashboard();
+
+}
+
+init();
+
+</script>
 </body>
 </html>
