@@ -1236,6 +1236,7 @@ function selectStudent(id) {
 // ═══════════════════════════════════════════════════════
 function renderStudentView() {
   const s = STUDENTS[currentStudentId];
+  if(!s) return; // ainda carregando
   document.getElementById('topbar-title').textContent = s.name;
 
   // BLANK STUDENT — only anamnese
@@ -3150,7 +3151,6 @@ function renderRitmoBadges() {
 (function() {
   const ov = document.getElementById('app-loading');
   if(ov) { ov.classList.add('out'); setTimeout(()=>ov.remove(), 500); }
-  navTo('students');
   bootstrapFromFirebase();
 })();
 </script>
