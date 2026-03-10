@@ -3150,6 +3150,7 @@ function renderRitmoBadges() {
 (function() {
   const ov = document.getElementById('app-loading');
   if(ov) { ov.classList.add('out'); setTimeout(()=>ov.remove(), 500); }
+  navTo('students');
   bootstrapFromFirebase();
 })();
 </script>
