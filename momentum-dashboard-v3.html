@@ -959,6 +959,14 @@ function newUID() { return 'ex_' + (++uid_counter); }
 const EX_NAME_MAP = {};
 EXERCISES.forEach(e => { EX_NAME_MAP[e.name.toLowerCase()] = e.id; });
 
+// Capitalize exercise names from history (stored lowercase in legacy data)
+function capNome(nome) {
+  if(!nome) return '';
+  // If already has uppercase (like Iarima's data), don't touch it
+  if(/[A-ZÁÉÍÓÚÂÊÎÔÛÃÕÇ]/.test(nome.slice(1))) return nome;
+  return nome.replace(/(?:^|\s|\/)\S/g, c => c.toUpperCase());
+}
+
 // Epley: estimate 1RM from a set
 function epley1RM(kg, reps) {
   if(reps === 1) return kg;
@@ -1317,7 +1325,7 @@ function renderStudentView() {
             <div class="sv-br"><div class="sv-bl">Metabólica</div><div class="sv-bt"><div class="sv-bf" style="width:${sess.met*100}%;background:#608040"></div></div></div>
           </div>
           <div class="sv-exs">
-            ${sess.exercicios.map(ex=>`<div class="sv-ex"><span class="sv-exn">${ex.nome}</span><span class="sv-exd">${ex.s}×${ex.r} · ${ex.kg}kg · PSE ${ex.pse}</span></div>`).join('')}
+            ${sess.exercicios.map(ex=>`<div class="sv-ex"><span class="sv-exn">${capNome(ex.nome)}</span><span class="sv-exd">${ex.s}×${ex.r} · ${ex.kg}kg · PSE ${ex.pse}</span></div>`).join('')}
           </div>
           <div class="sv-pse"><span>PSE geral</span><strong style="color:var(--copper)">${sess.pse}</strong></div>
         </div>`).join('')}
@@ -2254,7 +2262,9 @@ function renderAnalysis(radarOnly=false) {
   const sc=SCENARIOS.find(s=>s.id===currentScenarioId);
   const {N,M,Met,co}=calcSessionTotal();
   const maxComp=Math.max(N,M,Met)||1;
-  const student=STUDENTS['slv']; // always targeting Soares LV
+  const _sid = (mesoState && mesoState.studentId && STUDENTS[mesoState.studentId]) ? mesoState.studentId : (STUDENTS[currentStudentId] ? currentStudentId : Object.keys(STUDENTS)[0]);
+  const student=STUDENTS[_sid];
+  if(!student || !student.sessIndices) return;
   const indices=student.sessIndices;
   const mean=indices.reduce((a,b)=>a+b,0)/indices.length;
   const maint=mean*0.78;
@@ -3188,7 +3198,7 @@ function openSessDetail(sid, wi, si) {
             <div class="sd-ex-head">
               <div class="sd-ex-ico">${ex?.icon||'💪'}</div>
               <div style="flex:1">
-                <div class="sd-ex-name">${e.nome}</div>
+                <div class="sd-ex-name">${capNome(e.nome)}</div>
                 <div class="sd-ex-grp">${ex?.group||'—'}</div>
               </div>
               ${ic?`<div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;font-size:16px;color:rgba(200,160,96,.6)" title="Índice de Carga estimado">${ic.toLocaleString('pt-BR')}</div>`:''}
@@ -3310,7 +3320,7 @@ function sdHoverEx(idx) {
     {vals: window._sdRadarBase, color:'rgba(200,160,96,.2)'},
     {vals: exVals, color:'#c86030'}
   ]);
-  if(tip) tip.textContent = card.e.nome;
+  if(tip) tip.textContent = capNome(card.e.nome);
 }
 
 let _dimTipEl = null;
