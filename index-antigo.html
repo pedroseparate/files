@@ -1,0 +1,1548 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Momentum — Seu treino tem direção.</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600;1,700&family=IBM+Plex+Mono:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+html{font-size:18px;}
+:root{
+  --ink:#100e0a; --page:#f5f0e6; --page2:#ede6d2; --page3:#e4dbc4;
+  --night:#16120d; --night2:#1e1810; --night3:#271f13;
+  --copper:#8a6030; --copper2:#a07840; --gold:#c8a060; --gold2:#ddb870;
+  --moss:#4a6832; --slate:#2e5060;
+  --bd:rgba(26,20,10,.12); --bn:rgba(200,160,96,.14);
+  --t2:rgba(26,20,10,.60); --tn2:rgba(200,160,96,.78); --tn3:rgba(200,160,96,.52);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--night);color:var(--page);font-family:'IBM Plex Mono',monospace;overflow-x:hidden;font-size:17px;line-height:1.7;}
+
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.88' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23g)' opacity='.02'/%3E%3C/svg%3E");}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;height:56px;padding:0 56px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(22,18,13,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--bn);}
+.n-logo{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;font-size:20px;color:var(--gold);}
+.n-links{display:flex;gap:32px;}
+.n-links a{font-size:17px;text-transform:uppercase;letter-spacing:.16em;color:var(--tn3);text-decoration:none;transition:color .2s;}
+.n-links a:hover{color:var(--gold);}
+.n-cta{font-size:17px;text-transform:uppercase;letter-spacing:.13em;
+  padding:7px 18px;border:1px solid rgba(200,160,96,.28);color:var(--gold);text-decoration:none;transition:all .2s;}
+.n-cta:hover{background:var(--gold);color:var(--night);}
+
+/* SHARED */
+.wrap{max-width:1120px;margin:0 auto;}
+h2{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;line-height:.92;letter-spacing:-.01em;}
+.kicker{font-size:14.5px;text-transform:uppercase;letter-spacing:.22em;color:var(--copper2);
+  display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.kicker::before{content:'';width:20px;height:1px;background:currentColor;}
+.prose{font-size:17px;line-height:2.0;color:var(--tn2);}
+.prose strong{color:rgba(200,160,96,.96);}
+.prose p+p{margin-top:14px;}
+
+/* score-09 */
+.s09{display:inline-flex;align-items:baseline;gap:1px;}
+.s09 .i{font-family:'IBM Plex Mono',monospace;font-style:italic;font-weight:300;color:var(--gold);}
+.s09 .dot{font-weight:300;color:rgba(200,160,96,.25);}
+.s09 .f{font-family:'IBM Plex Mono',monospace;font-style:italic;font-weight:300;color:rgba(200,160,96,.58);}
+
+/* ═══ §8 GUIA INTERATIVO ══════════════════════════ */
+#guia{padding:120px 0;border-bottom:1px solid var(--bn);}
+.guia-shell{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--bn);background:var(--night2);margin-bottom:0;}
+.guia-quiz{padding:40px 44px;border-right:1px solid var(--bn);display:flex;flex-direction:column;gap:28px;min-height:520px;}
+.guia-preview{padding:40px 36px;display:flex;flex-direction:column;gap:16px;position:relative;overflow:hidden;}
+.guia-preview::before{content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 80% 60% at 60% 40%,rgba(138,96,48,.06) 0%,transparent 65%);}
+
+/* progress */
+.gq-prog{display:flex;align-items:center;gap:14px;}
+.gq-prog-track{flex:1;height:2px;background:rgba(200,160,96,.1);}
+.gq-prog-fill{height:100%;background:var(--copper);transition:width .5s ease;}
+.gq-prog-lbl{font-size:14px;text-transform:uppercase;letter-spacing:.16em;color:var(--tn3);white-space:nowrap;}
+
+/* slides */
+.gq-slides{flex:1;}
+.gq-slide{display:none;animation:gqIn .35s ease;}
+.gq-slide.active{display:block;}
+@keyframes gqIn{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
+.gq-q{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;font-size:clamp(20px,2.2vw,28px);color:var(--page);line-height:1.2;margin-bottom:6px;}
+.gq-sub{font-size:15px;color:var(--tn3);margin-bottom:24px;line-height:1.7;}
+.gq-opts{display:flex;flex-direction:column;gap:8px;}
+.gq-opt{display:flex;align-items:center;gap:14px;padding:13px 18px;border:1px solid rgba(200,160,96,.12);cursor:pointer;transition:all .15s;position:relative;overflow:hidden;}
+.gq-opt:hover{border-color:rgba(200,160,96,.32);background:rgba(200,160,96,.03);}
+.gq-opt.selected{border-color:var(--copper);background:rgba(138,96,48,.07);}
+.gq-opt-ico{font-size:20px;flex-shrink:0;width:28px;text-align:center;}
+.gq-opt-label{font-size:16px;color:var(--page);font-weight:500;}
+.gq-opt-sub{font-size:13.5px;color:var(--tn3);margin-top:2px;}
+.gq-opt-check{position:absolute;right:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;border-radius:50%;border:1px solid rgba(200,160,96,.2);display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .15s;}
+.gq-opt.selected .gq-opt-check{background:var(--copper);border-color:var(--copper);color:var(--page);}
+
+/* nav buttons */
+.gq-nav{display:flex;justify-content:space-between;align-items:center;}
+.gq-btn-back{font-family:'IBM Plex Mono',monospace;font-size:15px;text-transform:uppercase;letter-spacing:.12em;padding:9px 18px;border:1px solid rgba(200,160,96,.15);background:transparent;color:var(--tn3);cursor:pointer;transition:all .15s;}
+.gq-btn-back:hover{border-color:var(--gold);color:var(--gold);}
+.gq-btn-next{font-family:'IBM Plex Mono',monospace;font-size:15px;text-transform:uppercase;letter-spacing:.12em;padding:9px 24px;background:var(--copper);color:var(--page);border:none;cursor:pointer;transition:background .15s;}
+.gq-btn-next:hover{background:var(--copper2);}
+.gq-btn-next:disabled{background:rgba(200,160,96,.12);color:rgba(200,160,96,.3);cursor:default;}
+
+/* preview panel */
+.gp-label{font-size:13px;text-transform:uppercase;letter-spacing:.2em;color:rgba(200,160,96,.35);}
+.gp-profile-name{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;font-size:22px;color:var(--gold);min-height:32px;transition:all .4s;}
+.gp-radar-wrap{position:relative;display:flex;flex-direction:column;align-items:center;}
+.gp-radar-lbls{display:flex;justify-content:space-around;width:100%;margin-top:4px;}
+.gp-rl{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:rgba(200,160,96,.28);}
+.gp-axes{display:flex;flex-direction:column;gap:7px;}
+.gp-ax{display:flex;align-items:center;gap:8px;}
+.gp-ax-n{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:rgba(200,160,96,.35);width:68px;flex-shrink:0;}
+.gp-ax-t{flex:1;height:2px;background:rgba(200,160,96,.07);overflow:hidden;}
+.gp-ax-f{height:100%;transition:width .5s ease;}
+.gp-ax-v{font-size:12px;font-style:italic;width:22px;text-align:right;}
+
+.gp-div-suggest{padding:10px 12px;border-left:2px solid var(--copper);background:rgba(138,96,48,.06);font-size:13px;color:rgba(200,160,96,.65);line-height:1.7;}
+.gp-div-suggest strong{color:var(--gold);}
+.gp-ex-preview{display:flex;flex-direction:column;gap:5px;}
+.gp-ex-card{display:flex;align-items:center;gap:9px;padding:8px 10px;border:1px solid rgba(200,160,96,.1);background:rgba(200,160,96,.02);}
+.gp-ex-ico{font-size:16px;}
+.gp-ex-info{flex:1;min-width:0;}
+.gp-ex-name{font-size:13px;color:rgba(200,160,96,.82);}
+.gp-ex-coefs{display:flex;gap:4px;margin-top:2px;}
+.gp-ex-coef{font-size:11px;padding:1px 5px;border:1px solid rgba(200,160,96,.1);color:rgba(200,160,96,.38);}
+.gp-ex-coef.hi{border-color:rgba(138,96,48,.3);color:var(--copper2);}
+.gp-ex-ic{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:16px;color:rgba(200,160,96,.5);}
+
+/* ── RESULTADO ── */
+.guia-result{margin-top:2px;border:1px solid var(--bn);background:var(--night2);animation:gqIn .5s ease;}
+.guia-result.hidden{display:none!important;}
+.gr-header{padding:32px 44px;border-bottom:1px solid var(--bn);display:flex;flex-direction:column;gap:10px;position:relative;overflow:hidden;}
+.gr-header::before{content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 60% 120% at 80% 50%,rgba(138,96,48,.08) 0%,transparent 60%);}
+.gr-tag{font-size:13px;text-transform:uppercase;letter-spacing:.22em;color:var(--copper2);}
+.gr-name{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;font-size:clamp(32px,4vw,52px);color:var(--gold);line-height:1;}
+.gr-desc{font-size:16px;color:var(--tn2);line-height:1.8;max-width:600px;}
+.gr-score-wrap{display:flex;flex-direction:column;gap:4px;margin-top:6px;}
+.gr-score-lbl{font-size:13px;text-transform:uppercase;letter-spacing:.16em;color:rgba(200,160,96,.35);}
+.gr-body{display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid var(--bn);}
+.gr-left,.gr-center,.gr-right{padding:28px 32px;display:flex;flex-direction:column;gap:14px;}
+.gr-left,.gr-center{border-right:1px solid var(--bn);}
+.gr-sec-lbl{font-size:12px;text-transform:uppercase;letter-spacing:.2em;color:rgba(200,160,96,.32);}
+.gr-axes{display:flex;flex-direction:column;gap:8px;}
+.gr-ax{display:flex;align-items:center;gap:8px;}
+.gr-ax-n{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:rgba(200,160,96,.38);width:68px;flex-shrink:0;}
+.gr-ax-t{flex:1;height:3px;background:rgba(200,160,96,.07);}
+.gr-ax-f{height:100%;transition:width .6s ease;}
+.gr-ax-v{font-size:13px;font-style:italic;color:rgba(200,160,96,.6);width:28px;text-align:right;}
+.gr-sess-tipo{font-size:12px;text-transform:uppercase;letter-spacing:.14em;color:var(--copper2);padding-bottom:8px;border-bottom:1px solid rgba(200,160,96,.07);}
+.gr-ex-card{padding:9px 10px;border:1px solid rgba(200,160,96,.1);background:rgba(200,160,96,.02);margin-bottom:5px;}
+.gr-ex-head{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.gr-ex-ico{font-size:16px;}
+.gr-ex-name{font-size:14px;color:rgba(200,160,96,.88);flex:1;}
+.gr-ex-ic{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:16px;color:rgba(200,160,96,.5);}
+.gr-ex-coefs{display:flex;gap:3px;flex-wrap:wrap;}
+.gr-ex-coef{font-size:11px;padding:1px 5px;border:1px solid rgba(200,160,96,.1);color:rgba(200,160,96,.35);}
+.gr-ex-coef.hi{border-color:rgba(138,96,48,.28);color:var(--copper2);}
+.gr-ex-spec{font-size:12px;color:rgba(200,160,96,.4);margin-top:5px;}
+.gr-proj-meta{font-size:13px;color:rgba(200,160,96,.42);line-height:1.9;margin-top:4px;}
+.gr-proj-legend{display:flex;gap:14px;margin-top:6px;}
+.gr-pl{display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(200,160,96,.4);}
+.gr-pl-dot{width:8px;height:8px;border-radius:50%;}
+.gr-ritmo-preview{padding:12px;border:1px solid rgba(200,160,96,.08);margin-top:8px;}
+.gr-ritmo-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.gr-ritmo-row:last-child{margin-bottom:0;}
+.gr-ritmo-lbl{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:rgba(200,160,96,.32);width:42px;}
+.gr-ritmo-track{flex:1;height:3px;background:rgba(200,160,96,.06);}
+.gr-ritmo-fill{height:100%;transition:width .6s ease;}
+.gr-ritmo-val{font-size:12px;font-style:italic;color:rgba(200,160,96,.5);width:26px;text-align:right;}
+.gr-cta{padding:32px 44px;display:flex;align-items:center;justify-content:space-between;gap:32px;flex-wrap:wrap;}
+.gr-cta-text{font-size:16px;color:var(--tn2);line-height:2;max-width:480px;}
+.gr-cta-btns{display:flex;gap:10px;flex-wrap:wrap;}
+
+.rv{opacity:0;transform:translateY(20px);transition:opacity .75s ease,transform .75s ease;}
+.rv.on{opacity:1;transform:none;}
+.rv-r{opacity:0;transform:translateX(28px);transition:opacity .75s ease,transform .75s ease;}
+.rv-r.on{opacity:1;transform:none;}
+.d1{transition-delay:.10s;}.d2{transition-delay:.20s;}.d3{transition-delay:.30s;}.d4{transition-delay:.40s;}
+
+/* ═══ HERO ═══════════════════════════ */
+#hero{min-height:100vh;display:grid;grid-template-columns:1fr 480px;border-bottom:1px solid var(--bn);}
+.hero-l{display:flex;flex-direction:column;justify-content:center;padding:110px 56px 80px;
+  border-right:1px solid var(--bn);position:relative;overflow:hidden;}
+.hero-l::before{content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 70% 50% at 110% 30%,rgba(138,96,48,.07) 0%,transparent 60%),
+             radial-gradient(ellipse 50% 70% at -10% 80%,rgba(200,160,96,.04) 0%,transparent 60%);}
+.hero-tag{display:inline-flex;align-items:center;gap:8px;font-size:14.5px;text-transform:uppercase;
+  letter-spacing:.18em;border:1px solid rgba(200,160,96,.18);padding:6px 14px;
+  color:rgba(200,160,96,.55);width:fit-content;margin-bottom:28px;}
+.htd{width:5px;height:5px;border-radius:50%;background:var(--copper);animation:blink 2.6s ease infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
+h1.hero-h1{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;
+  font-size:clamp(60px,7.5vw,102px);line-height:.88;margin-bottom:22px;}
+h1.hero-h1 em{color:var(--gold);}
+.hero-lead{font-size:17px;line-height:2.0;color:var(--tn2);max-width:440px;margin-bottom:36px;}
+.hero-lead strong{color:rgba(200,160,96,.92);}
+.hero-slogan{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:22px;
+  color:var(--copper2);padding-left:16px;border-left:2px solid var(--copper);margin-bottom:36px;}
+.hero-btns{display:flex;gap:10px;}
+.btn-fill{font-size:17px;text-transform:uppercase;letter-spacing:.13em;padding:13px 30px;
+  background:var(--copper);color:var(--page);border:none;cursor:pointer;
+  font-family:'IBM Plex Mono',monospace;transition:background .2s;}
+.btn-fill:hover{background:var(--copper2);}
+.btn-line{font-size:17px;text-transform:uppercase;letter-spacing:.13em;padding:13px 24px;
+  background:transparent;color:var(--tn3);border:1px solid rgba(200,160,96,.22);cursor:pointer;
+  font-family:'IBM Plex Mono',monospace;transition:all .2s;}
+.btn-line:hover{border-color:var(--gold);color:var(--gold);}
+
+.hero-r{background:var(--night2);display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:60px 40px;position:relative;overflow:hidden;}
+.hero-r::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:360px;height:360px;border-radius:50%;
+  background:radial-gradient(ellipse,rgba(138,96,48,.07) 0%,transparent 65%);pointer-events:none;}
+.hero-rlbl{font-size:16.5px;text-transform:uppercase;letter-spacing:.22em;color:var(--tn3);
+  margin-bottom:12px;align-self:flex-start;}
+.hsr{width:280px;display:flex;justify-content:space-between;align-items:flex-end;
+  padding-top:14px;margin-top:16px;border-top:1px solid var(--bn);}
+.hsr-lbl{font-size:16.5px;text-transform:uppercase;letter-spacing:.16em;color:var(--tn3);}
+.hsr-sub{font-size:16.5px;color:rgba(200,160,96,.45);margin-top:3px;font-style:italic;}
+.haxes{width:280px;margin-top:14px;display:flex;flex-direction:column;gap:8px;}
+.hax{display:flex;align-items:center;gap:8px;}
+.hax-n{font-size:16.5px;color:var(--tn3);text-transform:uppercase;letter-spacing:.09em;width:72px;flex-shrink:0;}
+.hax-t{flex:1;height:2px;background:rgba(200,160,96,.07);}
+.hax-f{height:100%;transition:width 1.6s cubic-bezier(.4,0,.2,1);}
+.hax-d{font-size:16px;width:14px;text-align:center;flex-shrink:0;}
+
+/* ═══ §2 PROBLEMA ════════════════════ */
+#problema{padding:120px 56px;background:var(--night3);}
+.prob-cols{display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center;}
+.prob-h2{font-size:clamp(38px,4.5vw,62px);color:var(--page);margin-bottom:18px;}
+.prob-h2 em{color:var(--gold);}
+.prob-reveal{margin-top:28px;padding:15px 18px;border-left:2px solid var(--copper);
+  background:rgba(138,96,48,.07);font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:18px;line-height:1.55;color:var(--page);}
+.cmp-wrap{display:flex;flex-direction:column;gap:10px;}
+.cmp-card{border:1px solid;overflow:hidden;}
+.cmp-head{padding:10px 16px;border-bottom:1px solid;font-size:16.5px;text-transform:uppercase;
+  letter-spacing:.15em;display:flex;align-items:center;gap:8px;}
+.cmp-body{padding:16px;}
+.cmp-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid;}
+.cmp-row:last-child{border:none;}
+.cmp-exname{font-size:17px;}
+.cmp-val{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;font-size:26px;}
+.cmp-tags{display:flex;gap:4px;margin-top:3px;}
+.tag{font-size:17px;padding:2px 7px;border:1px solid;text-transform:uppercase;letter-spacing:.08em;}
+.cmp-verdict{padding:10px 12px;margin-top:8px;font-size:14.5px;line-height:1.8;border-left:2px solid;}
+
+/* ═══ §3 DIMENSÕES ════════════════════ */
+#dims{padding:120px 56px;background:var(--page);color:var(--ink);}
+.dims-h2{font-size:clamp(38px,4.5vw,62px);color:var(--ink);margin-bottom:10px;}
+.dims-h2 em{color:var(--copper);}
+.dims-intro{font-size:17px;color:var(--t2);line-height:2;max-width:600px;margin-bottom:52px;}
+.dims-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--bd);border:1px solid var(--bd);}
+.dim{background:var(--page);padding:36px 28px;}
+.dim:nth-child(2){background:var(--page2);}
+.dim-icon{font-size:30px;margin-bottom:14px;}
+.dim-analogy{font-size:17px;color:rgba(26,20,10,.65);line-height:1.85;padding:11px 13px;
+  background:var(--page2);border-left:2px solid;margin-bottom:14px;font-style:italic;}
+.dim:nth-child(2) .dim-analogy{background:var(--page3);}
+.dim-name{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;font-size:30px;line-height:1;margin-bottom:4px;}
+.dim-sub{font-size:16.5px;text-transform:uppercase;letter-spacing:.14em;color:rgba(26,20,10,.45);margin-bottom:12px;}
+.dim-desc{font-size:17px;color:rgba(26,20,10,.65);line-height:1.9;}
+.dim-radar-wrap{margin-top:16px;text-align:center;}
+.dim-radar-mini-lbl{font-size:16px;text-transform:uppercase;letter-spacing:.12em;color:rgba(26,20,10,.38);margin-top:6px;}
+
+/* ═══ §4 MAPA ═════════════════════════ */
+#mapa{padding:120px 56px;background:var(--night2);}
+.mapa-cols{display:grid;grid-template-columns:1fr 430px;gap:72px;align-items:start;}
+.mapa-h2{font-size:clamp(38px,4.5vw,62px);color:var(--page);margin-bottom:16px;}
+.mapa-h2 em{color:var(--gold);}
+.profile-list{margin-top:28px;display:flex;flex-direction:column;gap:6px;}
+.pb{padding:13px 16px;border:1px solid var(--bn);background:transparent;cursor:pointer;
+  font-family:'IBM Plex Mono',monospace;text-align:left;transition:all .18s;
+  display:flex;align-items:center;gap:12px;}
+.pb:hover{border-color:rgba(200,160,96,.28);}
+.pb.on{background:rgba(200,160,96,.06);border-color:rgba(200,160,96,.35);}
+.pb-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.pb-name{font-size:17px;color:rgba(200,160,96,.84);}
+.pb-meta{font-size:16.5px;color:var(--tn3);margin-top:2px;}
+.mapa-panel{background:var(--night3);border:1px solid rgba(200,160,96,.16);padding:28px;}
+.mp-name{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;font-size:22px;color:var(--page);margin-bottom:3px;}
+.mp-desc{font-size:14.5px;color:var(--tn3);font-style:italic;margin-bottom:16px;}
+.mp-axes{margin-top:14px;display:flex;flex-direction:column;gap:8px;}
+.mp-ax{display:flex;align-items:center;gap:8px;}
+.mp-ax-n{font-size:16.5px;text-transform:uppercase;letter-spacing:.09em;color:var(--tn3);width:70px;flex-shrink:0;}
+.mp-ax-t{flex:1;height:3px;background:rgba(200,160,96,.07);overflow:hidden;}
+.mp-ax-f{height:100%;transition:width .7s cubic-bezier(.4,0,.2,1);}
+.mp-ax-v{font-size:14.5px;width:24px;text-align:right;flex-shrink:0;}
+.mp-score-row{margin-top:14px;padding-top:14px;border-top:1px solid var(--bn);display:flex;justify-content:space-between;align-items:flex-end;}
+.mp-score-lbl{font-size:16.5px;text-transform:uppercase;letter-spacing:.16em;color:var(--tn3);}
+.mp-score-sub{font-size:16.5px;color:rgba(200,160,96,.42);margin-top:3px;font-style:italic;}
+
+/* ═══ §5 PROGRESSÃO ══════════════════ */
+#prog{padding:120px 56px;background:var(--page);color:var(--ink);}
+.prog-h2{font-size:clamp(38px,4.5vw,62px);color:var(--ink);margin-bottom:10px;}
+.prog-h2 em{color:var(--copper);}
+.prog-intro{font-size:17px;color:var(--t2);line-height:2;max-width:600px;margin-bottom:52px;}
+.levers{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--bd);border:1px solid var(--bd);margin-bottom:32px;}
+.lever{background:var(--page);padding:28px 24px;}
+.lever:nth-child(2){background:var(--page2);}
+.lever-num{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;font-size:44px;line-height:1;margin-bottom:8px;}
+.lever-name{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;font-size:22px;margin-bottom:4px;}
+.lever-dim{font-size:16.5px;text-transform:uppercase;letter-spacing:.13em;color:rgba(26,20,10,.48);margin-bottom:12px;}
+.lever-desc{font-size:17px;color:rgba(26,20,10,.65);line-height:1.9;margin-bottom:12px;}
+.lever-example{padding:10px 12px;border-left:2px solid;font-size:14.5px;line-height:1.8;color:rgba(26,20,10,.62);}
+.lever-example strong{color:var(--ink);}
+
+/* impact table */
+.impact-table{border:1px solid var(--bd);overflow:hidden;}
+.it-head{padding:13px 20px;background:var(--page2);border-bottom:1px solid var(--bd);
+  font-size:14.5px;text-transform:uppercase;letter-spacing:.15em;color:var(--t2);
+  display:flex;align-items:center;gap:16px;}
+.it-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--bd);}
+.it-col{background:var(--page);padding:20px 14px;text-align:center;}
+.it-col:nth-child(even){background:var(--page2);}
+.it-lbl{font-size:16.5px;text-transform:uppercase;letter-spacing:.11em;color:var(--t2);margin-bottom:8px;}
+/* arrows */
+.it-arrow{font-size:36px;line-height:1;margin-bottom:4px;transition:transform .2s;}
+.it-pct{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;font-size:28px;color:var(--copper);margin-bottom:4px;}
+.it-bar{height:5px;background:var(--bd);overflow:hidden;margin-bottom:5px;}
+.it-bar-fill{height:100%;transition:width 1.2s ease;}
+.it-note{font-size:16.5px;color:var(--t2);line-height:1.6;}
+.it-col:hover .it-arrow{transform:scale(1.2);}
+
+/* ═══ §6 RITMO ════════════════════════ */
+#ritmo{padding:120px 56px;background:var(--night3);}
+.ritmo-h2{font-size:clamp(38px,4.5vw,62px);color:var(--page);margin-bottom:10px;}
+.ritmo-h2 em{color:var(--gold);}
+.ritmo-intro{font-size:17px;color:var(--tn2);line-height:2;max-width:600px;margin-bottom:52px;}
+.ritmo-cols{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start;}
+
+.steps{display:flex;flex-direction:column;gap:14px;margin-bottom:24px;}
+.step{display:flex;gap:16px;padding:18px;border:1px solid var(--bn);background:var(--night2);}
+.step-n{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;font-size:32px;line-height:1;color:var(--copper);flex-shrink:0;width:28px;}
+.step-title{font-size:16px;font-weight:500;color:var(--page);margin-bottom:5px;}
+.step-body{font-size:17.5px;color:var(--tn2);line-height:1.9;}
+.step-body strong{color:rgba(200,160,96,.95);}
+
+/* PSE hover interaction */
+.pse-trigger{color:var(--gold);cursor:pointer;text-decoration:underline dotted;transition:color .2s;font-style:normal;}
+.pse-trigger:hover{color:var(--gold2);}
+
+.ritmo-chart-wrap{background:var(--night2);border:1px solid var(--bn);padding:24px;}
+.ritmo-chart-lbl{font-size:16.5px;text-transform:uppercase;letter-spacing:.2em;color:var(--tn3);margin-bottom:8px;}
+.ritmo-legend{display:flex;gap:16px;margin-bottom:16px;}
+.r-leg{display:flex;align-items:center;gap:6px;font-size:14.5px;color:var(--tn3);cursor:pointer;
+  transition:color .2s;padding:3px 0;border-bottom:1px solid transparent;transition:all .2s;}
+.r-leg:hover,.r-leg.hl{color:var(--page);}
+.r-leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.ritmo-canvas-wrap{position:relative;}
+.ritmo-tooltip{position:absolute;background:var(--night);border:1px solid var(--bn);
+  padding:7px 10px;font-size:16.5px;color:var(--page);pointer-events:none;opacity:0;
+  transition:opacity .15s;white-space:nowrap;z-index:10;}
+.ritmo-delta{margin-top:12px;padding:12px 14px;border-left:2px solid var(--copper);
+  background:rgba(138,96,48,.08);font-size:17.5px;line-height:1.9;color:var(--tn2);}
+.ritmo-delta strong{color:var(--gold2);}
+.ritmo-delta .d-carga{color:var(--copper);transition:all .3s;}
+.ritmo-delta .d-pse{color:var(--gold);transition:all .3s;}
+.ritmo-delta.hl-carga .d-carga{color:var(--gold2);font-size:16px;font-weight:600;}
+.ritmo-delta.hl-pse .d-pse{color:var(--gold2);font-size:16px;font-weight:600;}
+
+.ritmo-states{display:flex;flex-direction:column;gap:8px;margin-top:16px;}
+.pstate{padding:18px;border:1px solid var(--bn);background:var(--night2);}
+.pstate-icon{font-size:20px;margin-bottom:6px;}
+.pstate-name{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;font-size:20px;margin-bottom:5px;}
+.pstate-body{font-size:17px;color:var(--tn2);line-height:1.9;}
+.pstate-body strong{color:rgba(200,160,96,.92);}
+
+/* ═══ §7 CTA ══════════════════════════ */
+#cta{padding:140px 56px;background:var(--night);text-align:center;position:relative;overflow:hidden;}
+#cta::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:640px;height:400px;border-radius:50%;
+  background:radial-gradient(ellipse,rgba(138,96,48,.07) 0%,transparent 65%);pointer-events:none;}
+.cta-h2{font-size:clamp(48px,7vw,90px);color:var(--page);margin-bottom:10px;position:relative;}
+.cta-h2 em{color:var(--gold);}
+.cta-slogan{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:22px;color:var(--copper2);margin-bottom:26px;}
+.cta-body{font-size:16.5px;color:var(--tn2);line-height:1.9;margin-bottom:36px;}
+.cta-form{display:flex;max-width:400px;margin:0 auto 12px;}
+.cta-input{flex:1;padding:13px 16px;font-family:'IBM Plex Mono',monospace;font-size:17px;
+  background:rgba(200,160,96,.05);border:1px solid rgba(200,160,96,.2);border-right:none;
+  color:var(--page);outline:none;transition:border-color .2s;}
+.cta-input:focus{border-color:var(--copper);}
+.cta-input::placeholder{color:var(--tn3);}
+.cta-note{font-size:16.5px;color:var(--tn3);}
+
+footer{padding:22px 56px;border-top:1px solid var(--bn);display:flex;justify-content:space-between;
+  align-items:center;background:var(--night);}
+.f-logo{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;font-size:18px;color:var(--copper);}
+.f-copy{font-size:16.5px;color:var(--tn3);}
+
+/* responsive */
+@media(max-width:960px){
+  nav{padding:0 20px;} .n-links{display:none;}
+  #hero{grid-template-columns:1fr;} .hero-l{padding:100px 24px 60px;} .hero-r{display:none;}
+  #problema,#dims,#mapa,#prog,#ritmo,#cta{padding:80px 24px;}
+  .prob-cols,.mapa-cols,.ritmo-cols{grid-template-columns:1fr;}
+  .dims-grid,.levers,.it-grid{grid-template-columns:1fr;}
+  footer{padding:18px 24px;flex-direction:column;gap:6px;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="n-logo">Momentum</div>
+  <div class="n-links">
+    <a href="javascript:void(0)" onclick="document.getElementById('problema').scrollIntoView({behavior:'smooth'})">Por quê</a>
+    <a href="javascript:void(0)" onclick="document.getElementById('dims').scrollIntoView({behavior:'smooth'})">As dimensões</a>
+    <a href="javascript:void(0)" onclick="document.getElementById('mapa').scrollIntoView({behavior:'smooth'})">Seu Mapa</a>
+    <a href="javascript:void(0)" onclick="document.getElementById('prog').scrollIntoView({behavior:'smooth'})">Progressão</a>
+    <a href="javascript:void(0)" onclick="document.getElementById('ritmo').scrollIntoView({behavior:'smooth'})">Ritmo</a>
+    <a href="javascript:void(0)" onclick="document.getElementById('guia').scrollIntoView({behavior:'smooth'})">Como funciona</a>
+  </div>
+  <a href="javascript:void(0)" onclick="document.getElementById('cta').scrollIntoView({behavior:'smooth'})" class="n-cta">Quero conhecer →</a>
+  <a href="login.html" style="font-family:'IBM Plex Mono',monospace;font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:rgba(200,160,96,.4);text-decoration:none;margin-left:12px;transition:color .2s" onmouseover="this.style.color='rgba(200,160,96,.8)'" onmouseout="this.style.color='rgba(200,160,96,.4)'">Entrar</a>
+</nav>
+
+<!-- ═══ HERO ═══════════════════════════════════════ -->
+<section id="hero">
+  <div class="hero-l">
+    <div class="hero-tag"><span class="htd"></span>Metodologia de treinamento</div>
+    <h1 class="hero-h1">Treino<br>que lê<br><em>seu corpo.</em></h1>
+    <p class="hero-lead">A maioria dos métodos conta <strong>quanto você treinou</strong>.<br>
+    O Momentum entende <strong>o que você estimulou</strong> —<br>
+    e usa isso para construir um caminho que é só seu.</p>
+    <p class="hero-slogan">Progresso tem direção.</p>
+    <div class="hero-btns">
+      <button class="btn-fill" onclick="document.getElementById('problema').scrollIntoView({behavior:'smooth'})">Entender a metodologia</button>
+      <button class="btn-line" onclick="document.getElementById('cta').scrollIntoView({behavior:'smooth'})">Quero um treinador</button>
+    </div>
+  </div>
+  <div class="hero-r">
+    <div class="hero-rlbl">Seu Mapa de Momentum</div>
+    <canvas id="hero-canvas" width="280" height="280"></canvas>
+    <div class="hsr">
+      <div>
+        <div class="hsr-lbl">Momentum Score</div>
+        <div class="hsr-sub">↑ Ritmo em alta</div>
+      </div>
+      <div class="s09">
+        <span class="i" style="font-size:50px">3</span>
+        <span class="dot" style="font-size:24px">.</span>
+        <span class="f" style="font-size:30px">7</span>
+      </div>
+    </div>
+    <div class="haxes">
+      <div class="hax"><div class="hax-n">Neural</div><div class="hax-t"><div class="hax-f" id="h-n" style="width:0%;background:#8a6030"></div></div><div class="hax-d" style="color:var(--gold)">↑</div></div>
+      <div class="hax"><div class="hax-n">Mecânica</div><div class="hax-t"><div class="hax-f" id="h-m" style="width:0%;background:#a07848"></div></div><div class="hax-d" style="color:var(--gold)">↑</div></div>
+      <div class="hax"><div class="hax-n">Metabólica</div><div class="hax-t"><div class="hax-f" id="h-met" style="width:0%;background:#4a6832"></div></div><div class="hax-d" style="color:rgba(200,160,96,.3)">→</div></div>
+      <div class="hax"><div class="hax-n">Técnica</div><div class="hax-t"><div class="hax-f" id="h-t" style="width:0%;background:#2e5060"></div></div><div class="hax-d" style="color:var(--gold)">↑</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ §2 PROBLEMA ══════════════════════════════════ -->
+<section id="problema">
+  <div class="wrap">
+    <div class="prob-cols">
+      <div>
+        <div class="kicker rv">O que os outros métodos perdem</div>
+        <h2 class="prob-h2 rv d1">Dois exercícios.<br>Mesmo peso.<br><em>Realidades diferentes.</em></h2>
+        <div class="prose rv d2">
+          <p>Terra Hexagonal e Extensora. Três séries de oito, oitenta quilos nos dois. Em qualquer planilha de academia, eles aparecem como treinos equivalentes.</p>
+          <p>Mas no seu corpo, eles são completamente distintos. Um exige coordenação de dezenas de músculos em cadeia e custa dois dias de recuperação do sistema nervoso. O outro isola um músculo, cansa localmente, e você consegue repetir no dia seguinte.</p>
+          <p>Tratar os dois da mesma forma é como usar a mesma dose de remédio para doenças diferentes.</p>
+        </div>
+        <div class="prob-reveal rv d3">"O Momentum não mede só <em>quanto</em> você treinou. Mede <em>o que</em> você estimulou — e o que isso pede do seu corpo."</div>
+      </div>
+      <div class="cmp-wrap rv-r">
+        <div class="cmp-card" style="border-color:rgba(200,80,60,.2);background:var(--night2);">
+          <div class="cmp-head" style="background:rgba(200,80,60,.05);border-color:rgba(200,80,60,.12);color:rgba(200,100,80,.65);">✗ Como qualquer planilha vê</div>
+          <div class="cmp-body">
+            <div class="cmp-row" style="border-color:rgba(200,160,96,.06);">
+              <div><div class="cmp-exname" style="color:rgba(200,160,96,.55)">Terra Hexagonal</div><div style="font-size:14px;color:rgba(200,160,96,.28);margin-top:2px">3 × 8 · 80kg</div></div>
+              <div class="cmp-val" style="color:rgba(200,160,96,.35)">1.920<span style="font-size:15px;margin-left:4px;opacity:.6">kg vol.</span></div>
+            </div>
+            <div class="cmp-row" style="border-color:transparent;">
+              <div><div class="cmp-exname" style="color:rgba(200,160,96,.55)">Extensora</div><div style="font-size:14px;color:rgba(200,160,96,.28);margin-top:2px">3 × 8 · 80kg</div></div>
+              <div class="cmp-val" style="color:rgba(200,160,96,.35)">1.920<span style="font-size:15px;margin-left:4px;opacity:.6">kg vol.</span></div>
+            </div>
+            <div class="cmp-verdict" style="border-color:rgba(200,80,60,.35);background:rgba(200,80,60,.05);color:rgba(200,100,80,.6)">Exercícios equivalentes. Mesma progressão para os dois.</div>
+          </div>
+        </div>
+        <div class="cmp-card" style="border-color:rgba(200,160,96,.28);background:var(--night2);">
+          <div class="cmp-head" style="background:rgba(200,160,96,.04);border-color:rgba(200,160,96,.1);color:var(--gold)">✦ Como o Momentum lê</div>
+          <div class="cmp-body">
+            <div class="cmp-row" style="border-color:rgba(200,160,96,.08);">
+              <div>
+                <div class="cmp-exname" style="color:rgba(200,160,96,.85)">Terra Hexagonal</div>
+                <div class="cmp-tags">
+                  <div class="tag" style="color:#a07848;border-color:rgba(160,120,72,.3)">Neural alto</div>
+                  <div class="tag" style="color:#8a6030;border-color:rgba(138,96,48,.3)">Mecânica alta</div>
+                </div>
+              </div>
+              <div>
+                <div class="cmp-val" style="color:var(--gold)">2.592<span style="font-size:15px;margin-left:4px;opacity:.5">idx</span></div>
+                <div style="font-size:14px;color:rgba(200,160,96,.35);text-align:right">recuperação: 48h</div>
+              </div>
+            </div>
+            <div class="cmp-row" style="border-color:transparent;">
+              <div>
+                <div class="cmp-exname" style="color:rgba(200,160,96,.85)">Extensora</div>
+                <div class="cmp-tags">
+                  <div class="tag" style="color:#2e5060;border-color:rgba(46,80,96,.35)">Neural baixo</div>
+                  <div class="tag" style="color:#4a6832;border-color:rgba(74,104,50,.35)">Metabólica</div>
+                </div>
+              </div>
+              <div>
+                <div class="cmp-val" style="color:var(--copper2)">630<span style="font-size:15px;margin-left:4px;opacity:.5">idx</span></div>
+                <div style="font-size:14px;color:rgba(200,160,96,.35);text-align:right">recuperação: 24h</div>
+              </div>
+            </div>
+            <div class="cmp-verdict" style="border-color:var(--copper);background:rgba(138,96,48,.07);color:rgba(200,160,96,.65)">A Terra gera <strong style="color:var(--gold)">4× mais estímulo sistêmico</strong>. Progressão, volume e próxima sessão são calculados de formas completamente distintas.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ §3 DIMENSÕES ══════════════════════════════════ -->
+<section id="dims">
+  <div class="wrap">
+    <div class="kicker rv" style="color:var(--copper)">O que seu corpo sente</div>
+    <h2 class="dims-h2 rv d1">Seu corpo responde<br>em <em>três idiomas.</em></h2>
+    <p class="dims-intro rv d2">Você já deve ter percebido que alguns treinos deixam você "quebrado" de um jeito diferente — às vezes é o músculo, às vezes é a cabeça, às vezes é só o gás. O Momentum nomeia cada um desses idiomas e usa isso a seu favor.</p>
+    <div class="dims-grid rv d2">
+      <div class="dim">
+        <div class="dim-icon">⚡</div>
+        <div class="dim-analogy" style="border-color:#8a6030">"Você levantou pesado na segunda e na quarta as pernas estavam 'mortas' — sem dor, mas sem força. Isso não é fraqueza muscular. É o seu <em>sistema nervoso pedindo mais tempo.</em>"</div>
+        <div class="dim-name" style="color:#8a6030">Força Neural</div>
+        <div class="dim-sub">Sistema nervoso central</div>
+        <div class="dim-desc">Movimentos pesados, explosivos ou tecnicamente complexos exigem muito do seu cérebro e nervo motor — independente do quanto seus músculos estão cansados. O custo neural é o mais silencioso e o mais ignorado.</div>
+        <div class="dim-radar-wrap"><canvas id="dim-r1" width="110" height="110"></canvas>
+          <div class="dim-radar-mini-lbl" style="color:#8a6030">Agachamento pesado · Terra · Clean</div></div>
+      </div>
+      <div class="dim">
+        <div class="dim-icon">🔩</div>
+        <div class="dim-analogy" style="border-color:#a07848">"Aquela dorzinha gostosa aparece um dia depois do supino. É o músculo se reparando — e ficando maior no processo. Isso é <em>desgaste mecânico virando hipertrofia.</em>"</div>
+        <div class="dim-name" style="color:#a07848">Desgaste Mecânico</div>
+        <div class="dim-sub">Tecido muscular</div>
+        <div class="dim-desc">Exercícios com grande amplitude de movimento e tensão constante criam microlesões no músculo. Ao se repararem, essas fibras ficam mais grossas e fortes. É o principal mecanismo de hipertrofia.</div>
+        <div class="dim-radar-wrap"><canvas id="dim-r2" width="110" height="110"></canvas>
+          <div class="dim-radar-mini-lbl" style="color:#a07848">Supino · Afundo · Remada</div></div>
+      </div>
+      <div class="dim">
+        <div class="dim-icon">🌀</div>
+        <div class="dim-analogy" style="border-color:#4a6832">"O queimado das séries longas de extensora? É o ácido lático se acumulando — e junto com ele, hormônios que constroem músculo. Isso é <em>resistência metabólica sendo construída.</em>"</div>
+        <div class="dim-name" style="color:#4a6832">Resistência Metabólica</div>
+        <div class="dim-sub">Energia e metabolismo</div>
+        <div class="dim-desc">Séries longas e cargas moderadas criam um ambiente metabólico que favorece o crescimento e a resistência muscular. Tem recuperação rápida — você pode treinar esse sistema de novo no dia seguinte.</div>
+        <div class="dim-radar-wrap"><canvas id="dim-r3" width="110" height="110"></canvas>
+          <div class="dim-radar-mini-lbl" style="color:#4a6832">Extensora · Leg Press alto rep</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ §4 MAPA ════════════════════════════════════════ -->
+<section id="mapa">
+  <div class="wrap">
+    <div class="mapa-cols">
+      <div>
+        <div class="kicker rv">Sua identidade fisiológica</div>
+        <h2 class="mapa-h2 rv d1">Cada pessoa tem<br><em>um Mapa diferente.</em></h2>
+        <div class="prose rv d2">
+          <p>O <strong>Mapa de Momentum</strong> é uma representação visual do que o seu treino está construindo. Mostra em quais das três dimensões você está avançando, onde está estagnando, e qual é o perfil fisiológico atual do seu corpo.</p>
+          <p>Não é um dado genérico de tabela. É calculado a partir dos exercícios que você fez, das cargas que você usou, e da percepção de esforço que você registrou em cada sessão.</p>
+          <p>Muda toda semana. Conta sua história.</p>
+        </div>
+        <div class="profile-list rv d3">
+          <button class="pb on" id="pb-forca" onclick="setP('forca')"><div class="pb-dot" style="background:#8a6030"></div><div><div class="pb-name">Perfil de Força</div><div class="pb-meta">Alta demanda neural · Treino pesado e técnico</div></div></button>
+          <button class="pb" id="pb-hiper" onclick="setP('hiper')"><div class="pb-dot" style="background:#a07848"></div><div><div class="pb-name">Perfil de Hipertrofia</div><div class="pb-meta">Desgaste mecânico dominante · Volume moderado</div></div></button>
+          <button class="pb" id="pb-met" onclick="setP('met')"><div class="pb-dot" style="background:#4a6832"></div><div><div class="pb-name">Perfil Metabólico</div><div class="pb-meta">Alta resistência · Muitas reps, cargas moderadas</div></div></button>
+          <button class="pb" id="pb-misto" onclick="setP('misto')"><div class="pb-dot" style="background:var(--gold)"></div><div><div class="pb-name">Perfil Misto</div><div class="pb-meta">Equilíbrio entre as três dimensões</div></div></button>
+        </div>
+      </div>
+      <div class="rv-r">
+        <div class="mapa-panel">
+          <div class="mp-name" id="mp-name">Perfil de Força</div>
+          <div class="mp-desc" id="mp-desc">Sistema nervoso como motor principal</div>
+          <canvas id="mapa-canvas" width="260" height="260"></canvas>
+          <div class="mp-axes" id="mp-axes"></div>
+          <div class="mp-score-row">
+            <div><div class="mp-score-lbl">Momentum Score</div><div class="mp-score-sub" id="mp-score-dir">↑ Ritmo em alta</div></div>
+            <div class="s09" id="mp-score">
+              <span class="i" style="font-size:44px">4</span><span class="dot" style="font-size:22px">.</span><span class="f" style="font-size:28px">2</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ §5 PROGRESSÃO ════════════════════════════════ -->
+<section id="prog">
+  <div class="wrap">
+    <div class="kicker rv" style="color:var(--copper)">Como seu treino avança</div>
+    <h2 class="prog-h2 rv d1">Progredir não é<br>só <em>aumentar o peso.</em></h2>
+    <p class="prog-intro rv d2">Existem três formas de avançar no treino — e cada uma mexe em dimensões diferentes do seu corpo. O Momentum sabe qual usar na hora certa, dependendo do que o seu Mapa está mostrando.</p>
+    <div class="levers rv d2">
+      <div class="lever">
+        <div class="lever-num" style="color:#8a6030">01</div>
+        <div class="lever-name">Mais peso</div>
+        <div class="lever-dim">Dimensão neural ↑</div>
+        <div class="lever-desc">É a progressão mais conhecida. Aumenta o desafio para o sistema nervoso e amplia a força máxima. Funciona melhor quando você está bem recuperado — dormindo bem, com energia.</div>
+        <div class="lever-example" style="border-color:#8a6030;background:rgba(138,96,48,.06)">Agachamento: 80kg → 82,5kg<br><strong>Impacto neural: +12% · Mecânico: +3%</strong></div>
+      </div>
+      <div class="lever">
+        <div class="lever-num" style="color:#a07848">02</div>
+        <div class="lever-name">Mais séries</div>
+        <div class="lever-dim">Dimensão mecânica e metabólica ↑</div>
+        <div class="lever-desc">Uma série a mais é a forma mais eficiente de acumular volume. Aumenta o tempo total sob tensão e o estímulo metabólico — ideal no início de um bloco.</div>
+        <div class="lever-example" style="border-color:#a07848;background:rgba(160,120,72,.06)">Supino: 3 séries → 4 séries<br><strong>Impacto mecânico: +28% · Neural: estável</strong></div>
+      </div>
+      <div class="lever">
+        <div class="lever-num" style="color:#4a6832">03</div>
+        <div class="lever-name">Mais repetições</div>
+        <div class="lever-dim">Dimensão metabólica + mecânica ↑</div>
+        <div class="lever-desc">Mais reps com a mesma carga aumenta o tempo sob tensão sem exigir mais do sistema nervoso. Gera hipertrofia e resistência com baixo custo neural.</div>
+        <div class="lever-example" style="border-color:#4a6832;background:rgba(74,104,50,.06)">Leg Press: 10 reps → 13 reps<br><strong>Impacto metabólico: +30% · Neural: baixo</strong></div>
+      </div>
+    </div>
+
+    <div class="impact-table rv d3">
+      <div class="it-head">Agachamento livre · 80kg · qual alavanca tem mais impacto no seu objetivo?</div>
+      <div class="it-grid">
+        <div class="it-col">
+          <div class="it-lbl">Referência</div>
+          <div class="it-arrow" style="color:rgba(26,20,10,.2)">━</div>
+          <div class="it-pct" style="color:var(--t2)">—</div>
+          <div class="it-bar"><div class="it-bar-fill" id="it-b0" style="width:0%;background:var(--bd)"></div></div>
+          <div class="it-note">3 séries · 8 reps · 80kg</div>
+        </div>
+        <div class="it-col">
+          <div class="it-lbl" style="color:#8a6030">+ 2,5kg de carga</div>
+          <div class="it-arrow" style="color:#8a6030">↑</div>
+          <div class="it-pct" style="color:#8a6030">+14%</div>
+          <div class="it-bar"><div class="it-bar-fill" id="it-b1" style="width:0%;background:#8a6030"></div></div>
+          <div class="it-note">Força neural domina o ganho</div>
+        </div>
+        <div class="it-col">
+          <div class="it-lbl" style="color:#a07848">+ 1 série</div>
+          <div class="it-arrow" style="color:#a07848;font-size:44px">↑↑</div>
+          <div class="it-pct" style="color:#a07848">+25%</div>
+          <div class="it-bar"><div class="it-bar-fill" id="it-b2" style="width:0%;background:#a07848"></div></div>
+          <div class="it-note">Maior delta — hipertrofia e volume</div>
+        </div>
+        <div class="it-col">
+          <div class="it-lbl" style="color:#4a6832">+ 2 reps</div>
+          <div class="it-arrow" style="color:#4a6832;font-size:28px">↑</div>
+          <div class="it-pct" style="color:#4a6832">+11%</div>
+          <div class="it-bar"><div class="it-bar-fill" id="it-b3" style="width:0%;background:#4a6832"></div></div>
+          <div class="it-note">Metabólico + mecânico, custo neural baixo</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ §6 RITMO ════════════════════════════════════ -->
+<section id="ritmo">
+  <div class="wrap">
+    <div class="kicker rv">O sinal mais importante</div>
+    <h2 class="ritmo-h2 rv d1">Seu corpo avisa<br>quando está <em>pronto.</em></h2>
+    <p class="ritmo-intro rv d2">A maioria dos treinos decide a hora de progredir pelo calendário. O Momentum usa um sinal do seu próprio corpo para saber a hora certa. Esse sinal se chama <strong style="color:var(--gold)">Ritmo de Adaptação</strong>.</p>
+
+    <div class="ritmo-cols">
+      <div>
+        <div class="steps rv">
+          <div class="step">
+            <div class="step-n">1</div>
+            <div>
+              <div class="step-title">Você registra como se sentiu</div>
+              <div class="step-body">No final de cada sessão, você marca de 1 a 10 o quanto aquele treino foi difícil. Isso se chama <strong class="pse-trigger" id="pse-trig" onmouseenter="hlPSE(true)" onmouseleave="hlPSE(false)">PSE</strong> (Percepção Subjetiva de Esforço). Leva cinco segundos.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-n">2</div>
+            <div>
+              <div class="step-title">O sistema registra o que você fez</div>
+              <div class="step-body">O Momentum calcula automaticamente a <strong>carga real</strong> da sessão — séries, reps, peso, tipo de exercício. Um número único que representa o estímulo objetivo daquele dia.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-n">3</div>
+            <div>
+              <div class="step-title">O Ritmo compara os dois</div>
+              <div class="step-body">Quando a carga cresce mais rápido do que o esforço que você sente, seu corpo se adaptou. <strong>Esse é o sinal de que é hora de avançar.</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ritmo-states rv d1">
+          <div class="pstate">
+            <div class="pstate-icon">📈</div>
+            <div class="pstate-name" style="color:var(--copper2)">Ritmo em alta</div>
+            <div class="pstate-body">Carga cresceu mais que o esforço percebido. Corpo adaptado. <strong>O sistema sugere progressão.</strong></div>
+          </div>
+          <div class="pstate">
+            <div class="pstate-icon">〰️</div>
+            <div class="pstate-name" style="color:rgba(200,160,96,.72)">Ritmo estável</div>
+            <div class="pstate-body">Carga e esforço caminham juntos. Zona de consolidação. <strong>Solidificar antes de avançar.</strong></div>
+          </div>
+          <div class="pstate">
+            <div class="pstate-icon">📉</div>
+            <div class="pstate-name" style="color:rgba(200,120,80,.88)">Ritmo em queda</div>
+            <div class="pstate-body">Esforço subiu sem aumento de carga. Fadiga ou estresse externo. <strong>Não é hora de forçar.</strong></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rv-r">
+        <div class="ritmo-chart-wrap">
+          <div class="ritmo-chart-lbl">Ritmo de Adaptação · 6 semanas</div>
+          <div class="ritmo-legend">
+            <div class="r-leg" id="leg-carga" onmouseenter="hlLine('carga',true)" onmouseleave="hlLine('carga',false)">
+              <div class="r-leg-dot" style="background:var(--copper)"></div>Carga real de treino
+            </div>
+            <div class="r-leg" id="leg-pse" onmouseenter="hlLine('pse',true)" onmouseleave="hlLine('pse',false)">
+              <div class="r-leg-dot" style="background:var(--gold)"></div>Esforço percebido (PSE)
+            </div>
+          </div>
+          <div class="ritmo-canvas-wrap">
+            <canvas id="ritmo-canvas" width="480" height="200" style="width:100%;max-width:480px;display:block"></canvas>
+            <div class="ritmo-tooltip" id="ritmo-tip"></div>
+          </div>
+          <div class="ritmo-delta" id="ritmo-delta">
+            Nas 6 semanas, a carga real subiu <span class="d-carga"><strong>+72%</strong></span>. O esforço percebido subiu apenas <span class="d-pse"><strong>+18%</strong></span>. A distância entre os dois é o Ritmo — e ele está dizendo: <strong>esse corpo está pronto para o próximo passo.</strong>
+          </div>
+        </div>
+        <div style="margin-top:10px;padding:16px;border:1px solid var(--bn);font-size:16px;color:var(--tn2);line-height:1.9;background:var(--night2);">
+          <strong style="color:rgba(200,160,96,.85)">Uma nota importante:</strong> Um dia difícil fora da academia pode elevar a PSE sem que o treino tenha sido mais pesado. O Ritmo considera padrões de semanas, não dias isolados.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ §8 COMO FUNCIONA — guia interativo ══════════ -->
+<section id="guia">
+  <div class="wrap">
+    <div class="kicker rv" style="justify-content:center">Como funciona</div>
+    <h2 class="rv d1" style="text-align:center;font-size:clamp(42px,5.5vw,76px);margin-bottom:14px">
+      Veja o Momentum<br><em>na prática.</em>
+    </h2>
+    <p class="rv d2" style="text-align:center;font-size:17px;color:var(--tn3);margin-bottom:56px;max-width:520px;margin-left:auto;margin-right:auto">Responda cinco perguntas. O sistema monta seu perfil em tempo real.</p>
+
+    <div class="guia-shell rv d2">
+
+      <!-- LEFT: quiz -->
+      <div class="guia-quiz" id="guia-quiz">
+
+        <!-- progress bar -->
+        <div class="gq-prog">
+          <div class="gq-prog-track"><div class="gq-prog-fill" id="gq-fill"></div></div>
+          <div class="gq-prog-lbl" id="gq-step-lbl">Pergunta 1 de 5</div>
+        </div>
+
+        <!-- question slides -->
+        <div class="gq-slides" id="gq-slides"></div>
+
+        <!-- nav -->
+        <div class="gq-nav" id="gq-nav" style="display:none">
+          <button class="gq-btn-back" id="gq-back" onclick="gqBack()">← Voltar</button>
+          <button class="gq-btn-next" id="gq-next" onclick="gqNext()">Próximo →</button>
+        </div>
+      </div>
+
+      <!-- RIGHT: live preview -->
+      <div class="guia-preview" id="guia-preview">
+        <div class="gp-label" id="gp-label">Seu perfil começa aqui</div>
+        <div class="gp-profile-name" id="gp-name">—</div>
+        <div class="gp-radar-wrap">
+          <canvas id="gp-radar" width="200" height="200"></canvas>
+          <div class="gp-radar-lbls">
+            <div class="gp-rl" id="gpr-n">Neural</div>
+            <div class="gp-rl" id="gpr-m">Mecânica</div>
+            <div class="gp-rl" id="gpr-met">Metabólica</div>
+          </div>
+        </div>
+        <div class="gp-axes" id="gp-axes"></div>
+        <div class="gp-div-suggest" id="gp-div" style="display:none"></div>
+        <div class="gp-ex-preview" id="gp-ex" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- RESULTADO FINAL -->
+    <div class="guia-result hidden" id="guia-result">
+      <div class="gr-header">
+        <div class="gr-tag" id="gr-tag">Perfil gerado</div>
+        <div class="gr-name" id="gr-name">—</div>
+        <div class="gr-desc" id="gr-desc"></div>
+        <div class="gr-score-wrap">
+          <div class="gr-score-lbl">Momentum Score estimado · Semana 12</div>
+          <div class="s09" id="gr-score"></div>
+        </div>
+      </div>
+
+      <div class="gr-body">
+
+        <!-- radar + dims -->
+        <div class="gr-left">
+          <div class="gr-sec-lbl">Perfil dimensional</div>
+          <canvas id="gr-radar" width="220" height="220"></canvas>
+          <div class="gr-axes" id="gr-axes"></div>
+        </div>
+
+        <!-- sessão exemplo -->
+        <div class="gr-center">
+          <div class="gr-sec-lbl">Sessão exemplo · Semana 1</div>
+          <div class="gr-sess-tipo" id="gr-sess-tipo"></div>
+          <div id="gr-ex-list"></div>
+        </div>
+
+        <!-- projeção -->
+        <div class="gr-right">
+          <div class="gr-sec-lbl">Projeção IC · 12 semanas</div>
+          <canvas id="gr-proj" width="320" height="160"></canvas>
+          <div class="gr-proj-meta" id="gr-proj-meta"></div>
+          <div class="gr-proj-legend">
+            <div class="gr-pl"><div class="gr-pl-dot" style="background:#c8a060"></div>IC acumulado</div>
+            <div class="gr-pl"><div class="gr-pl-dot" style="background:#608040;opacity:.6"></div>Deload</div>
+          </div>
+          <div class="gr-ritmo-preview" id="gr-ritmo-prev"></div>
+        </div>
+      </div>
+
+      <div class="gr-cta">
+        <div class="gr-cta-text">Esse perfil foi gerado em 30 segundos.<br>Com um Personal Momentum, cada sessão é calibrada assim — semana a semana.</div>
+        <div class="gr-cta-btns">
+          <button class="btn-fill" onclick="document.getElementById('cta').scrollIntoView({behavior:'smooth'})">Quero um treinador Momentum →</button>
+          <button class="btn-line" onclick="gqReset()">Refazer o perfil</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══ §7 CTA ═════════════════════════════════════ -->
+<section id="cta">
+  <div style="position:relative">
+    <div class="kicker rv" style="justify-content:center;color:var(--copper2)">Começar</div>
+    <h2 class="cta-h2 rv d1">Encontre<br>seu treinador<br><em>Momentum.</em></h2>
+    <p class="cta-slogan rv d2">Progresso tem direção.</p>
+    <p class="cta-body rv d3">A metodologia é aplicada por Personal Trainers certificados.<br>Deixe seu contato e te conectamos com um treinador na sua cidade.</p>
+    <div class="cta-form rv d3">
+      <input class="cta-input" type="email" placeholder="seu@email.com">
+      <button class="btn-fill">Quero começar →</button>
+    </div>
+    <p class="cta-note rv d4">Sem compromisso · Só uma conversa para entender seus objetivos</p>
+  </div>
+</section>
+
+<footer>
+  <div class="f-logo">Momentum</div>
+  <div class="f-copy">Metodologia de treinamento · Mar 2026</div>
+</footer>
+
+<script>
+// ══ RADAR ══════════════════════════════
+function radar(canvas,vals,color,dark,size){
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d'),W=canvas.width,H=canvas.height,cx=W/2,cy=H/2;
+  const R=Math.min(W,H)/2-(size==='sm'?14:24),N=5;
+  const rc=dark?'rgba(200,160,96,.08)':'rgba(26,20,10,.08)';
+  const ac=dark?'rgba(200,160,96,.10)':'rgba(26,20,10,.10)';
+  const lc=dark?'rgba(200,160,96,.32)':'rgba(106,88,64,.48)';
+  ctx.clearRect(0,0,W,H);
+  for(let r=1;r<=5;r++){ctx.beginPath();for(let i=0;i<N;i++){const a=(i/N)*Math.PI*2-Math.PI/2,rr=R*r/5;i===0?ctx.moveTo(cx+rr*Math.cos(a),cy+rr*Math.sin(a)):ctx.lineTo(cx+rr*Math.cos(a),cy+rr*Math.sin(a));}ctx.closePath();ctx.strokeStyle=rc;ctx.lineWidth=1;ctx.stroke();}
+  for(let i=0;i<N;i++){const a=(i/N)*Math.PI*2-Math.PI/2;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+R*Math.cos(a),cy+R*Math.sin(a));ctx.strokeStyle=ac;ctx.lineWidth=1;ctx.stroke();}
+  ctx.beginPath();for(let i=0;i<N;i++){const a=(i/N)*Math.PI*2-Math.PI/2,rr=R*vals[i]/10;i===0?ctx.moveTo(cx+rr*Math.cos(a),cy+rr*Math.sin(a)):ctx.lineTo(cx+rr*Math.cos(a),cy+rr*Math.sin(a));}ctx.closePath();ctx.fillStyle=color+'1a';ctx.fill();ctx.strokeStyle=color;ctx.lineWidth=1.5;ctx.stroke();
+  for(let i=0;i<N;i++){const a=(i/N)*Math.PI*2-Math.PI/2,rr=R*vals[i]/10;ctx.beginPath();ctx.arc(cx+rr*Math.cos(a),cy+rr*Math.sin(a),2.5,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();}
+  if(size!=='sm'){const lbls=['N','M','Met','T','R'];ctx.font='13.0px IBM Plex Mono,monospace';ctx.textAlign='center';for(let i=0;i<N;i++){const a=(i/N)*Math.PI*2-Math.PI/2,lr=R+15;ctx.fillStyle=lc;ctx.fillText(lbls[i],cx+lr*Math.cos(a),cy+lr*Math.sin(a)+3);}}
+}
+
+// ══ HERO ══════════════════════════════
+radar(document.getElementById('hero-canvas'),[8.4,6.7,2.5,7.2,7.8],'#c8a060',true,'lg');
+setTimeout(()=>{document.getElementById('h-n').style.width='84%';document.getElementById('h-m').style.width='67%';document.getElementById('h-met').style.width='25%';document.getElementById('h-t').style.width='72%';},120);
+
+// ══ DIM radars ════════════════════════
+setTimeout(()=>{
+  radar(document.getElementById('dim-r1'),[9,4.5,2,8.5,7.5],'#8a6030',false,'sm');
+  radar(document.getElementById('dim-r2'),[4.5,9,5.5,4.5,7],'#a07848',false,'sm');
+  radar(document.getElementById('dim-r3'),[2.5,5.5,9.5,2,6],'#4a6832',false,'sm');
+},300);
+
+// ══ MAPA ══════════════════════════════
+const PROFILES={
+  forca:{name:'Perfil de Força',desc:'Sistema nervoso como motor principal',vals:[9.2,5.5,2.0,7.8,8.5],c:'#8a6030',axes:[['Neural',9.2,'#8a6030'],['Mecânica',5.5,'#a07848'],['Metabólica',2.0,'#4a6832'],['Técnica',7.8,'#2e5060'],['Ritmo',8.5,'#c8a060']],sc:'4.2',dir:'↑ Ritmo em alta'},
+  hiper:{name:'Perfil de Hipertrofia',desc:'Tensão mecânica como objetivo central',vals:[5,9,5.5,4.5,7],c:'#a07848',axes:[['Neural',5,'#8a6030'],['Mecânica',9,'#a07848'],['Metabólica',5.5,'#4a6832'],['Técnica',4.5,'#2e5060'],['Ritmo',7,'#c8a060']],sc:'3.1',dir:'→ Ritmo estável'},
+  met:{name:'Perfil Metabólico',desc:'Alta resistência, volume elevado',vals:[2.5,4.5,9.5,2,6.5],c:'#4a6832',axes:[['Neural',2.5,'#8a6030'],['Mecânica',4.5,'#a07848'],['Metabólica',9.5,'#4a6832'],['Técnica',2,'#2e5060'],['Ritmo',6.5,'#c8a060']],sc:'2.4',dir:'→ Ritmo estável'},
+  misto:{name:'Perfil Misto',desc:'Equilíbrio entre todas as dimensões',vals:[7,7.5,6.5,6,7.5],c:'#c8a060',axes:[['Neural',7,'#8a6030'],['Mecânica',7.5,'#a07848'],['Metabólica',6.5,'#4a6832'],['Técnica',6,'#2e5060'],['Ritmo',7.5,'#c8a060']],sc:'3.7',dir:'↑ Ritmo em alta'},
+};
+function setP(id){
+  const p=PROFILES[id];
+  document.querySelectorAll('.pb').forEach(b=>b.classList.remove('on'));
+  document.getElementById('pb-'+id).classList.add('on');
+  document.getElementById('mp-name').textContent=p.name;
+  document.getElementById('mp-desc').textContent=p.desc;
+  document.getElementById('mp-axes').innerHTML=p.axes.map(([n,v,c])=>`<div class="mp-ax"><div class="mp-ax-n">${n}</div><div class="mp-ax-t"><div class="mp-ax-f" style="width:${v*10}%;background:${c}"></div></div><div class="mp-ax-v" style="color:${c}">${v.toFixed(1)}</div></div>`).join('');
+  const [si,sf]=p.sc.split('.');
+  document.getElementById('mp-score').innerHTML=`<span class="i" style="font-size:44px">${si}</span><span class="dot" style="font-size:22px">.</span><span class="f" style="font-size:28px">${sf}</span>`;
+  document.getElementById('mp-score-dir').textContent=p.dir;
+  radar(document.getElementById('mapa-canvas'),p.vals,p.c,true,'lg');
+}
+setP('forca');
+
+// ══ IMPACT BARS ═══════════════════════
+const itObs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){[['it-b0','52'],['it-b1','66'],['it-b2','80'],['it-b3','63']].forEach(([id,w])=>{const el=document.getElementById(id);if(el)el.style.width=w+'%';});itObs.disconnect();}});},{threshold:.2});
+const itTable=document.querySelector('.impact-table');if(itTable)itObs.observe(itTable);
+
+// ══ RITMO LINE CHART ══════════════════
+const RITMO_DATA=[
+  {w:'Sem 1',c:.28,p:.46},{w:'Sem 2',c:.42,p:.52},
+  {w:'Sem 3',c:.56,p:.57},{w:'Sem 4',c:.68,p:.60},
+  {w:'Sem 5',c:.83,p:.63},{w:'Sem 6',c:1.0,p:.66},
+];
+const rc=document.getElementById('ritmo-canvas');
+let hlMode=null; // 'carga','pse','pse-text'
+
+function drawRitmo(hl){
+  if(!rc)return;
+  const ctx=rc.getContext('2d'),W=rc.width,H=rc.height;
+  const PAD={l:40,r:16,t:16,b:32};
+  const gw=W-PAD.l-PAD.r,gh=H-PAD.t-PAD.b;
+  ctx.clearRect(0,0,W,H);
+
+  // Grid lines
+  for(let i=0;i<=5;i++){
+    const y=PAD.t+gh*(1-i/5);
+    ctx.beginPath();ctx.moveTo(PAD.l,y);ctx.lineTo(PAD.l+gw,y);
+    ctx.strokeStyle='rgba(200,160,96,.06)';ctx.lineWidth=1;ctx.stroke();
+    ctx.fillStyle='rgba(200,160,96,.25)';ctx.font='13.0px IBM Plex Mono,monospace';ctx.textAlign='right';
+    ctx.fillText((i*20)+'',PAD.l-6,y+3);
+  }
+
+  // X labels
+  RITMO_DATA.forEach((d,i)=>{
+    const x=PAD.l+gw*i/(RITMO_DATA.length-1);
+    ctx.fillStyle='rgba(200,160,96,.3)';ctx.font='13.0px IBM Plex Mono,monospace';ctx.textAlign='center';
+    ctx.fillText(d.w,x,H-PAD.b+14);
+  });
+
+  // Points helper
+  const pt=(d,key)=>({x:PAD.l+gw*RITMO_DATA.indexOf(d)/(RITMO_DATA.length-1),y:PAD.t+gh*(1-d[key])});
+
+  // Fill area between curves (gap = ritmo)
+  const cargaPts=RITMO_DATA.map(d=>pt(d,'c'));
+  const psePts=RITMO_DATA.map(d=>pt(d,'p'));
+
+  if(hl==='carga'){
+    ctx.beginPath();
+    cargaPts.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));
+    psePts.slice().reverse().forEach(p=>ctx.lineTo(p.x,p.y));
+    ctx.closePath();ctx.fillStyle='rgba(138,96,48,.22)';ctx.fill();
+  } else if(hl==='pse'||hl==='pse-text'){
+    ctx.beginPath();
+    psePts.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));
+    psePts.slice().reverse().forEach(p=>ctx.lineTo(p.x,p.y));
+    ctx.closePath();ctx.fillStyle='rgba(200,160,96,.15)';ctx.fill();
+  } else {
+    // neutral fill
+    ctx.beginPath();
+    cargaPts.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));
+    psePts.slice().reverse().forEach(p=>ctx.lineTo(p.x,p.y));
+    ctx.closePath();ctx.fillStyle='rgba(138,96,48,.10)';ctx.fill();
+  }
+
+  // Draw smooth bezier lines
+  function drawLine(pts,color,lw,dashed){
+    ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=lw;
+    if(dashed)ctx.setLineDash([4,3]);else ctx.setLineDash([]);
+    pts.forEach((p,i)=>{
+      if(i===0){ctx.moveTo(p.x,p.y);}
+      else{
+        const prev=pts[i-1];
+        const cpx=(prev.x+p.x)/2;
+        ctx.bezierCurveTo(cpx,prev.y,cpx,p.y,p.x,p.y);
+      }
+    });
+    ctx.stroke();ctx.setLineDash([]);
+  }
+
+  const cargaLw=(hl==='carga')?3:1.8;
+  const pseLw=(hl==='pse'||hl==='pse-text')?3:1.8;
+  const cargaAlpha=(hl&&hl!=='carga')?'rgba(138,96,48,.35)':'#a07840';
+  const pseAlpha=(hl&&hl!=='pse'&&hl!=='pse-text')?'rgba(200,160,96,.3)':'#c8a060';
+
+  drawLine(cargaPts,cargaAlpha,cargaLw,false);
+  drawLine(psePts,pseAlpha,pseLw,true);
+
+  // Dots
+  function drawDots(pts,color,r,hl2){
+    pts.forEach(p=>{
+      ctx.beginPath();ctx.arc(p.x,p.y,hl2?5:3,0,Math.PI*2);
+      ctx.fillStyle=color;ctx.fill();
+      if(hl2){ctx.beginPath();ctx.arc(p.x,p.y,8,0,Math.PI*2);ctx.strokeStyle=color+'66';ctx.lineWidth=1.5;ctx.stroke();}
+    });
+  }
+  drawDots(cargaPts,(hl==='carga')?'#c8a060':'#a07840',3,hl==='carga');
+  drawDots(psePts,(hl==='pse'||hl==='pse-text')?'#ddb870':'#c8a060',3,hl==='pse'||hl==='pse-text');
+
+  // Ritmo label
+  const midI=Math.floor(RITMO_DATA.length/2);
+  const cp=pt(RITMO_DATA[midI],'c');const pp=pt(RITMO_DATA[midI],'p');
+  const midY=(cp.y+pp.y)/2;
+  ctx.fillStyle='rgba(200,160,96,.5)';ctx.font='italic 9px Cormorant Garamond,serif';ctx.textAlign='center';
+  ctx.fillText('ritmo ↑',cp.x+24,midY);
+}
+
+drawRitmo(null);
+
+// Hover on canvas
+rc.addEventListener('mousemove',e=>{
+  const rect=rc.getBoundingClientRect();
+  const scaleX=rc.width/rect.width;
+  const mx=(e.clientX-rect.left)*scaleX;
+  const PAD={l:40,r:16,t:16,b:32};
+  const gw=rc.width-PAD.l-PAD.r;
+  const tip=document.getElementById('ritmo-tip');
+
+  let nearest=null,minDist=9999;
+  RITMO_DATA.forEach((d,i)=>{
+    const x=PAD.l+gw*i/(RITMO_DATA.length-1);
+    const dist=Math.abs(mx-x);
+    if(dist<minDist){minDist=dist;nearest=i;}
+  });
+
+  if(nearest!==null&&minDist<30){
+    const d=RITMO_DATA[nearest];
+    const x=PAD.l+gw*nearest/(RITMO_DATA.length-1);
+    const scaleY=rect.height/rc.height;
+    tip.style.left=(x/scaleX)+'px';
+    tip.style.top='0px';
+    tip.style.opacity='1';
+    tip.innerHTML=`<span style="color:var(--copper)">${d.w}</span> · Carga: <span style="color:var(--copper)">${(d.c*100).toFixed(0)}</span> · PSE: <span style="color:var(--gold)">${(d.p*100).toFixed(0)}</span>`;
+  } else {
+    tip.style.opacity='0';
+  }
+});
+rc.addEventListener('mouseleave',()=>{document.getElementById('ritmo-tip').style.opacity='0';});
+
+function hlLine(type,on){
+  hlMode=on?type:null;
+  drawRitmo(hlMode);
+  const delta=document.getElementById('ritmo-delta');
+  delta.classList.remove('hl-carga','hl-pse');
+  if(on&&type==='carga')delta.classList.add('hl-carga');
+  if(on&&type==='pse')delta.classList.add('hl-pse');
+  document.getElementById('leg-carga').classList.toggle('hl',on&&type==='carga');
+  document.getElementById('leg-pse').classList.toggle('hl',on&&type==='pse');
+}
+
+function hlPSE(on){
+  hlMode=on?'pse-text':null;
+  drawRitmo(hlMode);
+  document.getElementById('leg-pse').classList.toggle('hl',on);
+  const delta=document.getElementById('ritmo-delta');
+  delta.classList.toggle('hl-pse',on);
+}
+
+// Redraw on resize
+window.addEventListener('resize',()=>drawRitmo(hlMode));
+
+// ══════════════════════════════════════════════════════════
+// §8 — GUIA INTERATIVO
+// ══════════════════════════════════════════════════════════
+
+const GQ_QUESTIONS = [
+  {
+    id:'objetivo',
+    q:'Qual é o seu objetivo principal?',
+    sub:'Sem julgamento — só o que você realmente quer.',
+    opts:[
+      {id:'hiper',    ico:'💪', label:'Ganhar massa',          sub:'Hipertrofia como foco principal'},
+      {id:'forca',    ico:'🏋️', label:'Ficar mais forte',      sub:'Aumentar carga e performance'},
+      {id:'emagre',   ico:'🔥', label:'Definir e emagrecer',   sub:'Recomposição corporal'},
+      {id:'funcional',ico:'⚡', label:'Condicionamento geral', sub:'Saúde, energia e bem-estar'},
+      {id:'retorno',  ico:'🔄', label:'Voltar a treinar',      sub:'Retomada após pausa'},
+    ]
+  },
+  {
+    id:'dias',
+    q:'Quantas vezes por semana você treina?',
+    sub:'Ou pretende treinar.',
+    opts:[
+      {id:'2', ico:'📅', label:'2x por semana',  sub:'Agenda restrita, máximo aproveitamento'},
+      {id:'3', ico:'📅', label:'3x por semana',  sub:'O equilíbrio mais comum'},
+      {id:'4', ico:'📅', label:'4x por semana',  sub:'Alta frequência com recuperação adequada'},
+      {id:'5', ico:'📅', label:'5x ou mais',     sub:'Alto volume — exige periodização cuidadosa'},
+    ]
+  },
+  {
+    id:'intensidade',
+    q:'Como você se sente diante de treinos muito intensos?',
+    sub:'Sem resposta certa. O sistema se adapta ao que é sustentável para você.',
+    opts:[
+      {id:'alto',    ico:'🔥', label:'Adoro treinar pesado',     sub:'Alta tolerância a desconforto'},
+      {id:'medio',   ico:'👍', label:'Tolero bem quando necessário', sub:'Subo a intensidade com orientação'},
+      {id:'baixo',   ico:'🤔', label:'Prefiro controle e progressão', sub:'Consistência vale mais que intensidade'},
+      {id:'minimo',  ico:'🌱', label:'Prefiro começar com calma',   sub:'Baixa exposição a esforço máximo'},
+    ]
+  },
+  {
+    id:'limitacao',
+    q:'Tem alguma limitação física que influencia seus treinos?',
+    sub:'Essencial para calibrar coeficientes de risco e ordem dos exercícios.',
+    opts:[
+      {id:'nenhuma', ico:'✅', label:'Nenhuma',            sub:'Amplitude total de movimentos'},
+      {id:'lombar',  ico:'⚠️', label:'Coluna / lombar',   sub:'Adaptações nos padrões de empurrar e agachar'},
+      {id:'joelho',  ico:'⚠️', label:'Joelho',            sub:'Restrições em flexão e impacto'},
+      {id:'ombro',   ico:'⚠️', label:'Ombro',             sub:'Cuidado com elevação e rotação'},
+      {id:'outra',   ico:'📋', label:'Outra restrição',   sub:'PT avalia individualmente'},
+    ]
+  },
+  {
+    id:'experiencia',
+    q:'Há quanto tempo você treina de forma consistente?',
+    sub:'Isso define a calibração inicial do PSE e o modelo de periodização sugerido.',
+    opts:[
+      {id:'inic',  ico:'🌱', label:'Estou começando',      sub:'Menos de 1 ano'},
+      {id:'basico',ico:'📈', label:'1 a 2 anos',           sub:'Base motora formada, ainda adaptando'},
+      {id:'inter', ico:'💡', label:'3 a 5 anos',           sub:'Intermediário — boa consciência corporal'},
+      {id:'avanc', ico:'🎯', label:'5 anos ou mais',       sub:'Avançado — alta interoceptividade'},
+    ]
+  },
+];
+
+// Exercise bank mini (coeficientes reais do sistema)
+const GQ_EXERCISES = {
+  hiper:[
+    {ico:'🦵',name:'Leg Press 45°',   CT:3,DN:3,IM:8,SV:3,FC:5, spec:'4×10 · Zona Moderada',  ic_est:2560},
+    {ico:'🍑',name:'Hip Thrust',       CT:4,DN:4,IM:7,SV:5,FC:6, spec:'4×12 · Zona Moderada',  ic_est:1920},
+    {ico:'💪',name:'Supino c/ Halt.',  CT:5,DN:5,IM:7,SV:6,FC:5, spec:'4×10 · Zona Moderada',  ic_est:1280},
+    {ico:'🔙',name:'Puxada Frontal',   CT:5,DN:5,IM:6,SV:5,FC:5, spec:'3×12 · Zona Moderada',  ic_est:1080},
+  ],
+  forca:[
+    {ico:'🏋️',name:'Agachamento Livre',CT:9,DN:9,IM:8,SV:7,FC:6, spec:'5×5 · Zona Pesado',    ic_est:4840},
+    {ico:'🔩',name:'Supino Reto',       CT:6,DN:6,IM:8,SV:5,FC:7, spec:'5×5 · Zona Pesado',    ic_est:3200},
+    {ico:'🔙',name:'Remada Curvada',    CT:7,DN:7,IM:7,SV:6,FC:5, spec:'4×5 · Zona Pesado',    ic_est:2940},
+    {ico:'🦵',name:'Terra Hexagonal',  CT:7,DN:8,IM:9,SV:6,FC:7, spec:'3×5 · Zona Pesado',    ic_est:5600},
+  ],
+  funcional:[
+    {ico:'🏋️',name:'Agachamento Livre',CT:9,DN:9,IM:8,SV:7,FC:6, spec:'3×8 · Zona Moderada',  ic_est:3200},
+    {ico:'💪',name:'Supino c/ Halt.',  CT:5,DN:5,IM:7,SV:6,FC:5, spec:'3×10 · Zona Leve',     ic_est:960},
+    {ico:'🦵',name:'Stiff / RDL',      CT:6,DN:6,IM:8,SV:6,FC:5, spec:'3×10 · Zona Moderada', ic_est:1680},
+    {ico:'🔙',name:'Remada Máquina',   CT:3,DN:3,IM:6,SV:3,FC:5, spec:'3×12 · Zona Leve',     ic_est:900},
+  ],
+  reab:[
+    {ico:'🦵',name:'Leg Press 45°',    CT:3,DN:3,IM:8,SV:3,FC:5, spec:'3×12 · Zona Leve',     ic_est:1200},
+    {ico:'🍑',name:'Hip Thrust',        CT:4,DN:4,IM:7,SV:5,FC:6, spec:'3×12 · Zona Leve',     ic_est:960},
+    {ico:'🔙',name:'Remada Máquina',   CT:3,DN:3,IM:6,SV:3,FC:5, spec:'3×12 · Zona Leve',     ic_est:720},
+    {ico:'💪',name:'Desenvolvimento H.',CT:4,DN:4,IM:5,SV:4,FC:4, spec:'3×12 · Zona Leve',     ic_est:480},
+  ],
+};
+
+const GQ_PROFILES = {
+  // [objetivo][intensidade][experiencia] → perfil
+  hiper_alto_avanc:  {name:'Hipertrofia Avançada',       tag:'Alto volume · Alta intensidade',   vals:[6.5,9.5,5.5,5.5,8],  c:'#a07848', divisao:'Upper / Lower 4×', score:'3.2', modelo:'Block',  exs:'hiper'},
+  hiper_alto_inter:  {name:'Hipertrofia Intermediária',   tag:'Volume progressivo · DUP suave',   vals:[5.5,9,5.5,5,7.5],    c:'#a07848', divisao:'Upper / Lower 4×', score:'2.8', modelo:'Linear', exs:'hiper'},
+  hiper_medio_inter: {name:'Hipertrofia Controlada',      tag:'Progressão sustentável',           vals:[5,8.5,5,4.5,7],      c:'#a07848', divisao:'Upper / Lower 4×', score:'2.4', modelo:'Linear', exs:'hiper'},
+  hiper_baixo_basico:{name:'Hipertrofia Base',             tag:'Construção motora + volume leve',  vals:[4,7,4.5,4,6],        c:'#a07848', divisao:'Full Body 3×',    score:'1.8', modelo:'Linear', exs:'hiper'},
+  forca_alto_avanc:  {name:'Força Máxima',                tag:'Neural dominante · Periodização DUP',vals:[9.5,6,2,8,8.5],   c:'#8a6030', divisao:'PPL 3–4×',        score:'4.1', modelo:'DUP',    exs:'forca'},
+  forca_alto_inter:  {name:'Força Progressiva',           tag:'Linear heavy · Padrões básicos',   vals:[8,6,2.5,7,7.5],     c:'#8a6030', divisao:'PPL 3×',          score:'3.4', modelo:'Linear', exs:'forca'},
+  forca_medio_inter: {name:'Força Funcional',             tag:'Força + padrões atléticos',        vals:[7,6.5,3.5,6.5,7],   c:'#8a6030', divisao:'PPL 3×',          score:'2.9', modelo:'Linear', exs:'forca'},
+  emagre_medio_basico:{name:'Recomposição Ativa',         tag:'Mecânica + metabólica balanceadas',vals:[4.5,7,7,4,6.5],     c:'#c8a060', divisao:'Full Body 3×',    score:'2.2', modelo:'Linear', exs:'hiper'},
+  emagre_alto_inter: {name:'Recomposição Avançada',       tag:'Alto volume · PSE calibrado',      vals:[5.5,7.5,7.5,5,7],   c:'#c8a060', divisao:'Upper / Lower 4×', score:'2.7', modelo:'Linear', exs:'hiper'},
+  funcional_medio_inic:{name:'Condicionamento Inicial',  tag:'Full body · Progressão neural',    vals:[3.5,5,7,3.5,5.5],   c:'#4a6832', divisao:'Full Body 3×',    score:'1.4', modelo:'Linear', exs:'funcional'},
+  funcional_medio_inter:{name:'Condicionamento Atlético',tag:'Conjugado · Força + potência',     vals:[6.5,6,6.5,6,7],     c:'#4a6832', divisao:'Torso/Membros 4×', score:'2.6', modelo:'Conjugado', exs:'funcional'},
+  retorno_baixo_basico:{name:'Retomada Estruturada',      tag:'Base motora · Progressão cautelosa',vals:[3,5,4,3.5,5],      c:'#2e5060', divisao:'Full Body 3×',    score:'1.2', modelo:'Linear', exs:'reab'},
+  retorno_medio_inter:{name:'Retomada Progressiva',       tag:'Resgate de padrões · Volume moderado',vals:[4.5,6.5,4,4.5,6],c:'#2e5060', divisao:'Full Body 3×',    score:'1.9', modelo:'Linear', exs:'funcional'},
+  _default:           {name:'Perfil Personalizado',       tag:'Parâmetros calibrados pelo PT',    vals:[5.5,6.5,5.5,5,6.5], c:'#c8a060', divisao:'A/B 3–4×',        score:'2.2', modelo:'Linear', exs:'hiper'},
+};
+
+// IC projection generator
+function gqProject(baseIC, modelo, semanas) {
+  return Array.from({length:semanas},(_,i)=>{
+    const isDeload = (i+1)%4===0 && i<semanas-1;
+    let mult;
+    if(isDeload) { mult = 0.72; }
+    else if(modelo==='Linear')    { mult = 1 + i*0.045; }
+    else if(modelo==='Block')     { const ph=Math.floor(i/(semanas/3)); mult=[1+i*0.035,1.12+i*0.025,1.25+i*0.015][ph]||1; }
+    else if(modelo==='DUP')       { mult = 1 + i*0.04 + (i%3===0?.02:0); }
+    else                           { mult = 1 + i*0.038 + (i%2===0?.01:-.005); }
+    return {v: Math.round(baseIC*mult), deload: isDeload};
+  });
+}
+
+let gqState = { step:0, answers:{} };
+
+function gqGetProfile() {
+  const a = gqState.answers;
+  const obj   = a.objetivo || 'hiper';
+  const int   = a.intensidade || 'medio';
+  const exp   = a.experiencia || 'basico';
+  const keys  = [
+    `${obj}_${int}_${exp}`,
+    `${obj}_${int}_inter`,
+    `${obj}_medio_${exp}`,
+    `${obj}_medio_basico`,
+    `${obj}_alto_inter`,
+  ];
+  for(const k of keys) if(GQ_PROFILES[k]) return GQ_PROFILES[k];
+  return GQ_PROFILES._default;
+}
+
+function gqRenderQuestion(n) {
+  const q = GQ_QUESTIONS[n];
+  const slides = document.getElementById('gq-slides');
+  slides.innerHTML = `
+    <div class="gq-slide active">
+      <div class="gq-q">${q.q}</div>
+      <div class="gq-sub">${q.sub}</div>
+      <div class="gq-opts">
+        ${q.opts.map(o=>`
+        <div class="gq-opt ${gqState.answers[q.id]===o.id?'selected':''}" onclick="gqSelect('${q.id}','${o.id}',this)">
+          <div class="gq-opt-ico">${o.ico}</div>
+          <div>
+            <div class="gq-opt-label">${o.label}</div>
+            <div class="gq-opt-sub">${o.sub}</div>
+          </div>
+          <div class="gq-opt-check">${gqState.answers[q.id]===o.id?'✓':''}</div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+
+  // progress
+  const pct = (n/GQ_QUESTIONS.length)*100;
+  document.getElementById('gq-fill').style.width = pct+'%';
+  document.getElementById('gq-step-lbl').textContent = `Pergunta ${n+1} de ${GQ_QUESTIONS.length}`;
+
+  // nav
+  const nav = document.getElementById('gq-nav');
+  nav.style.display = 'flex';
+  document.getElementById('gq-back').style.display = n>0?'':'none';
+  const nextBtn = document.getElementById('gq-next');
+  nextBtn.disabled = !gqState.answers[q.id];
+  nextBtn.textContent = n===GQ_QUESTIONS.length-1 ? 'Ver meu perfil →' : 'Próximo →';
+}
+
+function gqSelect(qId, optId, el) {
+  gqState.answers[qId] = optId;
+  // update UI
+  el.closest('.gq-opts').querySelectorAll('.gq-opt').forEach(e=>{
+    e.classList.remove('selected');
+    e.querySelector('.gq-opt-check').textContent='';
+  });
+  el.classList.add('selected');
+  el.querySelector('.gq-opt-check').textContent='✓';
+  document.getElementById('gq-next').disabled = false;
+  gqUpdatePreview();
+}
+
+function gqUpdatePreview() {
+  const prof = gqGetProfile();
+  // name
+  document.getElementById('gp-name').textContent = prof.name;
+  document.getElementById('gp-label').textContent = prof.tag;
+
+  // radar
+  const rc2 = document.getElementById('gp-radar');
+  radar(rc2, prof.vals, prof.c, true, 'sm');
+
+  // axes
+  const dims = [['Neural',prof.vals[0],'#8a6030'],['Mecânica',prof.vals[1],'#a07848'],['Metabólica',prof.vals[2],'#4a6832'],['Técnica',prof.vals[3],'#2e5060'],['Ritmo',prof.vals[4],'#c8a060']];
+  document.getElementById('gp-axes').innerHTML = dims.map(([n,v,c])=>`
+    <div class="gp-ax">
+      <div class="gp-ax-n">${n}</div>
+      <div class="gp-ax-t"><div class="gp-ax-f" style="width:${v*10}%;background:${c}"></div></div>
+      <div class="gp-ax-v" style="color:${c}">${v.toFixed(1)}</div>
+    </div>`).join('');
+
+  // divisão (after Q2)
+  const divEl = document.getElementById('gp-div');
+  if(gqState.answers.dias) {
+    divEl.style.display='block';
+    divEl.innerHTML=`<strong>Divisão sugerida:</strong> ${prof.divisao} · Periodização ${prof.modelo}`;
+  }
+
+  // exercícios (after Q1+Q3)
+  const exEl = document.getElementById('gp-ex');
+  if(gqState.answers.objetivo) {
+    exEl.style.display='flex';
+    const exList = GQ_EXERCISES[prof.exs]||GQ_EXERCISES.hiper;
+    exEl.innerHTML = exList.slice(0,3).map(e=>`
+      <div class="gp-ex-card">
+        <div class="gp-ex-ico">${e.ico}</div>
+        <div class="gp-ex-info">
+          <div class="gp-ex-name">${e.name}</div>
+          <div class="gp-ex-coefs">
+            <div class="gp-ex-coef ${e.CT>=7?'hi':''}">CT${e.CT}</div>
+            <div class="gp-ex-coef ${e.DN>=7?'hi':''}">DN${e.DN}</div>
+            <div class="gp-ex-coef ${e.SV>=7?'hi':''}">SV${e.SV}</div>
+          </div>
+        </div>
+        <div class="gp-ex-ic">${e.ic_est.toLocaleString('pt-BR')}</div>
+      </div>`).join('');
+  }
+}
+
+function gqNext() {
+  const q = GQ_QUESTIONS[gqState.step];
+  if(!gqState.answers[q.id]) return;
+  if(gqState.step < GQ_QUESTIONS.length - 1) {
+    gqState.step++;
+    gqRenderQuestion(gqState.step);
+    gqUpdatePreview();
+  } else {
+    gqShowResult();
+  }
+}
+
+function gqBack() {
+  if(gqState.step > 0) {
+    gqState.step--;
+    gqRenderQuestion(gqState.step);
+  }
+}
+
+function gqShowResult() {
+  const prof = gqGetProfile();
+  const exList = GQ_EXERCISES[prof.exs]||GQ_EXERCISES.hiper;
+  const limitacao = gqState.answers.limitacao || 'nenhuma';
+  const dias = gqState.answers.dias || '3';
+
+  // hide quiz, show result
+  document.getElementById('guia-quiz').style.opacity='0.3';
+  document.getElementById('guia-preview').style.opacity='0.3';
+  const resultEl = document.getElementById('guia-result');
+  resultEl.classList.remove('hidden');
+  resultEl.scrollIntoView({behavior:'smooth',block:'start'});
+
+  // fill progress bar to 100%
+  document.getElementById('gq-fill').style.width='100%';
+  document.getElementById('gq-step-lbl').textContent='Perfil gerado ✓';
+
+  // header
+  document.getElementById('gr-tag').textContent = prof.tag;
+  document.getElementById('gr-name').textContent = prof.name;
+  const limWarn = limitacao!=='nenhuma' ? ` Restrição identificada (${limitacao}) — exercícios adaptados automaticamente.` : '';
+  document.getElementById('gr-desc').textContent = `Periodização ${prof.modelo} · ${prof.divisao} · ${dias}× por semana.${limWarn}`;
+  const [si,sf] = prof.score.split('.');
+  document.getElementById('gr-score').innerHTML = `<span class="i" style="font-size:38px">${si}</span><span class="dot" style="font-size:20px">.</span><span class="f" style="font-size:24px">${sf}</span>`;
+
+  // radar
+  setTimeout(()=>{
+    radar(document.getElementById('gr-radar'), prof.vals, prof.c, true, 'lg');
+  },100);
+
+  // axes
+  const dims=[['Neural',prof.vals[0],'#8a6030'],['Mecânica',prof.vals[1],'#a07848'],['Metabólica',prof.vals[2],'#4a6832'],['Técnica',prof.vals[3],'#2e5060'],['Ritmo',prof.vals[4],'#c8a060']];
+  document.getElementById('gr-axes').innerHTML = dims.map(([n,v,c])=>`
+    <div class="gr-ax">
+      <div class="gr-ax-n">${n}</div>
+      <div class="gr-ax-t"><div class="gr-ax-f" style="width:${v*10}%;background:${c}"></div></div>
+      <div class="gr-ax-v" style="color:${c}">${v.toFixed(1)}</div>
+    </div>`).join('');
+
+  // sessão exemplo
+  const sessNome = prof.divisao.includes('Full')?'Full Body A':prof.divisao.includes('Upper')?'Upper A':prof.divisao.includes('PPL')?'Push':'Torso A';
+  document.getElementById('gr-sess-tipo').textContent = sessNome+' · Semana 1';
+  // filter restricted exercises
+  const filtered = limitacao==='joelho' ? exList.filter(e=>e.name!=='Leg Press 45°') : limitacao==='ombro' ? exList.filter(e=>!e.name.includes('Supino')&&!e.name.includes('Desenvolvimento')) : exList;
+  const shown = filtered.length ? filtered : exList;
+  document.getElementById('gr-ex-list').innerHTML = shown.map(e=>`
+    <div class="gr-ex-card">
+      <div class="gr-ex-head">
+        <div class="gr-ex-ico">${e.ico}</div>
+        <div class="gr-ex-name">${e.name}</div>
+        <div class="gr-ex-ic">${e.ic_est.toLocaleString('pt-BR')}</div>
+      </div>
+      <div class="gr-ex-coefs">
+        <div class="gr-ex-coef ${e.CT>=7?'hi':''}">CT ${e.CT}</div>
+        <div class="gr-ex-coef ${e.DN>=7?'hi':''}">DN ${e.DN}</div>
+        <div class="gr-ex-coef ${e.IM>=7?'hi':''}">IM ${e.IM}</div>
+        <div class="gr-ex-coef ${e.SV>=7?'hi':''}">SV ${e.SV}</div>
+        <div class="gr-ex-coef">FC ${e.FC}</div>
+      </div>
+      <div class="gr-ex-spec">${e.spec}</div>
+    </div>`).join('');
+
+  // IC projection 12 semanas
+  const baseIC = shown.reduce((s,e)=>s+e.ic_est,0);
+  const projData = gqProject(baseIC, prof.modelo, 12);
+  setTimeout(()=>drawGrProj(projData, prof.c), 150);
+  const fim = projData[projData.length-1].v;
+  const pct  = Math.round((fim/baseIC-1)*100);
+  document.getElementById('gr-proj-meta').innerHTML = `IC estimado S1: <strong style="color:var(--gold)">${baseIC.toLocaleString('pt-BR')}</strong><br>IC projetado S12: <strong style="color:var(--gold)">${fim.toLocaleString('pt-BR')}</strong><br>Crescimento: <strong style="color:#6aa050">+${pct}%</strong> ao longo do mesociclo`;
+
+  // ritmo preview
+  const ritmoProj = projData.map((d,i)=>({v:d.v/(6+i*0.3), deload:d.deload}));
+  const maxRitmo = Math.max(...ritmoProj.map(r=>r.v));
+  document.getElementById('gr-ritmo-prev').innerHTML = `
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:rgba(200,160,96,.3);margin-bottom:8px">Ritmo de Adaptação projetado</div>
+    ${ritmoProj.map((r,i)=>`
+    <div class="gr-ritmo-row">
+      <div class="gr-ritmo-lbl">S${i+1}</div>
+      <div class="gr-ritmo-track"><div class="gr-ritmo-fill" style="width:${(r.v/maxRitmo*100).toFixed(0)}%;background:${r.deload?'rgba(200,160,96,.2)':prof.c}"></div></div>
+      <div class="gr-ritmo-val">${r.deload?'🔽':''}</div>
+    </div>`).join('')}`;
+}
+
+function drawGrProj(data, color) {
+  const canvas = document.getElementById('gr-proj');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W=canvas.width, H=canvas.height;
+  const PAD={l:36,r:10,t:22,b:28};
+  const gw=W-PAD.l-PAD.r, gh=H-PAD.t-PAD.b;
+  ctx.clearRect(0,0,W,H);
+  const maxV = Math.max(...data.map(d=>d.v));
+  const minV = Math.min(...data.map(d=>d.v)) * 0.9;
+
+  // grid
+  for(let r=0;r<=4;r++){
+    const y=PAD.t+gh*r/4;
+    ctx.beginPath();ctx.moveTo(PAD.l,y);ctx.lineTo(PAD.l+gw,y);
+    ctx.strokeStyle='rgba(200,160,96,.06)';ctx.lineWidth=1;ctx.stroke();
+    const v=Math.round(maxV-(maxV-minV)*r/4);
+    ctx.fillStyle='rgba(200,160,96,.22)';ctx.font='11px IBM Plex Mono,monospace';ctx.textAlign='right';
+    ctx.fillText(v>999?(v/1000).toFixed(1)+'k':v,PAD.l-4,y+3);
+  }
+
+  const px=(i)=>PAD.l+gw*i/(data.length-1);
+  const py=(v)=>PAD.t+gh*(1-(v-minV)/(maxV-minV));
+
+  // deload shading
+  data.forEach((d,i)=>{
+    if(d.deload){
+      const x0=px(Math.max(0,i-.5)), x1=px(Math.min(data.length-1,i+.5));
+      ctx.fillStyle='rgba(200,160,96,.04)';
+      ctx.fillRect(x0,PAD.t,x1-x0,gh);
+    }
+  });
+
+  // area fill
+  ctx.beginPath();
+  data.forEach((d,i)=>i===0?ctx.moveTo(px(i),py(d.v)):ctx.lineTo(px(i),py(d.v)));
+  ctx.lineTo(px(data.length-1),PAD.t+gh);
+  ctx.lineTo(px(0),PAD.t+gh);
+  ctx.closePath();
+  ctx.fillStyle=color+'1a';ctx.fill();
+
+  // line
+  ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=2;
+  data.forEach((d,i)=>{
+    const x=px(i),y=py(d.v);
+    if(i===0) ctx.moveTo(x,y);
+    else {
+      const px2=px(i-1),py2=py(data[i-1].v);
+      ctx.bezierCurveTo((px2+x)/2,py2,(px2+x)/2,y,x,y);
+    }
+  });
+  ctx.stroke();
+
+  // dots
+  data.forEach((d,i)=>{
+    ctx.beginPath();
+    ctx.arc(px(i),py(d.v),d.deload?3:2.5,0,Math.PI*2);
+    ctx.fillStyle=d.deload?'rgba(200,160,96,.3)':color;
+    ctx.fill();
+  });
+
+  // x labels
+  data.forEach((d,i)=>{
+    if(i%3===0||i===data.length-1){
+      ctx.fillStyle='rgba(200,160,96,.28)';ctx.font='11px IBM Plex Mono,monospace';ctx.textAlign='center';
+      ctx.fillText('S'+(i+1),px(i),H-PAD.b+14);
+    }
+  });
+}
+
+function gqReset() {
+  gqState = {step:0, answers:{}};
+  document.getElementById('guia-quiz').style.opacity='1';
+  document.getElementById('guia-preview').style.opacity='1';
+  document.getElementById('guia-result').classList.add('hidden');
+  gqRenderQuestion(0);
+  // reset preview
+  document.getElementById('gp-name').textContent='—';
+  document.getElementById('gp-label').textContent='Seu perfil começa aqui';
+  document.getElementById('gp-axes').innerHTML='';
+  document.getElementById('gp-div').style.display='none';
+  document.getElementById('gp-ex').style.display='none';
+  const rc2=document.getElementById('gp-radar');
+  if(rc2){const ctx=rc2.getContext('2d');ctx.clearRect(0,0,rc2.width,rc2.height);}
+  document.getElementById('guia-result').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+// ── INIT ──
+gqRenderQuestion(0);
+// render initial blank radar with faint rings only
+(()=>{
+  const c=document.getElementById('gp-radar');
+  if(!c)return;
+  const ctx=c.getContext('2d'),W=c.width,H=c.height,cx=W/2,cy=H/2,R=Math.min(W,H)/2-14,N=5;
+  for(let r=1;r<=5;r++){ctx.beginPath();for(let i=0;i<N;i++){const a=(i/N)*Math.PI*2-Math.PI/2,rr=R*r/5;i===0?ctx.moveTo(cx+rr*Math.cos(a),cy+rr*Math.sin(a)):ctx.lineTo(cx+rr*Math.cos(a),cy+rr*Math.sin(a));}ctx.closePath();ctx.strokeStyle='rgba(200,160,96,.06)';ctx.lineWidth=1;ctx.stroke();}
+})();
+
+const rvObs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('on');rvObs.unobserve(e.target);}});},{threshold:.07,rootMargin:'0px 0px -28px 0px'});
+document.querySelectorAll('.rv,.rv-r,.rv-l').forEach(el=>rvObs.observe(el));
+
+// ── Section Analytics Tracker ─────────────────────────
+// Complementa o Netlify Analytics (server-side) com dados
+// de comportamento in-page: seções visitadas + tempo gasto
+(function(){
+  const SESSION_KEY = 'mmt_visit_' + Date.now();
+  const sections = ['hero','problema','dims','mapa','prog','ritmo','guia'];
+  const visited = {}, enteredAt = {};
+  const startTime = Date.now();
+
+  // Intersection observer por seção
+  const secObs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      const id = e.target.id;
+      if(e.isIntersecting){
+        enteredAt[id] = Date.now();
+        visited[id] = visited[id] || { count:0, totalMs:0 };
+        visited[id].count++;
+      } else if(enteredAt[id]){
+        if(visited[id]) visited[id].totalMs += Date.now() - enteredAt[id];
+        delete enteredAt[id];
+      }
+    });
+  }, {threshold:0.3});
+
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if(el) secObs.observe(el);
+  });
+
+  // Flush on leave
+  function flush(){
+    // close any open sections
+    Object.keys(enteredAt).forEach(id => {
+      if(visited[id]) visited[id].totalMs += Date.now() - enteredAt[id];
+    });
+    const payload = {
+      t: new Date().toISOString(),
+      totalMs: Date.now() - startTime,
+      sections: visited,
+      ref: document.referrer || 'direct',
+      ua: navigator.userAgent.slice(0,80)
+    };
+    // Store locally for PT to inspect (sessionStorage — not invasive, no cookies)
+    try { sessionStorage.setItem(SESSION_KEY, JSON.stringify(payload)); } catch(e){}
+    // Beacon to Netlify Function (optional — create functions/track.js to persist)
+    if(navigator.sendBeacon){
+      navigator.sendBeacon('/api/track', JSON.stringify(payload));
+    }
+  }
+  document.addEventListener('visibilitychange', ()=>{ if(document.hidden) flush(); });
+  window.addEventListener('pagehide', flush);
+})();
+</script>
+</body>
+</html>
