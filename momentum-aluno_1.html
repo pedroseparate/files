@@ -469,10 +469,19 @@ db.collection('students').doc(STUDENT_ID).onSnapshot(doc => {
 
 db.collection('sessions')
   .where('student_id', '==', STUDENT_ID)
-  .orderBy('timestamp', 'desc')
   .limit(30)
   .onSnapshot(snap => {
-    S.sessions = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(x => !x.simulado);
+    S.sessions = snap.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      .filter(x => !x.simulado)
+      .sort((a, b) => {
+        const ta = a.timestamp?.seconds || 0;
+        const tb = b.timestamp?.seconds || 0;
+        if (ta !== tb) return tb - ta;
+        const da = a.date || a.data || '';
+        const db_ = b.date || b.data || '';
+        return db_.localeCompare(da);
+      });
     renderEvolucao();
     renderHistorico();
   });

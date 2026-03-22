@@ -600,10 +600,20 @@ function selectStudent(id) {
 function loadSessions(studentId) {
   db.collection('sessions')
     .where('student_id', '==', studentId)
-    .orderBy('timestamp', 'desc')
     .limit(30)
     .onSnapshot(snap => {
-      STATE.sessions[studentId] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      STATE.sessions[studentId] = snap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .filter(x => !x.simulado)
+        .sort((a, b) => {
+          // Sessões novas têm timestamp, legadas têm date
+          const ta = a.timestamp?.seconds || 0;
+          const tb = b.timestamp?.seconds || 0;
+          if (ta !== tb) return tb - ta;
+          const da = a.date || a.data || '';
+          const db_ = b.date || b.data || '';
+          return db_.localeCompare(da);
+        });
       if (STATE.activeId === studentId) {
         renderHistorico();
         renderEvolucao();
