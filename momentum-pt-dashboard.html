@@ -1,0 +1,1802 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Momentum · PT Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600;1,700&family=IBM+Plex+Mono:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+
+<!-- Firebase compat SDK -->
+<script src="firebase-config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+<style>
+/* ── TOKENS (escuro calibrado: base night3, não night) ─── */
+:root,[data-theme="dark"]{
+  /* backgrounds — mais quentes, menos pitchblack */
+  --bg:   #271f13;   /* era #16120d — agora = night3 da index */
+  --bg2:  #2e2618;   /* cards principais */
+  --bg3:  #352d1e;   /* cards internos, inputs */
+  --bg4:  #3c3425;   /* hover states */
+
+  /* texto gold */
+  --ink:  rgba(200,160,96,.90);
+  --ink2: rgba(200,160,96,.58);
+  --ink3: rgba(200,160,96,.32);
+
+  /* borders */
+  --b:  rgba(200,160,96,.10);
+  --b2: rgba(200,160,96,.18);
+  --b3: rgba(200,160,96,.30);
+
+  /* accent */
+  --copper: #8a6030;
+  --copper2:#a07840;
+  --gold:   #c8a060;
+  --gold2:  #ddb870;
+  --gold3:  #e8cc90;
+
+  /* semânticas */
+  --moss:   #4a6832;
+  --moss2:  #5a8040;
+  --moss3:  #6aa050;
+  --slate:  #2e5060;
+  --slate2: #3a6878;
+  --danger: #8a3020;
+  --danger2:#b84030;
+
+  /* surface light — usado em light mode */
+  --page:  #f5f0e6;
+  --page2: #ede6d2;
+  --page3: #e4dbc4;
+
+  --card-bg: var(--bg2);
+  --card-border: var(--b);
+}
+[data-theme="light"]{
+  --bg:   #f5f0e6;
+  --bg2:  #ede6d2;
+  --bg3:  #fff;
+  --bg4:  #e4dbc4;
+  --ink:  rgba(60,40,15,.88);
+  --ink2: rgba(60,40,15,.58);
+  --ink3: rgba(60,40,15,.38);
+  --b:  rgba(100,70,30,.12);
+  --b2: rgba(100,70,30,.20);
+  --b3: rgba(100,70,30,.32);
+  --copper: #7a5020;
+  --gold:   #a07030;
+  --card-bg: #fff;
+  --card-border: var(--b2);
+}
+[data-theme="light"] body::after{display:none;}
+
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--bg);color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:13px;}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.88' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23g)' opacity='.018'/%3E%3C/svg%3E");}
+
+.app{width:100%;max-width:430px;margin:0 auto;height:100vh;display:flex;flex-direction:column;overflow:hidden;position:relative;}
+
+/* ── LOADING ─────────────────────────────────────── */
+.app-loading{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .4s;}
+.app-loading.out{opacity:0;pointer-events:none;}
+.app-loading-logo{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;font-size:28px;color:var(--gold);margin-bottom:8px;}
+.app-loading-sub{font-size:9px;text-transform:uppercase;letter-spacing:.22em;color:var(--ink3);}
+.app-loading-bar{width:120px;height:1px;background:var(--b);margin-top:24px;overflow:hidden;}
+.app-loading-bar-fill{height:100%;background:var(--copper);animation:loadbar 1.6s ease forwards;}
+@keyframes loadbar{from{width:0}to{width:100%}}
+
+/* ── TOPBAR ──────────────────────────────────────── */
+.topbar{flex-shrink:0;padding:14px 20px 10px;display:flex;align-items:center;justify-content:space-between;
+  background:rgba(39,31,19,.94);backdrop-filter:blur(14px);border-bottom:1px solid var(--b);z-index:10;}
+.tb-logo{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;font-size:16px;color:var(--gold);}
+.tb-right{display:flex;align-items:center;gap:8px;}
+.tb-badge{font-size:8px;text-transform:uppercase;letter-spacing:.14em;padding:3px 9px;
+  border:1px solid var(--b2);color:var(--copper2);border-radius:1px;}
+.theme-btn{background:none;border:1px solid var(--b2);color:var(--ink3);font-size:13px;width:30px;height:30px;
+  cursor:pointer;font-family:'IBM Plex Mono',monospace;transition:all .2s;}
+.theme-btn:hover{border-color:var(--b3);color:var(--ink2);}
+
+/* ── STUDENT SELECTOR ────────────────────────────── */
+.student-bar{flex-shrink:0;padding:10px 16px;border-bottom:1px solid var(--b);
+  background:rgba(46,38,24,.6);backdrop-filter:blur(8px);}
+.student-bar-label{font-size:8px;text-transform:uppercase;letter-spacing:.18em;color:var(--ink3);margin-bottom:8px;}
+.student-pills{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;}
+.student-pills::-webkit-scrollbar{display:none;}
+.student-pill{flex-shrink:0;padding:7px 14px;border:1px solid var(--b2);background:var(--bg3);
+  color:var(--ink2);font-size:9px;text-transform:uppercase;letter-spacing:.12em;
+  font-family:'IBM Plex Mono',monospace;cursor:pointer;transition:all .18s;border-radius:2px;white-space:nowrap;}
+.student-pill:hover{border-color:var(--b3);color:var(--ink);}
+.student-pill.active{border-color:var(--copper);color:var(--gold2);background:rgba(138,96,48,.10);}
+.student-pill.risk-monitorar{border-left:2px solid var(--danger2);}
+.student-pill-loading{display:flex;align-items:center;gap:8px;font-size:9px;color:var(--ink3);padding:7px 0;}
+
+/* ── SCREENS ─────────────────────────────────────── */
+.screen-wrap{flex:1;overflow:hidden;position:relative;}
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;pointer-events:none;
+  transition:opacity .22s ease,transform .22s ease;transform:translateX(20px);}
+.screen.active{opacity:1;pointer-events:all;transform:translateX(0);}
+.sbody{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.sbody::-webkit-scrollbar{display:none;}
+
+/* ── SECTION SHARED ──────────────────────────────── */
+.sec{padding:0 20px;margin-bottom:22px;}
+.sec-head{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.sec-title{font-size:9px;text-transform:uppercase;letter-spacing:.22em;color:var(--copper2);}
+.sec-line{flex:1;height:1px;background:var(--b);}
+.card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:3px;}
+
+/* ── HERO HOME ───────────────────────────────────── */
+.hero{padding:22px 20px 20px;}
+.hero-date{font-size:9px;color:var(--ink3);text-transform:uppercase;letter-spacing:.14em;margin-bottom:4px;}
+.hero-name{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;
+  font-size:38px;line-height:.9;color:var(--gold);margin-bottom:4px;}
+.hero-meso{font-size:9px;color:var(--ink3);text-transform:uppercase;letter-spacing:.12em;margin-bottom:20px;}
+
+/* momentum card */
+.ms-card{padding:16px;display:flex;align-items:center;gap:14px;}
+.ms-arc{position:relative;width:58px;height:58px;flex-shrink:0;}
+.ms-arc svg{width:58px;height:58px;}
+.ms-arc-val{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;font-size:20px;color:var(--gold);}
+.ms-label{font-size:8px;text-transform:uppercase;letter-spacing:.16em;color:var(--ink3);margin-bottom:4px;}
+.ms-title{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:16px;color:var(--gold2);margin-bottom:3px;}
+.ms-desc{font-size:9px;color:var(--ink2);line-height:1.7;}
+.ms-clickable{cursor:pointer;transition:border-color .15s;}
+.ms-clickable:hover{border-color:var(--b3);}
+
+/* scores grid */
+.scores-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
+.score-chip{background:var(--bg3);border:1px solid var(--b);border-radius:3px;padding:10px 10px 8px;
+  cursor:pointer;transition:border-color .15s;}
+.score-chip:hover{border-color:var(--b3);}
+.score-chip-lbl{font-size:7px;text-transform:uppercase;letter-spacing:.14em;color:var(--ink3);margin-bottom:6px;}
+.score-chip-bar{height:2px;background:var(--b);border-radius:1px;overflow:hidden;margin-bottom:5px;}
+.score-chip-fill{height:100%;border-radius:1px;}
+.score-chip-val{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;font-size:20px;color:var(--gold);}
+
+/* weekly strip */
+.sem-grid{display:flex;gap:6px;}
+.dia{flex:1;background:var(--bg3);border:1px solid var(--b);border-radius:3px;padding:10px 8px 12px;cursor:pointer;transition:border-color .15s;}
+.dia:hover{border-color:var(--b3);}
+.dia.done{border-color:rgba(90,128,64,.3);}
+.dia.hoje{border-color:var(--copper);background:rgba(138,96,48,.05);}
+.dia.rest{opacity:.45;}
+.dia-dot{width:5px;height:5px;border-radius:50%;margin-bottom:8px;}
+.dia-dot.done{background:var(--moss2);}
+.dia-dot.hoje{background:var(--gold);box-shadow:0 0 8px rgba(200,160,96,.44);}
+.dia-dot.rest{background:var(--b2);}
+.dia-lbl{font-size:8px;color:var(--ink3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px;}
+.dia-tipo{font-size:9px;color:var(--ink2);}
+.dia-tipo.hoje-txt{color:var(--copper2);}
+.dia-check{font-size:9px;color:var(--moss2);margin-top:4px;}
+
+/* msg PT */
+.msg-card{background:var(--bg3);border:1px solid var(--b);border-radius:3px;padding:16px;position:relative;overflow:hidden;}
+.msg-card::before{content:'';position:absolute;top:0;left:0;width:2px;height:100%;background:var(--copper);}
+.msg-author{font-size:8px;color:var(--copper2);text-transform:uppercase;letter-spacing:.14em;margin-bottom:8px;}
+.msg-text{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:13px;color:var(--ink2);line-height:1.9;}
+.msg-date{font-size:8px;color:var(--ink3);margin-top:8px;}
+
+/* start btn */
+.start-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:15px;
+  background:linear-gradient(135deg,var(--copper),var(--copper2));border:none;cursor:pointer;
+  font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.2em;
+  color:var(--page);margin-top:10px;border-radius:3px;transition:opacity .15s;}
+.start-btn:hover{opacity:.88;}
+
+/* ── EVOLUÇÃO PLACEHOLDERS ───────────────────────── */
+.pr-row{background:var(--bg3);border:1px solid var(--b);border-radius:3px;padding:12px 14px;
+  display:flex;align-items:center;gap:12px;margin-bottom:6px;cursor:pointer;transition:border-color .15s;}
+.pr-row:hover{border-color:var(--b3);}
+.pr-row.pr-new{border-color:rgba(200,160,60,.28);}
+.pr-ico{font-size:16px;width:22px;flex-shrink:0;}
+.pr-info{flex:1;}
+.pr-exname{font-size:10px;color:var(--ink);margin-bottom:2px;}
+.pr-desc{font-size:8px;color:var(--ink3);line-height:1.6;}
+.pr-badge{font-size:7px;padding:2px 6px;border:1px solid rgba(200,160,60,.3);color:var(--gold2);margin-top:3px;display:inline-block;border-radius:1px;}
+.pr-right{text-align:right;flex-shrink:0;}
+.pr-kg{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;font-size:22px;color:var(--gold);line-height:1;}
+.pr-reps{font-size:8px;color:var(--ink3);}
+
+.chart-card{background:var(--bg3);border:1px solid var(--b);border-radius:3px;padding:14px 14px 10px;}
+.chart-lbl{font-size:8px;color:var(--ink3);text-transform:uppercase;letter-spacing:.1em;}
+
+/* ── HISTÓRICO PLACEHOLDERS ──────────────────────── */
+.hist-row{background:var(--bg3);border:1px solid var(--b);border-radius:3px;padding:12px 14px;margin-bottom:6px;cursor:pointer;transition:border-color .15s;}
+.hist-row:hover{border-color:var(--b3);}
+.hist-hd{display:flex;justify-content:space-between;margin-bottom:6px;}
+.hist-tipo{font-size:10px;color:var(--ink);}
+.hist-date{font-size:8px;color:var(--ink3);}
+.hist-bar-bg{height:3px;background:var(--b);border-radius:2px;overflow:hidden;margin-bottom:6px;}
+.hist-bar-fill{height:100%;background:linear-gradient(90deg,var(--copper),var(--copper2));border-radius:2px;}
+.hist-tags{display:flex;gap:5px;flex-wrap:wrap;}
+.hist-tag{font-size:7px;padding:2px 7px;border:1px solid var(--b2);color:var(--ink3);text-transform:uppercase;letter-spacing:.07em;border-radius:2px;}
+
+/* ── BOTTOM NAV ──────────────────────────────────── */
+.bnav{flex-shrink:0;display:flex;border-top:1px solid var(--b);
+  background:rgba(39,31,19,.96);padding:10px 0 max(10px,env(safe-area-inset-bottom));}
+.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;
+  font-size:7px;text-transform:uppercase;letter-spacing:.12em;color:var(--ink3);
+  background:none;border:none;font-family:'IBM Plex Mono',monospace;padding:0;transition:color .15s;}
+.bnav-item.active{color:var(--gold);}
+.bnav-icon{font-size:16px;line-height:1;}
+
+/* ── MODAL SHELL ─────────────────────────────────── */
+.modal-overlay{position:fixed;inset:0;background:rgba(39,31,19,.72);z-index:200;
+  opacity:0;pointer-events:none;transition:opacity .22s;backdrop-filter:blur(4px);}
+.modal-overlay.open{opacity:1;pointer-events:all;}
+.modal-sheet{position:absolute;bottom:0;left:50%;transform:translateX(-50%) translateY(100%);
+  width:100%;max-width:430px;background:var(--bg2);border-top:1px solid var(--b2);
+  border-radius:6px 6px 0 0;transition:transform .28s cubic-bezier(.32,.72,0,1);
+  max-height:82vh;display:flex;flex-direction:column;}
+.modal-overlay.open .modal-sheet{transform:translateX(-50%) translateY(0);}
+.modal-handle{width:36px;height:3px;background:var(--b3);border-radius:2px;margin:12px auto 6px;}
+.modal-body{overflow-y:auto;padding:0 20px 40px;flex:1;}
+.modal-title{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;font-size:22px;color:var(--gold);margin-bottom:4px;}
+.modal-sub{font-size:8px;text-transform:uppercase;letter-spacing:.18em;color:var(--copper2);margin-bottom:16px;}
+.modal-prose{font-size:11px;color:var(--ink2);line-height:1.85;}
+
+/* ── PT SIMULATOR BADGE ──────────────────────────── */
+.sim-bar{display:flex;align-items:center;gap:10px;padding:8px 16px;
+  background:rgba(138,96,48,.08);border-bottom:1px solid var(--b);font-size:8px;
+  text-transform:uppercase;letter-spacing:.14em;color:var(--copper2);}
+.sim-dot{width:6px;height:6px;border-radius:50%;background:var(--copper);
+  animation:sblink 2s ease infinite;flex-shrink:0;}
+@keyframes sblink{0%,100%{opacity:1}50%{opacity:.2}}
+.sim-bar button{margin-left:auto;background:none;border:1px solid var(--b2);color:var(--ink3);
+  font-family:'IBM Plex Mono',monospace;font-size:7px;text-transform:uppercase;letter-spacing:.12em;
+  padding:4px 10px;cursor:pointer;transition:all .15s;border-radius:1px;}
+.sim-bar button:hover{border-color:var(--copper);color:var(--copper2);}
+
+/* ── EVOLUÇÃO ────────────────────────────────────── */
+.ic-chart-wrap{position:relative;width:100%;height:80px;margin-bottom:8px;}
+.ic-bar-group{display:flex;align-items:flex-end;gap:3px;height:72px;padding:0 2px;}
+.ic-bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;}
+.ic-bar{width:100%;border-radius:2px 2px 0 0;min-height:4px;transition:opacity .15s;}
+.ic-bar-col:hover .ic-bar{opacity:.75;}
+.ic-bar-lbl{font-size:6px;color:var(--ink3);text-align:center;white-space:nowrap;overflow:hidden;max-width:100%;}
+.ic-legend{display:flex;gap:10px;margin-top:6px;flex-wrap:wrap;}
+.ic-leg-item{display:flex;align-items:center;gap:4px;font-size:7px;color:var(--ink3);}
+.ic-leg-dot{width:6px;height:6px;border-radius:1px;flex-shrink:0;}
+
+.pr-section{display:flex;flex-direction:column;gap:5px;}
+.pr-empty{font-size:9px;color:var(--ink3);padding:12px 0;}
+
+.meso-weeks-grid{display:flex;gap:4px;flex-wrap:wrap;margin-top:10px;}
+.meso-wk{flex:1;min-width:32px;padding:8px 4px;background:var(--bg3);border:1px solid var(--b);
+  border-radius:2px;text-align:center;cursor:pointer;transition:border-color .15s;}
+.meso-wk:hover{border-color:var(--b3);}
+.meso-wk.done-wk{background:rgba(74,104,50,.10);border-color:rgba(90,128,64,.25);}
+.meso-wk.cur-wk{border-color:var(--copper);background:rgba(138,96,48,.07);}
+.meso-wk-n{font-size:7px;color:var(--ink3);text-transform:uppercase;letter-spacing:.1em;}
+.meso-wk-st{font-size:8px;margin-top:3px;}
+
+.chips-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px;}
+.chip{font-size:7px;padding:3px 9px;border-radius:2px;text-transform:uppercase;
+  letter-spacing:.1em;border:1px solid;}
+.chip-ok{color:var(--moss2);border-color:rgba(90,128,64,.35);background:rgba(74,104,50,.08);}
+.chip-warn{color:var(--copper2);border-color:rgba(160,120,64,.35);background:rgba(138,96,48,.08);}
+.chip-alert{color:var(--danger2);border-color:rgba(184,64,48,.3);background:rgba(138,32,16,.07);}
+
+/* ── HISTÓRICO ───────────────────────────────────── */
+.hist-detail{display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--b);}
+.hist-detail.open{display:block;}
+.hist-ex-row{display:flex;justify-content:space-between;font-size:9px;
+  color:var(--ink2);padding:4px 0;border-bottom:1px solid var(--b);}
+.hist-ex-row:last-child{border-bottom:none;}
+.hist-dims{display:flex;gap:6px;margin-top:8px;}
+.hist-dim{flex:1;background:var(--bg2);border:1px solid var(--b);border-radius:2px;
+  padding:6px 8px;text-align:center;}
+.hist-dim-lbl{font-size:6px;text-transform:uppercase;letter-spacing:.12em;color:var(--ink3);margin-bottom:3px;}
+.hist-dim-val{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:14px;color:var(--gold);}
+
+/* ── AI NARRATIVE ────────────────────────────────── */
+.ai-card{background:var(--bg3);border:1px solid var(--b);border-radius:3px;
+  padding:14px 16px;position:relative;overflow:hidden;cursor:pointer;transition:border-color .15s;}
+.ai-card:hover{border-color:var(--b3);}
+.ai-card::before{content:'';position:absolute;top:0;left:0;width:2px;height:100%;
+  background:linear-gradient(180deg,var(--copper),var(--gold));}
+.ai-card-label{font-size:7px;text-transform:uppercase;letter-spacing:.2em;
+  color:var(--copper2);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.ai-dot{width:4px;height:4px;border-radius:50%;background:var(--copper2);
+  animation:sblink 2.4s ease infinite;}
+.ai-text{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:13px;
+  color:var(--ink2);line-height:1.85;}
+.ai-text.loading{color:var(--ink3);}
+
+/* skeleton shimmer */
+.ai-skeleton{display:flex;flex-direction:column;gap:6px;}
+.ai-skel-line{height:11px;background:linear-gradient(90deg,var(--b) 25%,var(--b2) 50%,var(--b) 75%);
+  background-size:200% 100%;border-radius:2px;animation:shimmer 1.6s ease infinite;}
+.ai-skel-line:nth-child(2){width:88%;}
+.ai-skel-line:nth-child(3){width:72%;}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* ── SIMULATOR ───────────────────────────────────── */
+.sim-overlay{position:fixed;inset:0;background:rgba(23,18,10,.78);z-index:300;
+  opacity:0;pointer-events:none;transition:opacity .24s;backdrop-filter:blur(6px);}
+.sim-overlay.open{opacity:1;pointer-events:all;}
+.sim-sheet{position:absolute;bottom:0;left:50%;transform:translateX(-50%) translateY(100%);
+  width:100%;max-width:430px;background:var(--bg2);border-top:1px solid var(--b2);
+  border-radius:8px 8px 0 0;transition:transform .3s cubic-bezier(.32,.72,0,1);
+  max-height:92vh;display:flex;flex-direction:column;}
+.sim-overlay.open .sim-sheet{transform:translateX(-50%) translateY(0);}
+.sim-handle{width:36px;height:3px;background:var(--b3);border-radius:2px;margin:12px auto 0;}
+.sim-head{padding:14px 20px 10px;border-bottom:1px solid var(--b);}
+.sim-head-title{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;font-size:20px;color:var(--gold);margin-bottom:2px;}
+.sim-head-sub{font-size:8px;text-transform:uppercase;letter-spacing:.18em;color:var(--copper2);}
+.sim-body{flex:1;overflow-y:auto;padding:16px 20px 40px;}
+
+/* slider */
+.sim-slider-wrap{margin-bottom:20px;}
+.sim-slider-labels{display:flex;justify-content:space-between;margin-bottom:6px;}
+.sim-slider-lbl{font-size:8px;text-transform:uppercase;letter-spacing:.12em;color:var(--ink3);}
+.sim-slider-val{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;font-size:28px;color:var(--gold);line-height:1;}
+.sim-slider-desc{font-size:9px;color:var(--ink2);margin-top:4px;height:16px;}
+input[type=range].pse-range{
+  -webkit-appearance:none;width:100%;height:4px;
+  background:linear-gradient(90deg,var(--copper) 0%,var(--gold) 100%);
+  border-radius:2px;outline:none;margin:10px 0 4px;cursor:pointer;}
+input[type=range].pse-range::-webkit-slider-thumb{
+  -webkit-appearance:none;width:20px;height:20px;border-radius:50%;
+  background:var(--gold);border:2px solid var(--bg2);box-shadow:0 0 8px rgba(200,160,96,.4);cursor:pointer;}
+input[type=range].pse-range::-moz-range-thumb{
+  width:18px;height:18px;border-radius:50%;background:var(--gold);border:2px solid var(--bg2);cursor:pointer;}
+
+/* resultado cards */
+.sim-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;}
+.sim-card{background:var(--bg3);border:1px solid var(--b);border-radius:3px;padding:12px 12px 10px;}
+.sim-card-lbl{font-size:7px;text-transform:uppercase;letter-spacing:.16em;color:var(--ink3);margin-bottom:6px;}
+.sim-card-val{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;font-size:22px;line-height:1;}
+.sim-card-unit{font-size:8px;color:var(--ink3);margin-top:3px;text-transform:uppercase;letter-spacing:.1em;}
+.sim-card-delta{font-size:8px;margin-top:4px;}
+.sim-card-delta.neg{color:var(--danger2);}
+.sim-card-delta.pos{color:var(--moss2);}
+.sim-card-delta.neu{color:var(--ink3);}
+
+/* dimensões bar */
+.sim-dims{background:var(--bg3);border:1px solid var(--b);border-radius:3px;padding:12px 14px;margin-bottom:12px;}
+.sim-dims-title{font-size:8px;text-transform:uppercase;letter-spacing:.18em;color:var(--copper2);margin-bottom:10px;}
+.sim-dim-row{display:flex;align-items:center;gap:10px;margin-bottom:7px;}
+.sim-dim-lbl{font-size:8px;color:var(--ink3);width:56px;flex-shrink:0;}
+.sim-dim-track{flex:1;height:3px;background:var(--b);border-radius:2px;overflow:hidden;}
+.sim-dim-fill{height:100%;border-radius:2px;transition:width .4s ease;}
+.sim-dim-num{font-size:9px;color:var(--ink2);width:36px;text-align:right;flex-shrink:0;}
+
+/* chips */
+.sim-chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:16px;}
+.sim-chip{font-size:7px;padding:3px 9px;border-radius:2px;text-transform:uppercase;letter-spacing:.1em;border:1px solid;}
+.sim-chip-ok{color:var(--moss2);border-color:rgba(90,128,64,.35);background:rgba(74,104,50,.08);}
+.sim-chip-warn{color:var(--copper2);border-color:rgba(160,120,64,.35);background:rgba(138,96,48,.08);}
+.sim-chip-alert{color:var(--danger2);border-color:rgba(184,64,48,.3);background:rgba(138,32,16,.07);}
+
+/* exercícios simulados */
+.sim-ex-list{display:flex;flex-direction:column;gap:5px;margin-bottom:12px;}
+.sim-ex{background:var(--bg3);border:1px solid var(--b);border-radius:3px;padding:10px 12px;display:flex;align-items:center;gap:10px;}
+.sim-ex-name{flex:1;font-size:10px;color:var(--ink);}
+.sim-ex-detail{font-size:9px;color:var(--ink2);white-space:nowrap;}
+.sim-ex-pse{font-size:8px;padding:2px 6px;border-radius:2px;white-space:nowrap;}
+.sim-save-btn{width:100%;padding:15px;background:linear-gradient(135deg,var(--copper),var(--copper2));
+  border:none;color:var(--page);font-family:'IBM Plex Mono',monospace;font-size:9px;
+  text-transform:uppercase;letter-spacing:.2em;cursor:pointer;border-radius:3px;
+  margin-top:4px;transition:opacity .15s;}
+.sim-save-btn:hover{opacity:.88;}
+.sim-save-btn:disabled{opacity:.35;cursor:not-allowed;}
+
+/* ── UTIL ────────────────────────────────────────── */
+.empty-state{padding:40px 20px;text-align:center;color:var(--ink3);font-size:10px;line-height:2;}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--moss3);display:inline-block;
+  margin-right:5px;animation:sblink 2s ease infinite;vertical-align:middle;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="app-loading" id="app-loading">
+  <div class="app-loading-logo">Momentum</div>
+  <div class="app-loading-sub">PT Dashboard</div>
+  <div class="app-loading-bar"><div class="app-loading-bar-fill"></div></div>
+</div>
+
+<div class="app">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="tb-logo">Momentum</div>
+    <div class="tb-right">
+      <div class="tb-badge"><span class="live-dot"></span>ao vivo</div>
+      <button class="theme-btn" style="font-size:9px;width:auto;padding:0 10px;text-transform:uppercase;letter-spacing:.1em;"
+        onclick="openSim()">⚡ Sim</button>
+      <button class="theme-btn" onclick="toggleTheme()">◐</button>
+    </div>
+  </div>
+
+  <!-- STUDENT SELECTOR -->
+  <div class="student-bar">
+    <div class="student-bar-label">Selecionar aluno</div>
+    <div class="student-pills" id="student-pills">
+      <div class="student-pill-loading">
+        <span class="live-dot"></span> carregando alunos…
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREENS -->
+  <div class="screen-wrap">
+
+    <!-- ── HOME ─────────────────────────────────── -->
+    <div class="screen active" id="s-home">
+      <div class="sbody" id="sbody-home">
+        <div id="home-content">
+          <div class="empty-state">← selecione um aluno para começar</div>
+        </div>
+        <div style="height:24px"></div>
+      </div>
+    </div>
+
+    <!-- ── EVOLUÇÃO ──────────────────────────────── -->
+    <div class="screen" id="s-evolucao">
+      <div class="sbody">
+        <div style="height:20px"></div>
+        <div id="evolucao-content">
+          <div class="empty-state">← selecione um aluno</div>
+        </div>
+        <div style="height:24px"></div>
+      </div>
+    </div>
+
+    <!-- ── HISTÓRICO ─────────────────────────────── -->
+    <div class="screen" id="s-historico">
+      <div class="sbody">
+        <div style="height:20px"></div>
+        <div id="historico-content">
+          <div class="empty-state">← selecione um aluno</div>
+        </div>
+        <div style="height:24px"></div>
+      </div>
+    </div>
+
+  </div><!-- /screen-wrap -->
+
+  <!-- BOTTOM NAV -->
+  <div class="bnav">
+    <button class="bnav-item active" onclick="goPage('home')">
+      <span class="bnav-icon">🏠</span>Hoje
+    </button>
+    <button class="bnav-item" onclick="goPage('evolucao')">
+      <span class="bnav-icon">📈</span>Evolução
+    </button>
+    <button class="bnav-item" onclick="goPage('historico')">
+      <span class="bnav-icon">📋</span>Histórico
+    </button>
+  </div>
+
+</div><!-- /app -->
+
+<!-- SIMULATOR -->
+<div class="sim-overlay" id="sim-overlay" onclick="closeSim(event)">
+  <div class="sim-sheet">
+    <div class="sim-handle"></div>
+    <div class="sim-head">
+      <div class="sim-head-title">Simulador de Treino</div>
+      <div class="sim-head-sub" id="sim-student-label">selecione um aluno primeiro</div>
+    </div>
+    <div class="sim-body">
+
+      <!-- SLIDER PSE -->
+      <div class="sim-slider-wrap">
+        <div class="sim-slider-labels">
+          <span class="sim-slider-lbl">Desempenho / PSE do aluno</span>
+          <span class="sim-slider-lbl">hoje</span>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:8px">
+          <div class="sim-slider-val" id="sim-pse-num">8</div>
+          <div style="font-size:9px;color:var(--ink3)">/10</div>
+        </div>
+        <input type="range" class="pse-range" id="sim-pse-range"
+          min="1" max="10" step="1" value="8"
+          oninput="updateSim(+this.value)">
+        <div class="sim-slider-desc" id="sim-pse-label">—</div>
+      </div>
+
+      <!-- MÉTRICAS -->
+      <div class="sim-grid" id="sim-metrics"></div>
+
+      <!-- DIMENSÕES -->
+      <div class="sim-dims" id="sim-dims-block">
+        <div class="sim-dims-title">Carga por dimensão</div>
+        <div id="sim-dims-rows"></div>
+      </div>
+
+      <!-- CHIPS -->
+      <div id="sim-chips-wrap" style="margin-bottom:12px"></div>
+
+      <!-- EXERCÍCIOS -->
+      <div style="font-size:8px;text-transform:uppercase;letter-spacing:.18em;color:var(--copper2);margin-bottom:8px">Sessão simulada</div>
+      <div class="sim-ex-list" id="sim-ex-list"></div>
+
+      <!-- SAVE -->
+      <button class="sim-save-btn" id="sim-save-btn"
+        onclick="saveSimSession()">
+        ↓ Salvar como sessão simulada no banco
+      </button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// FIREBASE CONFIG — preencha com suas credenciais
+// ═══════════════════════════════════════════════════
+// FB_CONFIG carregado via firebase-config.js (não versionar)
+firebase.initializeApp(FB_CONFIG);
+const db = firebase.firestore();
+
+// ═══════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════
+let STATE = {
+  students: [],       // lista completa do Firestore
+  activeId: null,     // id do aluno selecionado
+  page: 'home',
+  sessions: {},       // { [studentId]: [sessões] }
+};
+
+// ═══════════════════════════════════════════════════
+// FIRESTORE — STUDENTS (onSnapshot = real-time)
+// ═══════════════════════════════════════════════════
+db.collection('students').onSnapshot(snap => {
+  STATE.students = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  renderStudentPills();
+  // Se já havia aluno selecionado, re-renderiza home
+  if (STATE.activeId) renderHome();
+}, err => {
+  console.error('Firebase error:', err);
+  document.getElementById('student-pills').innerHTML =
+    `<div class="student-pill-loading" style="color:var(--danger2)">⚠ erro ao conectar — verifique FB_CONFIG</div>`;
+});
+
+// ═══════════════════════════════════════════════════
+// STUDENT SELECTOR
+// ═══════════════════════════════════════════════════
+function renderStudentPills() {
+  const el = document.getElementById('student-pills');
+  if (!STATE.students.length) {
+    el.innerHTML = '<div class="student-pill-loading">nenhum aluno encontrado</div>';
+    return;
+  }
+  el.innerHTML = STATE.students.map(s => {
+    const isActive = s.id === STATE.activeId;
+    const riskClass = s.risk === 'monitorar' ? ' risk-monitorar' : '';
+    return `<button class="student-pill${isActive ? ' active' : ''}${riskClass}"
+      onclick="selectStudent('${s.id}')">${s.name || s.id}</button>`;
+  }).join('');
+}
+
+function selectStudent(id) {
+  STATE.activeId = id;
+  renderStudentPills();
+  renderHome();
+  renderEvolucao();
+  renderHistorico();
+  // Carrega sessões deste aluno se ainda não carregadas
+  if (!STATE.sessions[id]) loadSessions(id);
+}
+
+// ═══════════════════════════════════════════════════
+// FIRESTORE — SESSIONS (por aluno, sob demanda)
+// ═══════════════════════════════════════════════════
+function loadSessions(studentId) {
+  db.collection('sessions')
+    .where('student_id', '==', studentId)
+    .orderBy('timestamp', 'desc')
+    .limit(30)
+    .onSnapshot(snap => {
+      STATE.sessions[studentId] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      if (STATE.activeId === studentId) {
+        renderHistorico();
+        renderEvolucao();
+      }
+    });
+}
+
+// ═══════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════
+function getActiveStudent() {
+  return STATE.students.find(s => s.id === STATE.activeId) || null;
+}
+
+const DAYS   = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+const MONTHS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+function fmtDate() {
+  const n = new Date();
+  return `${DAYS[n.getDay()]}, ${n.getDate()} de ${MONTHS[n.getMonth()]}`;
+}
+
+function ritmoLabel(estado) {
+  const map = { alta:'Ritmo em alta', estavel:'Ritmo estável', sobrecarga:'Atenção — sobrecarga', baixo:'Ritmo baixo' };
+  return map[estado] || estado;
+}
+function ritmoDesc(s) {
+  const map = {
+    alta: 'Consistência boa. Carga crescendo de forma saudável.',
+    estavel: 'Progresso regular. Manter volume e monitorar recuperação.',
+    sobrecarga: 'PSE acima do prescrito nas últimas sessões. Considerar deload.',
+    baixo: 'Frequência abaixo do ideal. Verificar aderência.',
+  };
+  return map[s.ritmo_estado] || '—';
+}
+function scoreColor(v) {
+  if (v >= 8) return 'var(--moss2)';
+  if (v >= 6) return 'var(--gold)';
+  if (v >= 4) return 'var(--copper2)';
+  return 'var(--danger2)';
+}
+
+// ═══════════════════════════════════════════════════
+// RENDER — HOME
+// ═══════════════════════════════════════════════════
+function renderHome() {
+  const s = getActiveStudent();
+  const el = document.getElementById('home-content');
+  if (!s) { el.innerHTML = '<div class="empty-state">← selecione um aluno</div>'; return; }
+
+  const scores = s.scores || {};
+  const momentum = scores.momentum || 0;
+  const arcPct = Math.min(momentum / 5, 1);
+  const circ = 2 * Math.PI * 24;
+  const dash = circ * arcPct;
+
+  el.innerHTML = `
+    <div class="hero">
+      <div class="hero-date">${fmtDate()}</div>
+      <div class="hero-name">${(s.name || '').split(' ')[0]}.</div>
+      <div class="hero-meso">${s.mesociclo || '—'} · ${s.divisao || ''}</div>
+
+      <div class="card ms-card ms-clickable" onclick="openModal('momentum','${s.id}')">
+        <div class="ms-arc">
+          <svg viewBox="0 0 60 60">
+            <circle cx="30" cy="30" r="24" fill="none" stroke="rgba(200,160,96,.08)" stroke-width="4.5"/>
+            <circle cx="30" cy="30" r="24" fill="none" stroke="url(#ag${s.id})" stroke-width="4.5"
+              stroke-dasharray="${circ}" stroke-dashoffset="${circ - dash}"
+              stroke-linecap="round" transform="rotate(-90 30 30)"/>
+            <defs><linearGradient id="ag${s.id}" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#8a6030"/>
+              <stop offset="100%" stop-color="#ddb870"/>
+            </linearGradient></defs>
+          </svg>
+          <div class="ms-arc-val">${momentum.toFixed(1)}</div>
+        </div>
+        <div>
+          <div class="ms-label">Seu Momentum <span style="font-size:8px;opacity:.5">↗ toque para detalhes</span></div>
+          <div class="ms-title">${ritmoLabel(s.ritmo_estado)}</div>
+          <div class="ms-desc">${ritmoDesc(s)}</div>
+        </div>
+      </div>
+      <button class="start-btn" style="margin-top:12px" onclick="alert('Treino → CP futuro')">
+        <span>▶</span> Iniciar treino de hoje
+      </button>
+    </div>
+
+    <div class="sec">
+      <div class="sec-head"><div class="sec-title">Scores</div><div class="sec-line"></div></div>
+      <div class="scores-grid">
+        ${[['Neural','neural'],['Mecânica','mecanica'],['Metabólica','metabolica'],
+           ['Técnica','tecnica'],['Ritmo','ritmo'],['Momentum','momentum']].map(([lbl,k]) => {
+          const v = scores[k] || 0;
+          const pct = Math.min(v/10,1)*100;
+          return `<div class="score-chip" onclick="openModal('score_${k}','${s.id}')">
+            <div class="score-chip-lbl">${lbl}</div>
+            <div class="score-chip-bar"><div class="score-chip-fill" style="width:${pct}%;background:${scoreColor(v)}"></div></div>
+            <div class="score-chip-val">${v.toFixed(1)}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-head"><div class="sec-title">Esta semana</div><div class="sec-line"></div></div>
+      <div class="sem-grid" id="week-grid-${s.id}">
+        <div class="dia hoje" onclick="openModal('dia_hoje','${s.id}')">
+          <div class="dia-dot hoje"></div>
+          <div class="dia-lbl">Hoje</div>
+          <div class="dia-tipo hoje-txt">Próximo treino</div>
+        </div>
+        <div class="dia rest"><div class="dia-dot rest"></div><div class="dia-lbl">—</div><div class="dia-tipo">—</div></div>
+        <div class="dia rest"><div class="dia-dot rest"></div><div class="dia-lbl">—</div><div class="dia-tipo">—</div></div>
+      </div>
+    </div>
+
+    ${s.notas ? `
+    <div class="sec">
+      <div class="sec-head"><div class="sec-title">Nota do PT</div><div class="sec-line"></div></div>
+      <div class="msg-card" onclick="openModal('notas_pt','${s.id}')">
+        <div class="msg-author">João Pedro Almeida <span style="opacity:.5">↗</span></div>
+        <div class="msg-text">"${s.notas}"</div>
+      </div>
+    </div>` : ''}
+
+    <div class="sec">
+      <div class="sec-head"><div class="sec-title">Análise do momento</div><div class="sec-line"></div></div>
+      <div class="ai-card" id="ai-card-${s.id}" onclick="openModal('ai_narrative','${s.id}')">
+        <div class="ai-card-label"><span class="ai-dot"></span>Momentum IA · gerado agora</div>
+        <div class="ai-text loading" id="ai-text-${s.id}">
+          <div class="ai-skeleton">
+            <div class="ai-skel-line"></div>
+            <div class="ai-skel-line"></div>
+            <div class="ai-skel-line"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Dispara geração da narrativa após render
+  generateNarrative(s);
+}
+
+// ═══════════════════════════════════════════════════
+// RENDER — EVOLUÇÃO
+// ═══════════════════════════════════════════════════
+function renderEvolucao() {
+  const s = getActiveStudent();
+  const el = document.getElementById('evolucao-content');
+  if (!s) { el.innerHTML = '<div class="empty-state">← selecione um aluno</div>'; return; }
+  const sess = (STATE.sessions[s.id] || []).filter(x => !x.simulado);
+
+  // ── Chips longitudinais (RN 27) ──────────────────
+  const chips = calcLongitudinalChips(s, sess);
+
+  // ── Gráfico IC ──────────────────────────────────
+  const chartHTML = buildICChart(sess, s.id);
+
+  // ── PRs por exercício ────────────────────────────
+  const prsHTML = buildPRs(sess, s.id);
+
+  // ── Semanas do mesociclo ─────────────────────────
+  const mesoHTML = buildMesoWeeks(s, sess);
+
+  // ── Tendência PSE ────────────────────────────────
+  const pseHTML = buildPSETrend(sess);
+
+  el.innerHTML = `
+    ${chips.length ? `
+    <div class="sec">
+      <div class="sec-head"><div class="sec-title">Alertas ativos</div><div class="sec-line"></div></div>
+      <div class="chips-row">
+        ${chips.map(c => `<span class="chip chip-${c.c}" title="${c.t}">${c.t}</span>`).join('')}
+      </div>
+    </div>` : ''}
+
+    <div class="sec">
+      <div class="sec-head"><div class="sec-title">Mesociclo</div><div class="sec-line"></div></div>
+      <div class="chart-card" onclick="openModal('meso','${s.id}')">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div>
+            <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;color:var(--gold)">${s.mesociclo || '—'}</div>
+            <div class="chart-lbl" style="margin-top:2px">${s.divisao || ''}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:22px;color:var(--gold)" id="meso-pct-${s.id}">—</div>
+            <div class="chart-lbl">concluído</div>
+          </div>
+        </div>
+        <div style="height:3px;background:var(--b);border-radius:2px;overflow:hidden;margin-bottom:10px">
+          <div id="meso-bar-${s.id}" style="height:100%;width:0%;background:linear-gradient(90deg,var(--copper),var(--gold));border-radius:2px;transition:width .6s ease"></div>
+        </div>
+        ${mesoHTML}
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-head"><div class="sec-title">Índice de carga · últimas sessões</div><div class="sec-line"></div></div>
+      <div class="chart-card" onclick="openModal('ic_chart','${s.id}')">
+        ${sess.length < 2
+          ? `<div class="pr-empty">mínimo 2 sessões para exibir gráfico</div>`
+          : chartHTML}
+      </div>
+    </div>
+
+    ${sess.length >= 2 ? `
+    <div class="sec">
+      <div class="sec-head"><div class="sec-title">Tendência de PSE</div><div class="sec-line"></div></div>
+      <div class="chart-card" onclick="openModal('pse_trend','${s.id}')">
+        ${pseHTML}
+      </div>
+    </div>` : ''}
+
+    <div class="sec">
+      <div class="sec-head"><div class="sec-title">Recordes por exercício</div><div class="sec-line"></div></div>
+      ${prsHTML}
+    </div>
+  `;
+
+  // Anima barra do meso após render
+  requestAnimationFrame(() => updateMesoBar(s, sess));
+}
+
+function calcLongitudinalChips(s, sessoes) {
+  const chips = [];
+  if (sessoes.length < 3) return chips;
+
+  // delta_pse_crescente
+  const pses = sessoes.slice(0, 3).map(x => x.pse || 0);
+  if (pses[0] > pses[1] && pses[1] > pses[2] && pses[0] >= 7.5) {
+    chips.push({c:'warn',
+      t:`⚠ delta_pse_crescente — ${pses[2].toFixed(1)}→${pses[1].toFixed(1)}→${pses[0].toFixed(1)}`});
+  }
+
+  // ritmo_em_queda
+  if (sessoes.length >= 6) {
+    const bloco1 = sessoes.slice(0, 4);
+    const bloco2 = sessoes.slice(4, 8);
+    if (bloco2.length >= 2) {
+      const ritmo = ss => ss.reduce((s, x) => s + (x.indice||0) / Math.max(x.pse||7, 1), 0) / ss.length;
+      const delta = (ritmo(bloco1) - ritmo(bloco2)) / ritmo(bloco2);
+      if (delta <= -0.10)
+        chips.push({c:'alert', t:`⚠ ritmo_em_queda — IC÷PSE ${Math.round(Math.abs(delta)*100)}% abaixo`});
+      else if (delta <= -0.05)
+        chips.push({c:'warn', t:`⚠ ritmo_em_queda leve — −${Math.round(Math.abs(delta)*100)}%`});
+    }
+  }
+
+  // pse_ic_divergência (última sessão)
+  if (sessoes.length >= 4) {
+    const ultima = sessoes[0];
+    const mediaIC = sessoes.slice(1, 9).reduce((s, x) => s + (x.indice||0), 0) / Math.min(sessoes.length-1, 8);
+    if ((ultima.pse||0) >= 7.5 && (ultima.indice||0) < mediaIC * 0.85)
+      chips.push({c:'alert', t:'⚠ pse_ic_divergência — esforço alto, IC abaixo do usual'});
+  }
+
+  return chips;
+}
+
+function buildICChart(sess, sid) {
+  const items = sess.slice(0, 12).reverse(); // cronológico
+  if (items.length < 2) return '';
+  const maxIC = Math.max(...items.map(x => x.indice || 0), 1);
+
+  const bars = items.map((ss, i) => {
+    const h = Math.max(Math.round((ss.indice || 0) / maxIC * 64), 4);
+    const isLast = i === items.length - 1;
+    const col = isLast ? 'var(--gold)' : 'var(--copper)';
+    const lbl = (ss.data || '').slice(0, 5);
+    return `<div class="ic-bar-col" onclick="openModal('sessao_${ss.id || i}','${sid}')">
+      <div class="ic-bar" style="height:${h}px;background:${col};opacity:${isLast?1:0.6}"></div>
+      <div class="ic-bar-lbl">${lbl}</div>
+    </div>`;
+  }).join('');
+
+  // Tendência linear simples
+  const ics = items.map(x => x.indice || 0);
+  const n = ics.length;
+  const meanX = (n - 1) / 2;
+  const meanY = ics.reduce((a, b) => a + b, 0) / n;
+  const num = ics.reduce((s, y, i) => s + (i - meanX) * (y - meanY), 0);
+  const den = ics.reduce((s, _, i) => s + (i - meanX) ** 2, 0);
+  const slope = den ? num / den : 0;
+  const trendPct = Math.round(slope / (meanY || 1) * 100);
+  const trendLabel = trendPct > 3 ? `↑ +${trendPct}%` : trendPct < -3 ? `↓ ${trendPct}%` : '→ estável';
+  const trendColor = trendPct > 3 ? 'var(--moss2)' : trendPct < -3 ? 'var(--danger2)' : 'var(--ink3)';
+
+  return `
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px">
+      <div class="chart-lbl">Últimas ${items.length} sessões</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:16px;color:${trendColor}">${trendLabel}</div>
+    </div>
+    <div class="ic-bar-group">${bars}</div>
+    <div class="ic-legend">
+      <div class="ic-leg-item"><div class="ic-leg-dot" style="background:var(--gold)"></div>mais recente</div>
+      <div class="ic-leg-item"><div class="ic-leg-dot" style="background:var(--copper);opacity:.6"></div>anteriores</div>
+    </div>`;
+}
+
+function buildPSETrend(sess) {
+  const items = sess.slice(0, 10).reverse();
+  if (items.length < 2) return '';
+  const pses = items.map(x => x.pse || 0);
+  const max = Math.max(...pses, 10);
+  const w = 100 / (items.length - 1);
+
+  // Pontos SVG
+  const pts = pses.map((p, i) => {
+    const x = i * w;
+    const y = 100 - (p / max * 80) - 10;
+    return `${x},${y}`;
+  }).join(' ');
+
+  const avgPSE = (pses.reduce((a,b)=>a+b,0)/pses.length).toFixed(1);
+  const ultima = pses[pses.length-1].toFixed(1);
+
+  return `
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
+      <div class="chart-lbl">PSE média: ${avgPSE}</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:14px;color:var(--gold)">última: ${ultima}</div>
+    </div>
+    <svg width="100%" height="56" viewBox="0 0 100 100" preserveAspectRatio="none" style="display:block">
+      <polyline points="${pts}" fill="none" stroke="var(--copper2)" stroke-width="2.5"
+        stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+      ${pses.map((p,i) => {
+        const x = i * w;
+        const y = 100 - (p / max * 80) - 10;
+        const isLast = i === pses.length - 1;
+        return `<circle cx="${x}" cy="${y}" r="${isLast?3:2}" fill="${isLast?'var(--gold)':'var(--copper2)'}" vector-effect="non-scaling-stroke"/>`;
+      }).join('')}
+    </svg>
+    <div class="chart-lbl" style="margin-top:6px">PSE relatada por sessão · ↗ toque para detalhar</div>`;
+}
+
+function buildPRs(sess, sid) {
+  if (!sess.length) return '<div class="pr-empty">sem sessões registradas</div>';
+
+  // Agrupa por exercício, pega melhor kg×reps
+  const exMap = {};
+  sess.forEach(ss => {
+    (ss.exercicios || []).forEach(ex => {
+      const nome = ex.nome || ex.n;
+      if (!nome) return;
+      const score = (ex.kg || 0) * (ex.r || ex.reps || 1);
+      if (!exMap[nome] || score > exMap[nome].score) {
+        exMap[nome] = { nome, kg: ex.kg||0, r: ex.r||ex.reps||0, s: ex.s||3, score, data: ss.data };
+      }
+    });
+  });
+
+  const prs = Object.values(exMap).sort((a,b) => b.score - a.score).slice(0, 8);
+  if (!prs.length) return '<div class="pr-empty">exercícios sem dados de carga ainda</div>';
+
+  return `<div class="pr-section">
+    ${prs.map(pr => `
+      <div class="pr-row" onclick="openModal('pr_detail','${sid}','${encodeURIComponent(pr.nome)}')">
+        <div class="pr-ico">🏋️</div>
+        <div class="pr-info">
+          <div class="pr-exname">${pr.nome}</div>
+          <div class="pr-desc">${pr.data || ''} · ${pr.s}×${pr.r} reps</div>
+        </div>
+        <div class="pr-right">
+          <div class="pr-kg">${pr.kg > 0 ? pr.kg : '—'}</div>
+          <div class="pr-reps">${pr.kg > 0 ? 'kg' : 'peso corp.'}</div>
+        </div>
+      </div>`).join('')}
+  </div>`;
+}
+
+function buildMesoWeeks(s, sess) {
+  const total = s.semanas_total || 8;
+  // Estima semana atual pelo número de sessões (aprox 3 sessões/semana)
+  const sessReais = sess.filter(x => !x.simulado).length;
+  const freqSemanal = s.divisao?.includes('4x') ? 4 : s.divisao?.includes('3x') ? 3 : 3;
+  const semanasFeitas = Math.min(Math.floor(sessReais / freqSemanal), total - 1);
+  const semanaAtual = semanasFeitas + 1;
+  const pct = Math.round(semanasFeitas / total * 100);
+
+  // Atualiza barra e %
+  requestAnimationFrame(() => {
+    const bar = document.getElementById(`meso-bar-${s.id}`);
+    const pctEl = document.getElementById(`meso-pct-${s.id}`);
+    if (bar) bar.style.width = pct + '%';
+    if (pctEl) pctEl.textContent = pct + '%';
+  });
+
+  return `<div class="meso-weeks-grid">
+    ${Array.from({length: total}, (_, i) => {
+      const n = i + 1;
+      const done = n < semanaAtual;
+      const cur = n === semanaAtual;
+      return `<div class="meso-wk ${done?'done-wk':''} ${cur?'cur-wk':''}"
+        onclick="openModal('semana_${n}','${s.id}')">
+        <div class="meso-wk-n">S${n}</div>
+        <div class="meso-wk-st" style="color:${done?'var(--moss2)':cur?'var(--copper)':'var(--ink3)'}">
+          ${done?'✓':cur?'→':'—'}
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function updateMesoBar(s, sess) {
+  // Já tratado dentro de buildMesoWeeks via requestAnimationFrame
+}
+
+// ═══════════════════════════════════════════════════
+// RENDER — HISTÓRICO
+// ═══════════════════════════════════════════════════
+function renderHistorico() {
+  const s = getActiveStudent();
+  const el = document.getElementById('historico-content');
+  if (!s) { el.innerHTML = '<div class="empty-state">← selecione um aluno</div>'; return; }
+  const sess = (STATE.sessions[s.id] || []).filter(x => !x.simulado);
+
+  if (!sess.length) {
+    el.innerHTML = '<div class="empty-state">sem sessões no banco ainda</div>';
+    return;
+  }
+
+  el.innerHTML = `
+    <div class="sec">
+      <div class="sec-head">
+        <div class="sec-title">${sess.length} sessão${sess.length !== 1 ? 'ões' : ''}</div>
+        <div class="sec-line"></div>
+      </div>
+      ${sess.map((ss, i) => {
+        const exs = ss.exercicios || [];
+        const maxPSE = Math.max(...exs.map(x => x.pse||0), ss.pse||0, 0);
+        const simChips = calcSessionChips(ss, exs);
+        return `
+        <div class="hist-row" id="hist-row-${i}" onclick="toggleHistRow(${i})">
+          <div class="hist-hd">
+            <div class="hist-tipo">${ss.tipo || ss.treino_id || '—'}</div>
+            <div class="hist-date">${ss.data || ''}</div>
+          </div>
+          <div class="hist-bar-bg">
+            <div class="hist-bar-fill" style="width:${Math.min((ss.pse||0)/10,1)*100}%"></div>
+          </div>
+          <div class="hist-tags" style="justify-content:space-between">
+            <div style="display:flex;gap:5px;flex-wrap:wrap">
+              <span class="hist-tag">PSE ${ss.pse?.toFixed(1)||'—'}</span>
+              ${ss.indice ? `<span class="hist-tag">IC ${ss.indice}</span>` : ''}
+              ${ss.neural  ? `<span class="hist-tag">N ${Math.round(ss.neural)}</span>` : ''}
+              ${simChips.map(c => `<span class="hist-tag" style="color:${c.c==='alert'?'var(--danger2)':c.c==='warn'?'var(--copper2)':'var(--moss2)'}">● ${c.short}</span>`).join('')}
+            </div>
+            <span style="font-size:8px;color:var(--ink3)">↕</span>
+          </div>
+
+          <div class="hist-detail" id="hist-detail-${i}">
+            ${exs.length ? `
+              <div style="margin-bottom:8px">
+                ${exs.map(ex => `
+                  <div class="hist-ex-row">
+                    <span>${ex.nome||ex.n||'—'}</span>
+                    <span style="color:var(--ink3)">
+                      ${ex.s||3}×${ex.r||ex.reps||'?'} ${ex.kg>0?ex.kg+'kg':''}
+                      ${ex.pse ? `· PSE ${ex.pse}` : ''}
+                    </span>
+                  </div>`).join('')}
+              </div>` : ''}
+
+            ${(ss.neural || ss.mecanica || ss.metabolica) ? `
+              <div class="hist-dims">
+                ${ss.neural    ? `<div class="hist-dim"><div class="hist-dim-lbl">Neural</div><div class="hist-dim-val">${Math.round(ss.neural)}</div></div>` : ''}
+                ${ss.mecanica  ? `<div class="hist-dim"><div class="hist-dim-lbl">Mecânica</div><div class="hist-dim-val">${Math.round(ss.mecanica)}</div></div>` : ''}
+                ${ss.metabolica? `<div class="hist-dim"><div class="hist-dim-lbl">Metabólica</div><div class="hist-dim-val">${Math.round(ss.metabolica)}</div></div>` : ''}
+              </div>` : ''}
+
+            ${ss.ratio_adaptacao ? `
+              <div style="margin-top:8px;font-size:8px;color:var(--ink3)">
+                RatioAdaptação: <span style="color:var(--gold)">${ss.ratio_adaptacao.toFixed(3)}</span>
+                <span style="opacity:.5"> · apenas como tendência relativa</span>
+              </div>` : ''}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function calcSessionChips(ss, exs) {
+  const chips = [];
+  if (!exs.length) return chips;
+  const pses = exs.map(x => x.pse||0).filter(Boolean);
+  if (pses.length >= 4) {
+    const metade = Math.floor(pses.length / 2);
+    const inicio = pses.slice(0, metade).reduce((a,b)=>a+b,0)/metade;
+    const fim    = pses.slice(metade).reduce((a,b)=>a+b,0)/(pses.length-metade);
+    if (inicio > fim + 1.5) chips.push({c:'warn', short:'fadiga precoce'});
+  }
+  const sobrecarga = pses.filter((p,i) => i < Math.floor(pses.length/2) && p >= 9).length;
+  if (sobrecarga >= 3) chips.push({c:'alert', short:'sobrecarga PSE'});
+  if (pses.length >= 2 && pses.every(p => p <= 6.5)) chips.push({c:'ok', short:'progressão_ok'});
+  return chips;
+}
+
+function toggleHistRow(i) {
+  const detail = document.getElementById(`hist-detail-${i}`);
+  if (!detail) return;
+  const isOpen = detail.classList.contains('open');
+  // fecha todos
+  document.querySelectorAll('.hist-detail.open').forEach(d => d.classList.remove('open'));
+  if (!isOpen) detail.classList.add('open');
+  logClick(STATE.activeId, `historico_row_${i}`);
+}
+
+// ═══════════════════════════════════════════════════
+// MODAL DRILL-DOWN
+// ═══════════════════════════════════════════════════
+const SCORE_INFO = {
+  neural:    { label:'Neural', desc:'Capacidade do sistema nervoso de recrutar unidades motoras com alta intensidade. Reflete adaptações a exercícios com alta demanda de força máxima e potência.' },
+  mecanica:  { label:'Mecânica', desc:'Volume de trabalho muscular acumulado — séries × repetições × carga. Principal driver de hipertrofia quando combinado com técnica adequada.' },
+  metabolica:{ label:'Metabólica', desc:'Demanda cardiovascular e metabólica da sessão. Importante para condicionamento e densidade de treino.' },
+  tecnica:   { label:'Técnica', desc:'Índice de qualidade de execução dos exercícios ao longo das sessões. Inclui consistência de amplitude, controle excêntrico e simetria.' },
+  ritmo:     { label:'Ritmo', desc:'Consistência de frequência de treino versus o planejado. Alunos com ritmo alto tendem a ter progressão mais previsível.' },
+  momentum:  { label:'Momentum', desc:'Score composto que agrega as 5 dimensões acima. Reflete a trajetória de evolução do aluno — não um valor absoluto, mas uma tendência.' },
+};
+
+function openModal(type, studentId, extra) {
+  const s = STATE.students.find(x => x.id === studentId);
+  const body = document.getElementById('modal-body');
+  let html = '';
+
+  if (type === 'momentum') {
+    html = `<div class="modal-title">Momentum</div>
+      <div class="modal-sub">${s?.name} · score ${s?.scores?.momentum?.toFixed(1)}</div>
+      <div class="modal-prose">
+        O Momentum é um score composto que reflete a <strong>trajetória de evolução</strong> do aluno
+        — não um valor absoluto, mas uma tendência relativa ao próprio histórico.<br><br>
+        Estado atual: <strong>${ritmoLabel(s?.ritmo_estado)}</strong><br>
+        ${ritmoDesc(s || {})}
+      </div>`;
+  } else if (type.startsWith('score_')) {
+    const key = type.replace('score_', '');
+    const info = SCORE_INFO[key] || {};
+    const val = s?.scores?.[key] || 0;
+    html = `<div class="modal-title">${info.label}</div>
+      <div class="modal-sub">${s?.name} · ${val.toFixed(1)} / 10</div>
+      <div style="height:4px;background:var(--b);border-radius:2px;overflow:hidden;margin-bottom:16px">
+        <div style="height:100%;width:${val*10}%;background:${scoreColor(val)};border-radius:2px"></div>
+      </div>
+      <div class="modal-prose">${info.desc}</div>`;
+  } else if (type === 'notas_pt') {
+    html = `<div class="modal-title">Nota do PT</div>
+      <div class="modal-sub">${s?.name}</div>
+      <div class="modal-prose" style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;line-height:2">
+        "${s?.notas}"
+      </div>
+      ${s?.anamnese ? `<div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--b)">
+        <div class="modal-sub">Anamnese</div>
+        <div class="modal-prose">
+          <strong>Objetivo:</strong> ${s.anamnese.objetivo}<br>
+          <strong>Histórico:</strong> ${s.anamnese.historico}<br>
+          <strong>Restrições:</strong> ${s.anamnese.restricoes}<br>
+          <strong>Disponibilidade:</strong> ${s.anamnese.disponibilidade}
+        </div>
+      </div>` : ''}`;
+  } else if (type === 'ic_chart') {
+    const sess = (STATE.sessions[s?.id]||[]).filter(x=>!x.simulado);
+    const items = sess.slice(0,12).reverse();
+    const ics = items.map(x=>x.indice||0);
+    const avg = ics.length ? Math.round(ics.reduce((a,b)=>a+b,0)/ics.length) : 0;
+    const max = Math.max(...ics,1);
+    const min = Math.min(...ics.filter(x=>x>0),0);
+    html = `<div class="modal-title">Índice de Carga</div>
+      <div class="modal-sub">${s?.name} · últimas ${items.length} sessões</div>
+      <div class="modal-prose">
+        <strong>Média:</strong> ${avg} · <strong>Pico:</strong> ${max} · <strong>Mínimo:</strong> ${min}<br><br>
+        IC = (wN × Neural) + (wM × Mecânica) + (wMet × Metabólica).<br>
+        Os pesos variam por valência — ver modelo matemático §4.
+      </div>
+      <div style="margin-top:14px">
+        ${items.map(ss=>`
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <div style="font-size:8px;color:var(--ink3);width:44px;flex-shrink:0">${(ss.data||'').slice(0,5)}</div>
+            <div style="flex:1;height:3px;background:var(--b);border-radius:2px;overflow:hidden">
+              <div style="height:100%;width:${(ss.indice||0)/max*100}%;background:var(--copper);border-radius:2px"></div>
+            </div>
+            <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:14px;color:var(--gold);width:36px;text-align:right">${ss.indice||'—'}</div>
+          </div>`).join('')}
+      </div>`;
+
+  } else if (type === 'pse_trend') {
+    const sess = (STATE.sessions[s?.id]||[]).filter(x=>!x.simulado);
+    const items = sess.slice(0,10).reverse();
+    html = `<div class="modal-title">Tendência de PSE</div>
+      <div class="modal-sub">${s?.name}</div>
+      <div class="modal-prose">
+        PSE relatada sessão a sessão. ΔPSE crescendo = fadiga acumulada não capturada pelo IC.<br><br>
+        ${items.map((ss,i)=>{
+          const prev = items[i-1];
+          const delta = prev ? (ss.pse||0)-(prev.pse||0) : null;
+          const sign = delta===null?'':delta>0.2?`<span style="color:var(--danger2)">↑${delta.toFixed(1)}</span>`:delta<-0.2?`<span style="color:var(--moss2)">↓${Math.abs(delta).toFixed(1)}</span>`:'→';
+          return `<div style="display:flex;justify-content:space-between;font-size:9px;padding:4px 0;border-bottom:1px solid var(--b)">
+            <span style="color:var(--ink3)">${ss.data||'—'} · ${ss.tipo||'—'}</span>
+            <span>PSE <strong style="color:var(--gold)">${(ss.pse||0).toFixed(1)}</strong> ${sign}</span>
+          </div>`;
+        }).join('')}
+      </div>`;
+
+  } else if (type === 'pr_detail') {
+    const nome = decodeURIComponent(extra||'');
+    const sess = (STATE.sessions[s?.id]||[]).filter(x=>!x.simulado);
+    const historico = [];
+    sess.forEach(ss => {
+      (ss.exercicios||[]).forEach(ex => {
+        if ((ex.nome||ex.n||'') === nome)
+          historico.push({data:ss.data, kg:ex.kg||0, r:ex.r||ex.reps||0, s:ex.s||3, pse:ex.pse});
+      });
+    });
+    historico.sort((a,b)=>(b.kg||0)-(a.kg||0));
+    html = `<div class="modal-title">${nome}</div>
+      <div class="modal-sub">Histórico de registros</div>
+      <div class="modal-prose">
+        ${historico.length
+          ? historico.map(h=>`
+            <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--b);font-size:9px">
+              <span style="color:var(--ink3)">${h.data||'—'}</span>
+              <span>${h.s}×${h.r} ${h.kg>0?h.kg+'kg':'corpo'}${h.pse?` · PSE ${h.pse}`:''}</span>
+            </div>`).join('')
+          : '<span style="color:var(--ink3)">sem registros encontrados</span>'}
+      </div>`;
+
+  } else if (type === 'meso') {
+    html = `<div class="modal-title">Mesociclo</div>
+      <div class="modal-sub">${s?.mesociclo}</div>
+      <div class="modal-prose">
+        <strong>Divisão:</strong> ${s?.divisao}<br>
+        <strong>Objetivo:</strong> ${s?.goal}<br>
+        <strong>Nível:</strong> ${s?.nivel}<br>
+        <strong>Perfil:</strong> ${s?.profile}
+      </div>`;
+  } else if (type === 'ai_narrative') {
+    const cached = AI_CACHE[s?.id];
+    html = `<div class="modal-title">Análise do momento</div>
+      <div class="modal-sub">${s?.name} · gerado agora pela IA</div>
+      <div class="modal-prose ai-modal-text" style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;line-height:2">
+        ${cached || '<span style="color:var(--ink3)">gerando…</span>'}
+      </div>
+      <div style="margin-top:20px;padding-top:14px;border-top:1px solid var(--b)">
+        <div class="modal-sub" style="margin-bottom:8px">Contexto usado</div>
+        <div class="modal-prose">
+          Ritmo: <strong>${s?.ritmo_estado}</strong> ·
+          Momentum: <strong>${s?.scores?.momentum?.toFixed(1)}</strong> ·
+          Neural: <strong>${s?.scores?.neural?.toFixed(1)}</strong> ·
+          Mecânica: <strong>${s?.scores?.mecanica?.toFixed(1)}</strong>
+        </div>
+      </div>
+      <button onclick="refreshNarrative('${s?.id}')"
+        style="margin-top:14px;width:100%;padding:12px;background:transparent;
+        border:1px solid var(--b2);color:var(--ink2);font-family:'IBM Plex Mono',monospace;
+        font-size:8px;text-transform:uppercase;letter-spacing:.14em;cursor:pointer;border-radius:2px;">
+        ↺ Regerar análise
+      </button>`;
+  } else if (type === 'dia_hoje') {
+    html = `<div class="modal-title">Treino de hoje</div>
+      <div class="modal-sub">${s?.name}</div>
+      <div class="modal-prose">Prescrição detalhada será carregada no CP futuro.</div>`;
+  } else {
+    html = `<div class="modal-title">Detalhes</div>
+      <div class="modal-prose">Em breve — ${type}</div>`;
+  }
+
+  // log click (analytics básico)
+  logClick(studentId, type);
+
+  body.innerHTML = html;
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('modal')) {
+    document.getElementById('modal').classList.remove('open');
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// CLICK TRACKING (Firestore)
+// ═══════════════════════════════════════════════════
+function logClick(studentId, section) {
+  db.collection('pt_interactions').add({
+    student_id: studentId,
+    section,
+    ts: firebase.firestore.FieldValue.serverTimestamp(),
+    agent: 'pt_dashboard'
+  }).catch(() => {}); // silencioso
+}
+
+// ═══════════════════════════════════════════════════
+// NAV
+// ═══════════════════════════════════════════════════
+function goPage(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('s-' + id)?.classList.add('active');
+  STATE.page = id;
+  document.querySelectorAll('.bnav-item').forEach(b => b.classList.remove('active'));
+  const idx = { home:0, evolucao:1, historico:2 }[id];
+  if (idx !== undefined) document.querySelectorAll('.bnav-item')[idx]?.classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════
+// THEME
+// ═══════════════════════════════════════════════════
+function toggleTheme() {
+  const html = document.documentElement;
+  const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  html.setAttribute('data-theme', next);
+  localStorage.setItem('momentum-theme', next);
+}
+(function(){
+  const saved = localStorage.getItem('momentum-theme');
+  if (saved) document.documentElement.setAttribute('data-theme', saved);
+})();
+
+// ═══════════════════════════════════════════════════
+// IA NARRATIVA
+// ═══════════════════════════════════════════════════
+
+// Cache em memória: evita re-gerar ao navegar entre tabs
+const AI_CACHE = {};
+
+function buildNarrativePrompt(s, sessoes) {
+  const scores = s.scores || {};
+  const ultimas = sessoes.filter(x => !x.simulado).slice(0, 5);
+  const pses = ultimas.map(x => x.pse).filter(Boolean);
+  const pse_media = pses.length ? (pses.reduce((a,b)=>a+b,0)/pses.length).toFixed(1) : null;
+  const ics = ultimas.map(x => x.indice).filter(Boolean);
+  const ic_trend = ics.length >= 2
+    ? (ics[0] > ics[1] ? 'subindo' : ics[0] < ics[1] ? 'caindo' : 'estável')
+    : null;
+
+  return `Você é o sistema de análise do Momentum, app de personal training científico.
+Gere uma análise curta (2–3 frases, máximo 60 palavras) sobre o momento atual deste aluno.
+Tom: direto, técnico mas acessível. Sem emojis. Sem saudações. Sem "com base nos dados".
+Comece direto pela observação mais relevante.
+Fale na 3ª pessoa (ex: "Ana está..." ou "O ritmo de...").
+Foque no que é mais acionável para o PT hoje.
+
+DADOS DO ALUNO:
+- Nome: ${s.name}
+- Nível: ${s.nivel}
+- Objetivo: ${s.goal}
+- Mesociclo: ${s.mesociclo}
+- Ritmo estado: ${s.ritmo_estado}
+- Risk: ${s.risk}
+- Scores: Neural ${scores.neural} · Mecânica ${scores.mecanica} · Metabólica ${scores.metabolica} · Técnica ${scores.tecnica} · Ritmo ${scores.ritmo} · Momentum ${scores.momentum}
+${pse_media ? `- PSE média últimas ${pses.length} sessões: ${pse_media}` : ''}
+${ic_trend ? `- Tendência de IC: ${ic_trend}` : ''}
+${s.notas ? `- Nota do PT: ${s.notas}` : ''}
+${s.anamnese?.restricoes && s.anamnese.restricoes !== 'Nenhuma' ? `- Restrições: ${s.anamnese.restricoes}` : ''}`;
+}
+
+async function generateNarrative(s) {
+  // Usa cache se já gerou nesta sessão
+  if (AI_CACHE[s.id]) {
+    renderNarrativeText(s.id, AI_CACHE[s.id]);
+    return;
+  }
+
+  const sessoes = STATE.sessions[s.id] || [];
+  const prompt = buildNarrativePrompt(s, sessoes);
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 120,
+        system: 'Você é o sistema de análise do Momentum. Responda APENAS com o texto da análise, sem formatação, sem aspas, sem prefixo.',
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    const data = await res.json();
+    const text = data?.content?.[0]?.text?.trim() || null;
+
+    if (text) {
+      AI_CACHE[s.id] = text;
+      renderNarrativeText(s.id, text);
+      // Salva no modal também se estiver aberto
+      const modalBody = document.getElementById('modal-body');
+      if (modalBody?.querySelector('.ai-modal-text')) {
+        modalBody.querySelector('.ai-modal-text').textContent = text;
+      }
+    } else {
+      renderNarrativeText(s.id, null);
+    }
+  } catch(e) {
+    renderNarrativeText(s.id, null);
+  }
+}
+
+function renderNarrativeText(studentId, text) {
+  const el = document.getElementById(`ai-text-${studentId}`);
+  if (!el) return;
+  if (text) {
+    el.className = 'ai-text';
+    el.textContent = text;
+  } else {
+    el.className = 'ai-text loading';
+    el.textContent = 'Análise indisponível — verifique a conexão.';
+  }
+}
+
+function refreshNarrative(studentId) {
+  delete AI_CACHE[studentId];
+  const s = STATE.students.find(x => x.id === studentId);
+  if (!s) return;
+  // Reseta o card
+  const el = document.getElementById(`ai-text-${studentId}`);
+  if (el) {
+    el.className = 'ai-text loading';
+    el.innerHTML = '<div class="ai-skeleton"><div class="ai-skel-line"></div><div class="ai-skel-line"></div><div class="ai-skel-line"></div></div>';
+  }
+  // Reseta o modal se aberto
+  const modalAI = document.querySelector('.ai-modal-text');
+  if (modalAI) modalAI.innerHTML = '<span style="color:var(--ink3)">gerando…</span>';
+  generateNarrative(s);
+}
+
+// ═══════════════════════════════════════════════════
+// SIMULADOR DE TREINO
+// ═══════════════════════════════════════════════════
+
+// Exercícios genéricos de referência por perfil de aluno
+// (serão substituídos pela prescrição real quando disponível)
+const SIM_PROFILES = {
+  hiper: {
+    wN:0.30, wM:0.40, wMet:0.30,
+    exs:[
+      {nome:'Supino Reto',     kg:60,  s:4, r:10, FC:0.7,DN:5.0,CT:4.0,SV:3.0,IM:7.5,descanso:90},
+      {nome:'Agachamento',     kg:80,  s:4, r:8,  FC:1.2,DN:8.0,CT:6.0,SV:5.0,IM:9.0,descanso:120},
+      {nome:'Puxada Frontal',  kg:55,  s:4, r:10, FC:0.7,DN:5.5,CT:3.5,SV:3.0,IM:7.0,descanso:90},
+      {nome:'Desenvolvimento', kg:40,  s:3, r:10, FC:0.8,DN:5.0,CT:4.0,SV:3.0,IM:6.5,descanso:90},
+      {nome:'Cadeira Ext.',    kg:50,  s:3, r:12, FC:0.2,DN:3.0,CT:1.5,SV:2.0,IM:5.5,descanso:60},
+      {nome:'Rosca Direta',    kg:20,  s:3, r:12, FC:0.3,DN:3.5,CT:2.0,SV:2.0,IM:4.5,descanso:60},
+    ]
+  },
+  forca: {
+    wN:0.50, wM:0.35, wMet:0.15,
+    exs:[
+      {nome:'Agachamento Livre',    kg:100, s:5, r:5,  FC:1.2,DN:8.0,CT:6.0,SV:5.0,IM:9.0,descanso:180},
+      {nome:'Supino Reto',          kg:80,  s:5, r:5,  FC:0.7,DN:5.0,CT:4.0,SV:3.0,IM:7.5,descanso:180},
+      {nome:'Terra / RDL',          kg:110, s:4, r:4,  FC:1.1,DN:8.5,CT:7.0,SV:5.0,IM:9.5,descanso:180},
+      {nome:'Desenvolvimento Barra',kg:50,  s:4, r:5,  FC:0.9,DN:6.0,CT:5.0,SV:3.5,IM:6.5,descanso:120},
+    ]
+  },
+  recomp: {
+    wN:0.20, wM:0.25, wMet:0.55,
+    exs:[
+      {nome:'Agachamento Goblet',   kg:20,  s:3, r:15, FC:0.8,DN:5.5,CT:3.5,SV:4.0,IM:6.5,descanso:60},
+      {nome:'Supino c/ Halteres',   kg:14,  s:3, r:12, FC:0.6,DN:4.0,CT:3.0,SV:3.0,IM:6.0,descanso:60},
+      {nome:'Remada Unilateral',    kg:18,  s:3, r:12, FC:0.7,DN:4.5,CT:3.0,SV:3.0,IM:6.0,descanso:60},
+      {nome:'Cadeira Extensora',    kg:35,  s:3, r:15, FC:0.2,DN:3.0,CT:1.5,SV:2.0,IM:5.5,descanso:45},
+      {nome:'Elevação Lateral',     kg:6,   s:3, r:15, FC:0.3,DN:3.0,CT:2.0,SV:2.5,IM:4.0,descanso:45},
+    ]
+  },
+  funcional: {
+    wN:0.25, wM:0.25, wMet:0.50,
+    exs:[
+      {nome:'Agachamento c/ Peso',  kg:0,   s:3, r:15, FC:0.8,DN:4.5,CT:3.0,SV:4.0,IM:5.5,descanso:60},
+      {nome:'Flexão de Braços',     kg:0,   s:3, r:12, FC:0.6,DN:4.0,CT:3.5,SV:4.0,IM:5.0,descanso:60},
+      {nome:'Remada c/ Elástico',   kg:10,  s:3, r:15, FC:0.5,DN:3.5,CT:2.5,SV:3.5,IM:4.5,descanso:60},
+      {nome:'Afundo',               kg:10,  s:3, r:10, FC:0.9,DN:5.0,CT:4.0,SV:4.0,IM:6.5,descanso:60},
+    ]
+  },
+  reab: {
+    wN:0.15, wM:0.25, wMet:0.60,
+    exs:[
+      {nome:'Cadeira Extensora',    kg:20,  s:3, r:15, FC:0.2,DN:2.5,CT:1.0,SV:1.0,IM:4.5,descanso:90},
+      {nome:'Leg Press (leve)',     kg:40,  s:3, r:15, FC:0.4,DN:3.5,CT:2.0,SV:2.0,IM:5.5,descanso:90},
+      {nome:'Remada Sentado',       kg:15,  s:3, r:15, FC:0.5,DN:3.5,CT:2.0,SV:2.0,IM:5.0,descanso:90},
+      {nome:'Rosca Martelo (leve)', kg:6,   s:2, r:15, FC:0.3,DN:2.5,CT:1.5,SV:1.5,IM:3.5,descanso:75},
+    ]
+  },
+};
+
+// Fatores de ajuste por PSE (1–10)
+// PSE aqui = disponibilidade/desempenho declarado antes do treino
+const SIM_FACTORS = {
+  10: {carga:1.00, volume:1.00, descanso:1.00, pse_esp:8.5, label:'Pico · sessão completa e intensa',         cor:'var(--moss2)'},
+  9:  {carga:0.97, volume:1.00, descanso:1.00, pse_esp:8.0, label:'Excelente · acima da média',               cor:'var(--moss2)'},
+  8:  {carga:0.92, volume:0.95, descanso:1.05, pse_esp:7.5, label:'Bom · dentro do prescrito',                cor:'var(--gold)'},
+  7:  {carga:0.85, volume:0.88, descanso:1.10, pse_esp:7.0, label:'Regular · pequena redução de volume',      cor:'var(--gold)'},
+  6:  {carga:0.75, volume:0.80, descanso:1.15, pse_esp:6.0, label:'Abaixo do esperado · sessão moderada',     cor:'var(--copper2)'},
+  5:  {carga:0.65, volume:0.70, descanso:1.25, pse_esp:5.0, label:'Cansado · sessão leve',                    cor:'var(--copper2)'},
+  4:  {carga:0.52, volume:0.58, descanso:1.40, pse_esp:4.0, label:'Muito cansado · volume mínimo',            cor:'var(--danger2)'},
+  3:  {carga:0.40, volume:0.45, descanso:1.60, pse_esp:3.5, label:'Overreaching · sessão de ativação',        cor:'var(--danger2)'},
+  2:  {carga:0.28, volume:0.30, descanso:1.80, pse_esp:3.0, label:'Fadiga aguda · mobilidade apenas',         cor:'var(--danger2)'},
+  1:  {carga:0.00, volume:0.00, descanso:2.00, pse_esp:2.0, label:'⚠ Repouso recomendado — não treinar hoje', cor:'var(--danger2)'},
+};
+
+function calcNeuralEx(ex, kg, r, s) {
+  const cn = kg * r * s;
+  const amp = 1 + ex.CT * 0.05; // explos=0 por default no simulador
+  return cn * ex.FC * ex.DN * amp;
+}
+function calcMecEx(ex, kg, r, s) {
+  return kg * r * s * ex.IM;
+}
+function calcMetEx(ex, kg, r, s, descanso) {
+  const cn = kg * r * s;
+  const FTT = 1; // cadência não prescrita → FTT=1 (modelo matemático §2c)
+  const FD = 90 / descanso;
+  return cn * FTT * ex.SV * FD;
+}
+
+function simulateSession(pse) {
+  const s = getActiveStudent();
+  if (!s) return null;
+  const profile = SIM_PROFILES[s.profile] || SIM_PROFILES['hiper'];
+  const f = SIM_FACTORS[pse];
+
+  let neural_total = 0, mec_total = 0, met_total = 0;
+  let neural_base = 0, mec_base = 0, met_base = 0;
+
+  const exsBase = profile.exs.map(ex => {
+    const nb = calcNeuralEx(ex, ex.kg, ex.r, ex.s);
+    const mb = calcMecEx(ex, ex.kg, ex.r, ex.s);
+    const mtb = calcMetEx(ex, ex.kg, ex.r, ex.s, ex.descanso);
+    neural_base += nb; mec_base += mb; met_base += mtb;
+    return { ...ex, nb, mb, mtb };
+  });
+
+  const exsSim = exsBase.map(ex => {
+    const kg_sim  = Math.round(ex.kg * f.carga / 2.5) * 2.5;
+    const r_sim   = Math.max(1, Math.round(ex.r * f.volume));
+    const desc_sim = Math.round(ex.descanso * f.descanso);
+    const pse_ex  = Math.min(10, +(f.pse_esp + (Math.random() * 0.8 - 0.4)).toFixed(1));
+    const n = calcNeuralEx(ex, kg_sim, r_sim, ex.s);
+    const m = calcMecEx(ex, kg_sim, r_sim, ex.s);
+    const mt = calcMetEx(ex, kg_sim, r_sim, ex.s, desc_sim);
+    neural_total += n; mec_total += m; met_total += mt;
+    return { ...ex, kg_sim, r_sim, s_sim: ex.s, desc_sim, pse_ex, n, m, mt };
+  });
+
+  const { wN, wM, wMet } = profile;
+  const ic_base = (wN * neural_base) + (wM * mec_base) + (wMet * met_base);
+  const ic_sim  = (wN * neural_total) + (wM * mec_total) + (wMet * met_total);
+  const duração = 45 + (pse >= 8 ? 15 : pse >= 6 ? 5 : 0);
+  const carga_interna = f.pse_esp * duração;
+  const ratio = ic_sim / carga_interna;
+
+  return {
+    student: s,
+    pse,
+    factor: f,
+    exsSim,
+    ic_base,
+    ic_sim,
+    neural: neural_total,
+    mec: mec_total,
+    met: met_total,
+    neural_base,
+    mec_base,
+    met_base,
+    carga_interna,
+    ratio,
+    duração,
+    wN, wM, wMet
+  };
+}
+
+function calcChips(sim) {
+  if (!sim) return [];
+  const chips = [];
+  const { exsSim, pse, factor, student } = sim;
+  const sessoes = (STATE.sessions[student.id] || []).filter(s => !s.simulado);
+
+  // ── CHIPS EXISTENTES (RN 26) ──────────────────────
+
+  // progressão_ok
+  if (factor.volume >= 0.95 && factor.pse_esp >= 7.5) {
+    chips.push({c:'ok', t:'✓ progressão_ok — candidato a aumento de carga'});
+  }
+  // sessão no limite
+  if (pse >= 9 && factor.pse_esp >= 8.5) {
+    chips.push({c:'warn', t:`⚠ sessão no limite — PSE esperada ${factor.pse_esp.toFixed(1)}, monitorar execução`});
+  }
+  // fadiga
+  if (pse <= 5 && pse > 1) {
+    chips.push({c:'warn', t:'⚠ fadiga — volume e carga reduzidos automaticamente'});
+  }
+  // repouso
+  if (pse <= 1) {
+    chips.push({c:'alert', t:'⚠ PSE crítico — sessão cancelada, repouso recomendado'});
+    return chips; // sem mais chips se não vai treinar
+  }
+  // overreaching
+  if (pse <= 3) {
+    chips.push({c:'alert', t:'⚠ sinal de overreaching — avaliar deload'});
+  }
+
+  // ── CHIPS NOVOS (dependem de histórico no banco) ──
+
+  // pse_ic_divergência: PSE esperada alta com IC simulado abaixo da média histórica -15%
+  if (sessoes.length >= 3) {
+    const mediaIC = sessoes.slice(0, 8).reduce((s, ss) => s + (ss.indice || 0), 0) /
+                    Math.min(sessoes.length, 8);
+    if (factor.pse_esp >= 7.5 && sim.ic_sim < mediaIC * 0.85) {
+      chips.push({c:'alert',
+        t:`⚠ pse_ic_divergência — esforço esperado alto (${factor.pse_esp}) com IC ${Math.round((sim.ic_sim/mediaIC-1)*100)}% abaixo da média`});
+    }
+  }
+
+  // delta_pse_crescente: PSE relatada subindo nas últimas 3 sessões consecutivas
+  // = fadiga acumulada silenciosa que o IC não captura
+  if (sessoes.length >= 3) {
+    const ultimas = sessoes.slice(0, 3).map(s => s.pse || 0);
+    const crescente = ultimas[0] > ultimas[1] && ultimas[1] > ultimas[2];
+    if (crescente && ultimas[0] >= 7.5) {
+      chips.push({c:'warn',
+        t:`⚠ delta_pse_crescente — PSE subindo nas últimas 3 sessões (${ultimas[2].toFixed(1)}→${ultimas[1].toFixed(1)}→${ultimas[0].toFixed(1)}) · fadiga acumulada`});
+    }
+  }
+
+  // ritmo_em_queda: RatioAdaptação caindo em 2 semanas consecutivas
+  // Proxy: IC médio das últimas 4 sessões vs 4 anteriores, controlado por PSE
+  if (sessoes.length >= 6) {
+    const bloco1 = sessoes.slice(0, 4); // mais recentes
+    const bloco2 = sessoes.slice(4, 8); // anteriores
+    if (bloco2.length >= 2) {
+      const ritmo = ss => ss.reduce((s, x) => s + (x.indice || 0) / Math.max(x.pse || 7, 1), 0) / ss.length;
+      const r1 = ritmo(bloco1);
+      const r2 = ritmo(bloco2);
+      const delta = (r1 - r2) / r2;
+      if (delta <= -0.10) {
+        chips.push({c:'alert',
+          t:`⚠ ritmo_em_queda — IC÷PSE caiu ${Math.round(Math.abs(delta)*100)}% nas últimas semanas · considerar deload`});
+      } else if (delta <= -0.05) {
+        chips.push({c:'warn',
+          t:`⚠ ritmo_em_queda leve — IC÷PSE −${Math.round(Math.abs(delta)*100)}% · monitorar próximas sessões`});
+      }
+    }
+  }
+
+  return chips;
+}
+
+function pseColor2(v) {
+  if (v >= 9)  return '#b84030';
+  if (v >= 8)  return '#a07040';
+  if (v >= 7)  return '#8a6030';
+  if (v >= 5)  return '#c8a060';
+  return '#6aa050';
+}
+function fmtNum(n) { return Number.isInteger(n) ? n : n.toFixed(0); }
+
+let _lastSim = null;
+
+function updateSim(pse) {
+  document.getElementById('sim-pse-num').textContent = pse;
+  const f = SIM_FACTORS[pse];
+  document.getElementById('sim-pse-label').textContent = f.label;
+  document.getElementById('sim-pse-label').style.color = f.cor;
+
+  const sim = simulateSession(pse);
+  _lastSim = sim;
+  if (!sim) return;
+
+  const deltaPct = (v, base) => {
+    const d = ((v - base) / base * 100);
+    const sign = d > 0 ? '+' : '';
+    const cls = d < -5 ? 'neg' : d > 5 ? 'pos' : 'neu';
+    return `<div class="sim-card-delta ${cls}">${sign}${d.toFixed(0)}% vs prescrito</div>`;
+  };
+
+  document.getElementById('sim-metrics').innerHTML = `
+    <div class="sim-card">
+      <div class="sim-card-lbl">CargaObjetiva</div>
+      <div class="sim-card-val" style="color:${f.cor}">${fmtNum(sim.ic_sim)}</div>
+      <div class="sim-card-unit">índice</div>
+      ${deltaPct(sim.ic_sim, sim.ic_base)}
+    </div>
+    <div class="sim-card">
+      <div class="sim-card-lbl">PSE esperada</div>
+      <div class="sim-card-val" style="color:${pseColor2(f.pse_esp)}">${f.pse_esp.toFixed(1)}</div>
+      <div class="sim-card-unit">pós-sessão</div>
+    </div>
+    <div class="sim-card">
+      <div class="sim-card-lbl">Volume</div>
+      <div class="sim-card-val">${Math.round(f.volume*100)}<span style="font-size:14px">%</span></div>
+      <div class="sim-card-unit">do prescrito</div>
+    </div>
+    <div class="sim-card">
+      <div class="sim-card-lbl">Descanso</div>
+      <div class="sim-card-val">${f.descanso >= 1.5 ? '↑↑' : f.descanso >= 1.1 ? '↑' : '='}</div>
+      <div class="sim-card-unit">${Math.round(f.descanso*100-100)}% a mais</div>
+    </div>
+  `;
+
+  // dimensões
+  const maxDim = Math.max(sim.neural, sim.mec, sim.met, 1);
+  document.getElementById('sim-dims-rows').innerHTML = [
+    ['Neural',     sim.neural,  sim.neural_base,  'var(--slate2)'],
+    ['Mecânica',   sim.mec,     sim.mec_base,     'var(--copper)'],
+    ['Metabólica', sim.met,     sim.met_base,     'var(--moss2)'],
+  ].map(([lbl, v, vb, cor]) => `
+    <div class="sim-dim-row">
+      <div class="sim-dim-lbl">${lbl}</div>
+      <div class="sim-dim-track">
+        <div class="sim-dim-fill" style="width:${v/maxDim*100}%;background:${cor}"></div>
+      </div>
+      <div class="sim-dim-num">${fmtNum(v)}</div>
+    </div>
+  `).join('');
+
+  // chips
+  const chips = calcChips(sim);
+  document.getElementById('sim-chips-wrap').innerHTML = chips.length
+    ? `<div class="sim-chips">${chips.map(ch =>
+        `<span class="sim-chip sim-chip-${ch.c}">${ch.t}</span>`).join('')}</div>`
+    : '';
+
+  // exercícios
+  document.getElementById('sim-ex-list').innerHTML = sim.exsSim.map(ex => `
+    <div class="sim-ex">
+      <div class="sim-ex-name">${ex.nome}</div>
+      <div class="sim-ex-detail">${ex.s_sim}×${ex.r_sim} · ${ex.kg_sim > 0 ? ex.kg_sim+'kg' : 'corpo'} · ${ex.desc_sim}s</div>
+      <div class="sim-ex-pse" style="background:${pseColor2(ex.pse_ex)}22;color:${pseColor2(ex.pse_ex)};border:1px solid ${pseColor2(ex.pse_ex)}44">
+        ${ex.pse_ex.toFixed(1)}
+      </div>
+    </div>
+  `).join('');
+}
+
+function openSim() {
+  const s = getActiveStudent();
+  const label = document.getElementById('sim-student-label');
+  label.textContent = s ? `${s.name} · ${s.mesociclo}` : 'selecione um aluno primeiro';
+  document.getElementById('sim-save-btn').disabled = !s;
+  document.getElementById('sim-overlay').classList.add('open');
+  if (s) updateSim(+document.getElementById('sim-pse-range').value);
+}
+
+function closeSim(e) {
+  if (!e || e.target === document.getElementById('sim-overlay')) {
+    document.getElementById('sim-overlay').classList.remove('open');
+  }
+}
+
+async function saveSimSession() {
+  const sim = _lastSim;
+  if (!sim) return;
+  const btn = document.getElementById('sim-save-btn');
+  btn.disabled = true;
+  btn.textContent = 'Salvando…';
+  try {
+    await db.collection('sessions').add({
+      student_id: sim.student.id,
+      simulado: true,
+      pse_input: sim.pse,
+      pse: sim.factor.pse_esp,
+      indice: Math.round(sim.ic_sim),
+      carga_interna: Math.round(sim.carga_interna),
+      ratio_adaptacao: +sim.ratio.toFixed(3),
+      neural: Math.round(sim.neural),
+      mecanica: Math.round(sim.mec),
+      metabolica: Math.round(sim.met),
+      tipo: `Simulação PSE ${sim.pse}`,
+      data: new Date().toLocaleDateString('pt-BR'),
+      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+      exercicios: sim.exsSim.map(ex => ({
+        nome: ex.nome,
+        s: ex.s_sim,
+        r: ex.r_sim,
+        kg: ex.kg_sim,
+        pse: +ex.pse_ex.toFixed(1),
+      }))
+    });
+    btn.textContent = '✓ Sessão salva!';
+    setTimeout(() => {
+      btn.textContent = '↓ Salvar como sessão simulada no banco';
+      btn.disabled = false;
+      closeSim();
+    }, 1800);
+  } catch(e) {
+    btn.textContent = '⚠ Erro — tente novamente';
+    btn.disabled = false;
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════
+window.addEventListener('load', () => {
+  const ov = document.getElementById('app-loading');
+  setTimeout(() => {
+    ov.classList.add('out');
+    setTimeout(() => ov.remove(), 400);
+  }, 900);
+});
+</script>
+</body>
+</html>
