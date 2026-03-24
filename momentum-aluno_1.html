@@ -88,28 +88,49 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;
 .card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:3px;}
 
 /* ── HOME ────────────────────────────────────────── */
-.hero{padding:22px 20px 20px;}
+
+/* ── Hero card — versão limpa (v1 ativa) ──────────
+   V2: versão com foto documentada em buildHeroCardPhoto()
+   ─────────────────────────────────────────────────── */
+.hero-card{background:var(--bg2);border:1px solid var(--b);border-radius:18px;
+  overflow:hidden;margin:16px 20px 18px;}
+.hero-clean{padding:20px 18px 0;}
 .hero-date{font-size:9px;color:var(--ink3);text-transform:uppercase;letter-spacing:.14em;margin-bottom:4px;}
 .hero-name{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;
   font-size:38px;line-height:.9;color:var(--gold);margin-bottom:4px;}
-.hero-meso{font-size:9px;color:var(--ink3);text-transform:uppercase;letter-spacing:.12em;margin-bottom:20px;}
+.hero-meso{font-size:9px;color:var(--ink3);text-transform:uppercase;letter-spacing:.12em;margin-bottom:16px;}
 
-/* momentum card */
-.ms-card{padding:16px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:border-color .15s;}
-.ms-card:hover{border-color:var(--b3);}
-.ms-arc{position:relative;width:58px;height:58px;flex-shrink:0;}
-.ms-arc svg{width:58px;height:58px;}
+/* momentum row dentro do hero */
+.hero-momentum-row{display:flex;align-items:center;gap:14px;padding:14px 18px;
+  background:var(--bg3);border-top:1px solid var(--b);cursor:pointer;transition:background .15s;}
+.hero-momentum-row:hover{background:var(--bg2);}
+.ms-arc{position:relative;width:56px;height:56px;flex-shrink:0;}
+.ms-arc svg{width:56px;height:56px;}
 .ms-arc-val{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-  font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;font-size:20px;color:var(--gold);}
-.ms-label{font-size:8px;text-transform:uppercase;letter-spacing:.16em;color:var(--ink3);margin-bottom:4px;}
-.ms-title{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:16px;color:var(--gold2);margin-bottom:3px;}
+  font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;font-size:19px;color:var(--gold);}
+.ms-label{font-size:8px;text-transform:uppercase;letter-spacing:.16em;color:var(--ink3);margin-bottom:3px;}
+.ms-title{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;color:var(--gold2);margin-bottom:2px;}
 .ms-desc{font-size:9px;color:var(--ink2);line-height:1.7;}
+
+/* gráfico de trajetória */
+.hero-traj{padding:12px 18px 10px;border-top:1px solid var(--b);}
+.hero-traj-lbl{font-size:7px;text-transform:uppercase;letter-spacing:.18em;color:var(--ink3);margin-bottom:8px;}
+.hero-traj svg{display:block;width:100%;}
+
+/* bolinhas do mesociclo */
+.hero-meso-dots-wrap{padding:10px 18px 14px;border-top:1px solid var(--b);}
+.hero-meso-dots-lbl{font-size:7px;text-transform:uppercase;letter-spacing:.18em;color:var(--ink3);margin-bottom:8px;}
+.hero-meso-dots{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:8px;}
+.hero-meso-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.hero-meso-legend{display:flex;gap:10px;flex-wrap:wrap;}
+.hero-meso-leg-item{display:flex;align-items:center;gap:3px;font-size:7px;color:var(--ink3);}
+.hero-meso-leg-dot{width:5px;height:5px;border-radius:50%;}
 
 /* start btn */
 .start-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:15px;
   background:linear-gradient(135deg,var(--copper),var(--copper2));border:none;cursor:pointer;
   font-family:'IBM Plex Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.2em;
-  color:var(--page);margin-top:10px;border-radius:3px;transition:opacity .15s;}
+  color:var(--page);border-radius:3px;transition:opacity .15s;margin:0 0 0;}
 .start-btn:hover{opacity:.88;}
 .start-btn-ico{font-size:20px;}
 
@@ -284,6 +305,61 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;
   font-size:8px;text-transform:uppercase;letter-spacing:.14em;color:var(--ink2);cursor:pointer;border-radius:2px;transition:all .15s;}
 .rest-skip:hover{border-color:var(--copper);color:var(--copper);}
 
+/* ── CHECK-IN ────────────────────────────────────── */
+.checkin-screen{position:fixed;inset:0;background:var(--bg);z-index:500;
+  display:flex;flex-direction:column;opacity:0;pointer-events:none;
+  transition:opacity .28s ease;max-width:430px;margin:0 auto;}
+.checkin-screen.open{opacity:1;pointer-events:all;}
+.checkin-inner{flex:1;display:flex;flex-direction:column;justify-content:center;padding:32px 28px;}
+.checkin-logo{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:14px;
+  color:var(--ink3);text-align:center;margin-bottom:36px;letter-spacing:.08em;}
+.checkin-step{display:none;flex-direction:column;gap:0;animation:fadeUp .3s ease;}
+.checkin-step.active{display:flex;}
+.checkin-q{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;
+  font-size:26px;color:var(--gold);line-height:1.15;margin-bottom:8px;text-align:center;}
+.checkin-sub{font-size:9px;color:var(--ink3);text-align:center;letter-spacing:.14em;
+  text-transform:uppercase;margin-bottom:32px;}
+.checkin-opts{display:flex;flex-direction:column;gap:10px;}
+.checkin-btn{padding:18px 20px;border:1px solid var(--b2);background:var(--bg2);
+  color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:11px;
+  cursor:pointer;border-radius:3px;transition:all .18s;display:flex;align-items:center;gap:14px;
+  text-align:left;}
+.checkin-btn:hover{border-color:var(--b3);background:var(--bg3);}
+.checkin-btn.selected{border-color:var(--copper);background:rgba(138,96,48,.10);color:var(--gold2);}
+.checkin-btn-emoji{font-size:24px;line-height:1;flex-shrink:0;}
+.checkin-btn-text{display:flex;flex-direction:column;gap:3px;}
+.checkin-btn-label{font-size:11px;}
+.checkin-btn-desc{font-size:8px;color:var(--ink3);letter-spacing:.06em;}
+.checkin-btn.selected .checkin-btn-desc{color:var(--ink2);}
+
+/* resultado prontidão */
+.checkin-result{display:flex;flex-direction:column;align-items:center;gap:16px;padding:20px 0;}
+.checkin-arc{position:relative;width:100px;height:100px;}
+.checkin-arc svg{width:100px;height:100px;}
+.checkin-arc-val{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;font-size:32px;color:var(--gold);}
+.checkin-result-label{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:18px;color:var(--gold2);text-align:center;}
+.checkin-result-desc{font-size:9px;color:var(--ink2);text-align:center;line-height:1.8;max-width:260px;}
+.checkin-ajuste{padding:12px 16px;background:rgba(138,96,48,.08);border:1px solid var(--b2);
+  border-radius:3px;font-size:9px;color:var(--ink2);text-align:center;line-height:1.7;margin-top:4px;}
+.checkin-ajuste strong{color:var(--gold);}
+
+/* footer */
+.checkin-footer{padding:20px 28px 32px;display:flex;flex-direction:column;gap:8px;}
+.checkin-next{width:100%;padding:16px;background:linear-gradient(135deg,var(--copper),var(--copper2));
+  border:none;color:var(--page);font-family:'IBM Plex Mono',monospace;font-size:9px;
+  text-transform:uppercase;letter-spacing:.2em;cursor:pointer;border-radius:3px;transition:opacity .15s;}
+.checkin-next:hover{opacity:.88;}
+.checkin-next:disabled{opacity:.35;cursor:not-allowed;}
+.checkin-skip{width:100%;padding:12px;background:transparent;border:1px solid var(--b);
+  color:var(--ink3);font-family:'IBM Plex Mono',monospace;font-size:8px;
+  text-transform:uppercase;letter-spacing:.16em;cursor:pointer;border-radius:3px;transition:all .15s;}
+.checkin-skip:hover{border-color:var(--b2);color:var(--ink2);}
+.checkin-progress{display:flex;gap:4px;justify-content:center;margin-bottom:20px;}
+.checkin-dot{width:5px;height:5px;border-radius:50%;background:var(--b2);transition:background .2s;}
+.checkin-dot.active{background:var(--copper);}
+.checkin-dot.done{background:var(--moss2);}
+
 /* ── MODAL ───────────────────────────────────────── */
 .modal-overlay{position:fixed;inset:0;background:rgba(39,31,19,.72);z-index:200;
   opacity:0;pointer-events:none;transition:opacity .22s;backdrop-filter:blur(4px);}
@@ -405,6 +481,125 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;
 
 </div><!-- /app -->
 
+<!-- CHECK-IN PRÉ-TREINO -->
+<div class="checkin-screen" id="checkin-screen">
+  <div class="checkin-inner">
+    <div class="checkin-logo">Momentum · check-in</div>
+
+    <!-- Progresso -->
+    <div class="checkin-progress" id="ci-progress"></div>
+
+    <!-- Step 1: Disposição principal -->
+    <div class="checkin-step active" id="ci-step-1">
+      <div class="checkin-q">Como você está se sentindo hoje?</div>
+      <div class="checkin-sub">antes de começar o treino</div>
+      <div class="checkin-opts">
+        <button class="checkin-btn" onclick="selectDisposicao(3)">
+          <span class="checkin-btn-emoji">⚡</span>
+          <div class="checkin-btn-text">
+            <span class="checkin-btn-label">Disposto</span>
+            <span class="checkin-btn-desc">energia boa · pronto para treinar</span>
+          </div>
+        </button>
+        <button class="checkin-btn" onclick="selectDisposicao(2)">
+          <span class="checkin-btn-emoji">😐</span>
+          <div class="checkin-btn-text">
+            <span class="checkin-btn-label">Normal</span>
+            <span class="checkin-btn-desc">nem bem nem mal · treino vai</span>
+          </div>
+        </button>
+        <button class="checkin-btn" onclick="selectDisposicao(1)">
+          <span class="checkin-btn-emoji">😴</span>
+          <div class="checkin-btn-text">
+            <span class="checkin-btn-label">Cansado</span>
+            <span class="checkin-btn-desc">pesado · pouca energia</span>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 2: Aprofundamento cansaço -->
+    <div class="checkin-step" id="ci-step-2">
+      <div class="checkin-q" id="ci-q2">Quanto você está cansado?</div>
+      <div class="checkin-sub">opcional · ajuda a calibrar melhor</div>
+      <div class="checkin-opts" id="ci-opts-2"></div>
+    </div>
+
+    <!-- Step 3: Sono -->
+    <div class="checkin-step" id="ci-step-3">
+      <div class="checkin-q">Como foi seu sono?</div>
+      <div class="checkin-sub">noite anterior</div>
+      <div class="checkin-opts">
+        <button class="checkin-btn" onclick="selectSono('bom')">
+          <span class="checkin-btn-emoji">😴</span>
+          <div class="checkin-btn-text">
+            <span class="checkin-btn-label">Bom</span>
+            <span class="checkin-btn-desc">dormiu bem · acordou descansado</span>
+          </div>
+        </button>
+        <button class="checkin-btn" onclick="selectSono('normal')">
+          <span class="checkin-btn-emoji">🙂</span>
+          <div class="checkin-btn-text">
+            <span class="checkin-btn-label">Normal</span>
+            <span class="checkin-btn-desc">razoável · nada de especial</span>
+          </div>
+        </button>
+        <button class="checkin-btn" onclick="selectSono('ruim')">
+          <span class="checkin-btn-emoji">😵</span>
+          <div class="checkin-btn-text">
+            <span class="checkin-btn-label">Ruim</span>
+            <span class="checkin-btn-desc">mal dormido · acordou cansado</span>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 4: Alimentação -->
+    <div class="checkin-step" id="ci-step-4">
+      <div class="checkin-q">E a alimentação hoje?</div>
+      <div class="checkin-sub">até o momento do treino</div>
+      <div class="checkin-opts">
+        <button class="checkin-btn" onclick="selectAlimentacao('boa')">
+          <span class="checkin-btn-emoji">🥗</span>
+          <div class="checkin-btn-text">
+            <span class="checkin-btn-label">Boa</span>
+            <span class="checkin-btn-desc">comeu bem · energia garantida</span>
+          </div>
+        </button>
+        <button class="checkin-btn" onclick="selectAlimentacao('normal')">
+          <span class="checkin-btn-emoji">🍽️</span>
+          <div class="checkin-btn-text">
+            <span class="checkin-btn-label">Normal</span>
+            <span class="checkin-btn-desc">dentro do comum</span>
+          </div>
+        </button>
+        <button class="checkin-btn" onclick="selectAlimentacao('ruim')">
+          <span class="checkin-btn-emoji">😬</span>
+          <div class="checkin-btn-text">
+            <span class="checkin-btn-label">Ruim</span>
+            <span class="checkin-btn-desc">pouco ou mal comido</span>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 5: Resultado -->
+    <div class="checkin-step" id="ci-step-5">
+      <div class="checkin-result" id="ci-result"></div>
+    </div>
+
+  </div>
+
+  <div class="checkin-footer">
+    <button class="checkin-next" id="ci-next-btn" onclick="checkinNext()" disabled>
+      Continuar →
+    </button>
+    <button class="checkin-skip" id="ci-skip-btn" onclick="checkinSkip()">
+      Pular check-in
+    </button>
+  </div>
+</div>
+
 <!-- MODAL -->
 <div class="modal-overlay" id="modal" onclick="closeModal(event)">
   <div class="modal-sheet">
@@ -433,6 +628,7 @@ let S = {
   student: null,
   sessions: [],
   page: 'home',
+  checkinHoje: null,
   treino: {
     exs: [],
     ativo: 0,
@@ -516,6 +712,169 @@ const PSE_LABELS={1:'Esforço mínimo',2:'Muito leve',3:'Leve',4:'Leve–Moderad
 function fmtTime(s){return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;}
 
 // ═══════════════════════════════════════════════════
+// HERO CARD — v1: limpo (ativo)
+// V2 com foto: ver buildHeroCardPhoto() abaixo
+// ═══════════════════════════════════════════════════
+function buildHeroCard(s) {
+  const scores   = s.scores || {};
+  const momentum = scores.momentum || 0;
+  const circ     = 2 * Math.PI * 22;
+  const dash     = circ * Math.min(momentum / 5, 1);
+
+  // Trajetória: IC÷PSE por sessão (proxy de momentum histórico)
+  const sess    = S.sessions.filter(x => !x.simulado && (x.indice||x.indice_carga) && x.pse);
+  const trajPts = sess.slice(0, 10).reverse();
+
+  const STATE_COLOR = {
+    alta:'#6aa050', estavel:'#c8a060',
+    queda:'#a07040', sobrecarga:'#a07040', baixo:'#b84030',
+  };
+
+  let trajSVG = '';
+  if (trajPts.length >= 2) {
+    const W=320,H=44,PL=2,PR=2,PT=4,PB=12;
+    const cW=W-PL-PR, cH=H-PT-PB;
+    const vals = trajPts.map(x=>(x.indice||x.indice_carga||0)/Math.max(x.pse||1,1));
+    const lo=Math.min(...vals)*.88, hi=Math.max(...vals)*1.08;
+    const sx=i=>PL+(i/(trajPts.length-1))*cW;
+    const sy=v=>PT+cH-((v-lo)/(hi-lo||1))*cH;
+    const area=`M${sx(0)},${H-PB} `+vals.map((v,i)=>`L${sx(i)},${sy(v)}`).join(' ')+` L${sx(vals.length-1)},${H-PB} Z`;
+    const line=vals.map((v,i)=>`${i===0?'M':'L'}${sx(i).toFixed(1)},${sy(v).toFixed(1)}`).join(' ');
+    const col  = STATE_COLOR[s.ritmo_estado]||'#c8a060';
+    const dots = trajPts.map((_,i)=>{
+      const isLast=i===trajPts.length-1;
+      return `<circle cx="${sx(i).toFixed(1)}" cy="${sy(vals[i]).toFixed(1)}"
+        r="${isLast?3.2:2.4}" fill="${isLast?'#ddb870':col}"
+        ${isLast?'stroke="rgba(30,24,16,.8)" stroke-width="1.5"':''}/>`;
+    }).join('');
+    trajSVG=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" height="44" style="display:block;width:100%">
+      <defs><linearGradient id="hg" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="rgba(200,160,96,.18)"/>
+        <stop offset="100%" stop-color="rgba(200,160,96,0)"/>
+      </linearGradient></defs>
+      <path d="${area}" fill="url(#hg)"/>
+      <path d="${line}" fill="none" stroke="rgba(200,160,96,.65)" stroke-width="1.6" stroke-linejoin="round"/>
+      ${dots}
+    </svg>`;
+  }
+
+  // Bolinhas do mesociclo
+  const diasDecorr = sess.length;
+  const totalDias  = (s.semanas_total||8) * 7;
+  const FREQ = [1,3,5];
+  const MCOL = {up:'var(--moss2)',stable:'var(--gold)',down:'var(--copper2)',
+    off:'rgba(200,160,96,.10)',future:'rgba(200,160,96,.05)'};
+  function dotSt(i){
+    if(i>=diasDecorr) return 'future';
+    const dow=i%7; if(!FREQ.includes(dow)) return 'off';
+    const p=i/Math.max(diasDecorr,1);
+    if(p<.2) return 'stable'; if(p<.4) return 'down'; if(p<.6) return 'stable'; return 'up';
+  }
+  const dots56=Array.from({length:totalDias},(_,i)=>{
+    const st=dotSt(i), isNow=i===diasDecorr-1;
+    return `<div class="hero-meso-dot" style="background:${MCOL[st]};${st==='future'?'border:1px solid rgba(200,160,96,.14);':''}${isNow?'box-shadow:0 0 7px rgba(200,160,96,.6);':''}"></div>`;
+  }).join('');
+
+  return `
+    <div class="hero-card">
+      <div class="hero-clean">
+        <div class="hero-date">${fmtDate()}</div>
+        <div class="hero-name">${(s.name||'').split(' ')[0]}.</div>
+        <div class="hero-meso">${s.mesociclo||'—'} · ${s.divisao||''}</div>
+      </div>
+      <div class="hero-momentum-row" onclick="openModal('momentum')">
+        <div class="ms-arc">
+          <svg viewBox="0 0 56 56">
+            <circle cx="28" cy="28" r="22" fill="none" stroke="rgba(200,160,96,.08)" stroke-width="4"/>
+            <circle cx="28" cy="28" r="22" fill="none" stroke="url(#ag)" stroke-width="4"
+              stroke-dasharray="${circ}" stroke-dashoffset="${circ-dash}"
+              stroke-linecap="round" transform="rotate(-90 28 28)"/>
+            <defs><linearGradient id="ag" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#8a6030"/>
+              <stop offset="100%" stop-color="#ddb870"/>
+            </linearGradient></defs>
+          </svg>
+          <div class="ms-arc-val">${momentum.toFixed(1)}</div>
+        </div>
+        <div style="flex:1">
+          <div class="ms-label">Momentum <span style="font-size:7px;opacity:.4">↗</span></div>
+          <div class="ms-title">${ritmoLabel(s.ritmo_estado)}</div>
+          <div class="ms-desc" id="ms-desc-txt">carregando…</div>
+        </div>
+      </div>
+      ${trajSVG?`
+      <div class="hero-traj">
+        <div class="hero-traj-lbl">Trajetória · últimas ${trajPts.length} sessões</div>
+        ${trajSVG}
+      </div>`:''}
+      <div class="hero-meso-dots-wrap">
+        <div class="hero-meso-dots-lbl">${s.mesociclo||'Mesociclo'} · dia ${diasDecorr}</div>
+        <div class="hero-meso-dots">${dots56}</div>
+        <div class="hero-meso-legend">
+          <div class="hero-meso-leg-item"><div class="hero-meso-leg-dot" style="background:var(--moss2)"></div>alta</div>
+          <div class="hero-meso-leg-item"><div class="hero-meso-leg-dot" style="background:var(--gold)"></div>estável</div>
+          <div class="hero-meso-leg-item"><div class="hero-meso-leg-dot" style="background:var(--copper2)"></div>queda</div>
+          <div class="hero-meso-leg-item"><div class="hero-meso-leg-dot" style="background:rgba(200,160,96,.12)"></div>day off</div>
+          <div class="hero-meso-leg-item"><div class="hero-meso-leg-dot" style="background:rgba(200,160,96,.05);border:1px solid rgba(200,160,96,.14)"></div>futuro</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════
+// HERO CARD — v2: com foto (PENDENTE — não ativo)
+// ─────────────────────────────────────────────────
+// Para ativar na v2:
+//   1. Adicionar campo `foto_url` no documento do aluno no Firestore
+//   2. Substituir buildHeroCard(s) por buildHeroCardPhoto(s) no renderHome
+//   3. Foto: object-position 30% 18% — corpo à esq, céu à dir
+//   4. Backdrops: rgba(22,18,13,.30) + backdrop-filter:blur(2px) por elemento
+//   5. Score mantém #ddb870 — referência visual do sistema intacta
+//   6. Véu: linear-gradient da esq (opaco) para dir (quase transparente)
+// ─────────────────────────────────────────────────
+function buildHeroCardPhoto(s) {
+  const scores   = s.scores || {};
+  const momentum = scores.momentum || 0;
+  const fotoURL  = s.foto_url || '';
+  if (!fotoURL) return buildHeroCard(s);
+  return `
+    <div style="background:var(--bg2);border-radius:18px;overflow:hidden;margin:16px 20px 18px;border:1px solid var(--b)">
+      <div style="position:relative;height:260px;overflow:hidden">
+        <img src="${fotoURL}" alt="${s.name}"
+          style="width:100%;height:100%;object-fit:cover;object-position:30% 18%;display:block">
+        <div style="position:absolute;inset:0;background:linear-gradient(to right,rgba(22,18,13,.65) 0%,rgba(22,18,13,.38) 45%,rgba(22,18,13,.02) 100%)"></div>
+        <div style="position:absolute;top:0;right:0;width:52%;height:100%;
+          display:flex;flex-direction:column;justify-content:flex-end;padding:0 14px 18px 0;gap:5px">
+          <div style="display:inline-block;font-size:9px;text-transform:uppercase;letter-spacing:.14em;
+            color:rgba(220,190,130,.9);background:rgba(22,18,13,.32);padding:2px 7px;border-radius:3px;
+            align-self:flex-start;backdrop-filter:blur(2px)">${fmtDate()}</div>
+          <div style="display:inline-block;font-family:'Cormorant Garamond',serif;font-style:italic;
+            font-size:32px;line-height:.92;color:#fff;background:rgba(22,18,13,.30);
+            padding:3px 9px 5px;border-radius:4px;align-self:flex-start;backdrop-filter:blur(2px)">
+            ${(s.name||'').split(' ')[0]}.</div>
+          <div style="display:inline-block;font-size:7px;color:rgba(220,190,130,.85);
+            text-transform:uppercase;letter-spacing:.1em;background:rgba(22,18,13,.30);
+            padding:2px 7px;border-radius:3px;align-self:flex-start;backdrop-filter:blur(2px)">
+            ${s.mesociclo||'—'} · ${s.divisao||''}</div>
+          <div style="display:inline-flex;align-items:center;gap:9px;background:rgba(22,18,13,.32);
+            padding:7px 10px;border-radius:5px;align-self:flex-start;backdrop-filter:blur(2px);cursor:pointer"
+            onclick="openModal('momentum')">
+            <div style="font-family:'Cormorant Garamond',serif;font-style:italic;
+              font-size:28px;color:#ddb870;line-height:1">${momentum.toFixed(1)}</div>
+            <div style="width:1px;height:28px;background:rgba(200,160,96,.2);flex-shrink:0"></div>
+            <div>
+              <div style="font-family:'Cormorant Garamond',serif;font-style:italic;
+                font-size:13px;color:rgba(255,255,255,.92);margin-bottom:2px">${ritmoLabel(s.ritmo_estado)}</div>
+              <div style="font-size:7px;color:rgba(210,180,120,.6);line-height:1.5"
+                id="ms-desc-txt">carregando…</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════
 // RENDER — HOME
 // ═══════════════════════════════════════════════════
 function renderHome(){
@@ -523,40 +882,12 @@ function renderHome(){
   if(!s) return;
   const el = document.getElementById('home-content');
   const scores = s.scores||{};
-  const momentum = scores.momentum||0;
-  const circ = 2*Math.PI*24;
-  const dash = circ*Math.min(momentum/5,1);
-
-  // Semana simulada (até prescrição real existir)
-  const diasSem = buildWeekStrip(s);
 
   el.innerHTML = `
-    <div class="hero">
-      <div class="hero-date">${fmtDate()}</div>
-      <div class="hero-name">${(s.name||'').split(' ')[0]}.</div>
-      <div class="hero-meso">${s.mesociclo||'—'} · ${s.divisao||''}</div>
+    ${buildHeroCard(s)}
 
-      <div class="card ms-card" onclick="openModal('momentum')">
-        <div class="ms-arc">
-          <svg viewBox="0 0 60 60">
-            <circle cx="30" cy="30" r="24" fill="none" stroke="rgba(200,160,96,.08)" stroke-width="4.5"/>
-            <circle cx="30" cy="30" r="24" fill="none" stroke="url(#ag)" stroke-width="4.5"
-              stroke-dasharray="${circ}" stroke-dashoffset="${circ-dash}"
-              stroke-linecap="round" transform="rotate(-90 30 30)"/>
-            <defs><linearGradient id="ag" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stop-color="#8a6030"/><stop offset="100%" stop-color="#ddb870"/>
-            </linearGradient></defs>
-          </svg>
-          <div class="ms-arc-val">${momentum.toFixed(1)}</div>
-        </div>
-        <div>
-          <div class="ms-label">Momentum <span style="font-size:7px;opacity:.45">↗ saiba mais</span></div>
-          <div class="ms-title">${ritmoLabel(s.ritmo_estado)}</div>
-          <div class="ms-desc" id="ms-desc-txt">carregando…</div>
-        </div>
-      </div>
-
-      <button class="start-btn" onclick="startTreino()">
+    <div style="padding:0 20px 14px">
+      <button class="start-btn" onclick="openCheckin()">
         <span class="start-btn-ico">▶</span>
         Iniciar treino de hoje
       </button>
@@ -564,7 +895,7 @@ function renderHome(){
 
     <div class="sec">
       <div class="sec-head"><div class="sec-title">Esta semana</div><div class="sec-line"></div></div>
-      <div class="sem-grid">${diasSem}</div>
+      <div class="sem-grid">${buildWeekStrip(s)}</div>
     </div>
 
     <div class="sec">
@@ -604,6 +935,7 @@ function renderHome(){
         </div>
       </div>
     </div>
+    <div style="height:24px"></div>
   `;
 
   generateNarrative();
@@ -720,6 +1052,7 @@ function renderEvolucao(){
   const chartHTML = buildICChart(sess);
   const prsHTML   = buildPRs(sess);
   const mesoHTML  = buildMesoWeeks(s, sess);
+  const correlHTML = buildCheckinCorrelacao(s, sess);
 
   el.innerHTML = `
     <div class="sec">
@@ -751,6 +1084,8 @@ function renderEvolucao(){
       </div>
     </div>
 
+    ${correlHTML}
+
     <div class="sec">
       <div class="sec-head"><div class="sec-title">Seus recordes</div><div class="sec-line"></div></div>
       ${prsHTML}
@@ -766,6 +1101,78 @@ function renderEvolucao(){
     if(bar) bar.style.width = pct+'%';
     if(pctEl) pctEl.textContent = pct+'%';
   });
+}
+
+function buildCheckinCorrelacao(s, sess) {
+  const perf = s.perfil_recuperacao || {};
+  const comCheckin = sess.filter(ss => ss.estado_prontidao_entrada != null && (ss.indice||ss.indice_carga));
+
+  // Insights do perfil de recuperação
+  const insights = [];
+  if (perf.padrao_semanal) {
+    const dias = Object.entries(perf.padrao_semanal).filter(([,v])=>v!=null);
+    const melhor = dias.reduce((a,b)=>b[1]>a[1]?b:a, ['—',0]);
+    const pior   = dias.reduce((a,b)=>b[1]<a[1]?b:a, ['—',10]);
+    if (melhor[1] >= 7) insights.push(`Você tende a se sentir melhor às <strong>${melhor[0]}</strong> — prontidão média ${melhor[1]}/10.`);
+    if (pior[1] <= 5)   insights.push(`Às <strong>${pior[0]}</strong> sua disposição costuma ser mais baixa (${pior[1]}/10).`);
+  }
+  if (perf.correlacao_sono_pse >= 0.7) {
+    insights.push(`Seu sono tem correlação forte com seu desempenho (r=${(perf.correlacao_sono_pse*100).toFixed(0)}%) — noites ruins afetam diretamente seu treino.`);
+  }
+  if (perf.variabilidade === 'alta') {
+    insights.push('Sua disposição varia bastante de dia para dia — os ajustes automáticos do check-in são especialmente úteis para você.');
+  }
+  if (perf.variabilidade === 'baixa' && perf.disponibilidade_media >= 7) {
+    insights.push('Sua consistência de disposição é um dos seus pontos mais fortes — você chega pronto na maioria dos treinos.');
+  }
+
+  if (comCheckin.length < 3 && !insights.length) return '';
+
+  // Gráfico de dispersão simplificado: prontidão × IC
+  let scatterHTML = '';
+  if (comCheckin.length >= 3) {
+    const maxIC = Math.max(...comCheckin.map(x=>x.indice||x.indice_carga||0), 1);
+    const pCor = p => p>=8?'#6aa050':p>=6?'#c8a060':p>=4?'#a07840':'#b84030';
+    const pts = comCheckin.slice(0,10).map(ss => {
+      const p = ss.estado_prontidao_entrada;
+      const ic = ss.indice||ss.indice_carga||0;
+      const x = ((p-1)/9)*88 + 4;
+      const y = 100 - ((ic/maxIC)*80) - 10;
+      return `<circle cx="${x}%" cy="${y}" r="4" fill="${pCor(p)}" opacity=".8"/>`;
+    }).join('');
+
+    scatterHTML = `
+      <div style="margin-bottom:8px">
+        <div class="chart-lbl" style="margin-bottom:6px">Prontidão → IC executado</div>
+        <svg width="100%" height="60" style="display:block">
+          <line x1="4%" y1="5" x2="4%" y2="55" stroke="var(--b2)" stroke-width="1"/>
+          <line x1="4%" y1="55" x2="96%" y2="55" stroke="var(--b2)" stroke-width="1"/>
+          ${pts}
+        </svg>
+        <div style="display:flex;justify-content:space-between;font-size:6px;color:var(--ink3);padding:0 4%">
+          <span>baixa</span><span>prontidão →</span><span>alta</span>
+        </div>
+      </div>`;
+  }
+
+  if (!insights.length && !scatterHTML) return '';
+
+  return `
+    <div class="sec">
+      <div class="sec-head"><div class="sec-title">Como você treina melhor</div><div class="sec-line"></div></div>
+      <div class="chart-card" onclick="openModal('correlacao_checkin')">
+        ${scatterHTML}
+        ${insights.length ? `
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:${scatterHTML?'10px':'0'}">
+          ${insights.map(txt=>`
+            <div style="display:flex;gap:8px;align-items:flex-start">
+              <div style="width:4px;height:4px;border-radius:50%;background:var(--copper);flex-shrink:0;margin-top:5px"></div>
+              <div style="font-size:9px;color:var(--ink2);line-height:1.7">${txt}</div>
+            </div>`).join('')}
+        </div>` : ''}
+        <div style="font-size:7px;color:var(--ink3);margin-top:10px;text-align:right">↗ toque para detalhes</div>
+      </div>
+    </div>`;
 }
 
 function buildICChart(sess){
@@ -991,12 +1398,33 @@ function renderTreino(){
   const done = t.exs.filter((_,i)=>t.expanded[i]==='done').length;
   document.getElementById('prog-fill').style.width = `${(done/total)*100}%`;
 
-  let html = t.exs.map((ex,i)=>{
+  // Banner de prontidão
+  const p = t.estado_prontidao;
+  const f = t.fator;
+  const bannerHTML = (p && f && f.volume < 1.0) ? `
+    <div style="margin:8px 20px 0;padding:10px 14px;background:rgba(138,96,48,.08);
+      border:1px solid var(--b2);border-radius:3px;display:flex;align-items:center;gap:10px">
+      <div style="font-size:18px">${p >= 6 ? '⚡' : p >= 4 ? '😐' : '😴'}</div>
+      <div style="flex:1">
+        <div style="font-size:8px;text-transform:uppercase;letter-spacing:.16em;color:var(--copper2);margin-bottom:2px">
+          Prontidão ${p}/10 · ${f.label}
+        </div>
+        <div style="font-size:8px;color:var(--ink3)">
+          Reps ajustadas para ${Math.round(f.volume*100)}%
+          ${f.carga < 1.0 ? ` · carga sugerida ${Math.round(f.carga*100)}%` : ''}
+        </div>
+      </div>
+    </div>` : '';
+
+  let html = bannerHTML + '<div style="height:8px"></div>';
+
+  html += t.exs.map((ex,i)=>{
     const isDone   = t.expanded[i]==='done';
     const isActive = i===t.ativo && !isDone;
     const isOpen   = t.expanded[i]==='open'||isActive;
     const badge    = isDone?'badge-done done-ex':isActive?'badge-active active-ex':'badge-pending';
     const badgeTxt = isDone?'✓ feito':isActive?'em andamento':'pendente';
+    const ajustado = ex.ajustado && ex.r_original && ex.r !== ex.r_original;
 
     const seriesHTML = isOpen ? `
       <div class="series-tbl">
@@ -1033,7 +1461,10 @@ function renderTreino(){
           <div class="ex-num">${i+1}</div>
           <div class="ex-meta">
             <div class="ex-card-name">${ex.nome}</div>
-            <div class="ex-card-pre">${ex.s} séries · ${ex.r} reps${ex.kg>0?' · '+ex.kg+'kg':''} · ${ex.descanso}s desc.</div>
+            <div class="ex-card-pre">
+              ${ex.s} séries · ${ex.r} reps${ex.kg>0?' · '+ex.kg+'kg':''} · ${ex.descanso}s desc.
+              ${ajustado?`<span style="color:var(--copper2);margin-left:4px">↓ ajustado de ${ex.r_original}</span>`:''}
+            </div>
           </div>
           <div class="ex-badge ${badge}">${badgeTxt}</div>
         </div>
@@ -1201,15 +1632,22 @@ async function finishTreino(){
   const pses=S.treino.registros.map(r=>r.pse).filter(Boolean);
   const pseMedia=pses.length?pses.reduce((a,b)=>a+b,0)/pses.length:7;
   try{
-    await db.collection('sessions').add({
+    const sessaoRef = await db.collection('sessions').add({
       student_id: STUDENT_ID,
-      tipo: 'Treino · app',
+      tipo: S.treino.estado_prontidao >= 8 ? 'Treino · completo' : S.treino.estado_prontidao >= 4 ? 'Treino · adaptado' : 'Treino · leve',
       data: new Date().toLocaleDateString('pt-BR'),
       timestamp: firebase.firestore.FieldValue.serverTimestamp(),
       pse: +pseMedia.toFixed(1),
       duracao_min: durMin,
+      estado_prontidao_entrada: S.treino.estado_prontidao || null,
+      checkin_id: S.treino.checkinId || null,
       exercicios: S.treino.registros,
     });
+    // Vincula checkin à sessão
+    if(S.treino.checkinId){
+      db.collection('checkins').doc(S.treino.checkinId)
+        .update({ session_id: sessaoRef.id }).catch(()=>{});
+    }
   } catch(e){ console.warn('Erro ao salvar sessão',e); }
   goPage('home');
 }
@@ -1255,6 +1693,33 @@ function openModal(type){
       <div class="modal-prose" style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;line-height:2">
         "${s?.notas}"
       </div>`;
+  } else if(type==='correlacao_checkin'){
+    const perf = s?.perfil_recuperacao||{};
+    const dias = perf.padrao_semanal ? Object.entries(perf.padrao_semanal).filter(([,v])=>v!=null) : [];
+    html=`<div class="modal-title">Como você treina melhor</div>
+      <div class="modal-sub">${s?.name} · padrão de recuperação</div>
+      ${perf.disponibilidade_media ? `
+      <div class="modal-prose">
+        <strong>Prontidão média:</strong> ${perf.disponibilidade_media}/10<br>
+        <strong>Variabilidade:</strong> ${perf.variabilidade||'—'}<br>
+        <strong>Sono médio:</strong> ${perf.sono_medio||'—'}<br>
+        ${perf.correlacao_sono_pse ? `<strong>Correlação sono→desempenho:</strong> ${(perf.correlacao_sono_pse*100).toFixed(0)}%` : ''}
+      </div>` : ''}
+      ${dias.length ? `
+      <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--b)">
+        <div class="modal-sub">Seu padrão por dia da semana</div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:8px">
+          ${dias.map(([dia,v])=>`
+            <div style="flex:1;min-width:36px;padding:8px 4px;background:var(--bg3);border:1px solid var(--b);border-radius:2px;text-align:center">
+              <div style="font-size:6px;text-transform:uppercase;color:var(--ink3);margin-bottom:4px">${dia}</div>
+              <div style="height:3px;background:var(--b);border-radius:2px;overflow:hidden;margin-bottom:4px">
+                <div style="height:100%;width:${v*10}%;background:${v>=8?'var(--moss2)':v>=6?'var(--gold)':'var(--copper2)'};border-radius:2px"></div>
+              </div>
+              <div style="font-size:11px;color:${v>=8?'var(--moss2)':v>=6?'var(--gold)':'var(--copper2)'}">${v}</div>
+            </div>`).join('')}
+        </div>
+      </div>` : ''}`;
+
   } else if(type==='meso'){
     html=`<div class="modal-title">Mesociclo</div>
       <div class="modal-sub">${s?.mesociclo}</div>
@@ -1334,6 +1799,284 @@ function refreshNarrative(){
   const m=document.querySelector('.ai-modal-text');
   if(m) m.innerHTML='<span style="color:var(--ink3)">gerando…</span>';
   generateNarrative();
+}
+
+// ═══════════════════════════════════════════════════
+// CHECK-IN PRÉ-TREINO
+// ═══════════════════════════════════════════════════
+let CI = {
+  step: 1,        // 1=disposicao · 2=cansaco · 3=sono · 4=alimentacao · 5=resultado
+  disposicao: null,
+  cansaco_nivel: null,
+  sono: null,
+  alimentacao: null,
+  estado_prontidao: null,
+  skipOptional: false,
+};
+
+const CI_TOTAL_STEPS = 5;
+
+function calcEstadoProntidao(ci) {
+  const scoreDisp = (ci.disposicao || 2) * 3;         // 3 · 6 · 9
+  const scoreCans = ci.cansaco_nivel !== null
+    ? (11 - ci.cansaco_nivel) : 5;                     // inverte escala
+  const scoreSono = {bom:9, normal:6, ruim:3}[ci.sono] ?? 5;
+  const scoreAlim = {boa:9, normal:6, ruim:3}[ci.alimentacao] ?? 5;
+  const raw = scoreDisp*0.50 + scoreCans*0.20 + scoreSono*0.20 + scoreAlim*0.10;
+  return Math.min(10, Math.max(1, Math.round(raw)));
+}
+
+function fatorProntidao(p) {
+  if (p >= 8) return { volume: 1.00, carga: 1.00, label: 'Treino completo', desc: 'Você está no nível. Volume e carga completos.' };
+  if (p >= 6) return { volume: 0.90, carga: 1.00, label: 'Volume levemente reduzido', desc: 'Disposição boa. Volume −10%, carga mantida.' };
+  if (p >= 4) return { volume: 0.75, carga: 0.90, label: 'Sessão adaptada', desc: 'Dia moderado. Volume −25%, carga −10%. Qualidade acima de quantidade.' };
+  if (p >= 2) return { volume: 0.60, carga: 0.85, label: 'Sessão leve', desc: 'Você chegou cansado. Treino ajustado para preservar recuperação.' };
+  return      { volume: 0.00, carga: 0.00, label: 'Repouso recomendado', desc: 'Seu corpo pede recuperação hoje. Considere descansar.' };
+}
+
+function openCheckin() {
+  // Verifica se já fez check-in hoje
+  const hoje = new Date().toLocaleDateString('pt-BR');
+  const jaFez = S.checkinHoje && S.checkinHoje.data === hoje;
+  if (jaFez) {
+    // Reutiliza check-in do dia e vai direto ao treino
+    iniciarTreinoComCheckin(S.checkinHoje);
+    return;
+  }
+  // Reset
+  CI = { step:1, disposicao:null, cansaco_nivel:null, sono:null, alimentacao:null,
+         estado_prontidao:null, skipOptional:false };
+  renderCheckinStep(1);
+  document.getElementById('checkin-screen').classList.add('open');
+}
+
+function renderCheckinStep(step) {
+  CI.step = step;
+  // Atualiza progress dots
+  const prog = document.getElementById('ci-progress');
+  prog.innerHTML = [1,2,3,4].map(i =>
+    `<div class="checkin-dot ${i < step ? 'done' : i === step ? 'active' : ''}"></div>`
+  ).join('');
+
+  // Mostra step correto
+  document.querySelectorAll('.checkin-step').forEach(el => el.classList.remove('active'));
+  document.getElementById(`ci-step-${step}`)?.classList.add('active');
+
+  const nextBtn  = document.getElementById('ci-next-btn');
+  const skipBtn  = document.getElementById('ci-skip-btn');
+
+  if (step === 1) {
+    nextBtn.disabled = true;
+    nextBtn.textContent = 'Continuar →';
+    skipBtn.textContent = 'Pular check-in';
+    skipBtn.style.display = '';
+  } else if (step === 2) {
+    // Monta opções do aprofundamento de acordo com disposição
+    buildCansacoOpts();
+    nextBtn.disabled = true;
+    nextBtn.textContent = 'Continuar →';
+    skipBtn.textContent = 'Pular esta etapa';
+    skipBtn.style.display = '';
+  } else if (step === 3) {
+    nextBtn.disabled = true;
+    nextBtn.textContent = 'Continuar →';
+    skipBtn.textContent = 'Pular esta etapa';
+    skipBtn.style.display = '';
+    // Reseta seleção visual
+    document.querySelectorAll('#ci-step-3 .checkin-btn').forEach(b => b.classList.remove('selected'));
+  } else if (step === 4) {
+    nextBtn.disabled = true;
+    nextBtn.textContent = 'Ver meu estado →';
+    skipBtn.textContent = 'Pular esta etapa';
+    skipBtn.style.display = '';
+    document.querySelectorAll('#ci-step-4 .checkin-btn').forEach(b => b.classList.remove('selected'));
+  } else if (step === 5) {
+    // Calcula e exibe resultado
+    CI.estado_prontidao = calcEstadoProntidao(CI);
+    renderCheckinResultado();
+    nextBtn.disabled = false;
+    nextBtn.textContent = 'Iniciar treino →';
+    skipBtn.style.display = 'none';
+  }
+}
+
+function buildCansacoOpts() {
+  const d = CI.disposicao;
+  const opts = d === 1
+    ? [{v:9, emoji:'😩', label:'Muito cansado',  desc:'pesado demais · baixa energia'},
+       {v:8, emoji:'😮‍💨', label:'Bastante cansado', desc:'acima do normal'},
+       {v:7, emoji:'😔', label:'Cansado',         desc:'dentro do comum para um dia ruim'}]
+    : d === 2
+    ? [{v:4, emoji:'🙂', label:'Levemente bem',   desc:'ligeiramente acima do normal'},
+       {v:5, emoji:'😐', label:'Neutro',           desc:'exatamente no médio'},
+       {v:6, emoji:'😑', label:'Levemente pesado', desc:'pouco abaixo do ideal'}]
+    : [{v:3, emoji:'💪', label:'Muito disposto',  desc:'acima do seu nível normal'},
+       {v:2, emoji:'⚡', label:'No pico',          desc:'melhor que o normal'},
+       {v:1, emoji:'🔥', label:'Imbatível',        desc:'dia excepcional'}];
+
+  const q2 = document.getElementById('ci-q2');
+  if (q2) q2.textContent = d === 1 ? 'Quão cansado você está?' : d === 2 ? 'Como está sua energia?' : 'Qual o seu nível hoje?';
+
+  document.getElementById('ci-opts-2').innerHTML = opts.map(o =>
+    `<button class="checkin-btn" onclick="selectCansaco(${o.v})">
+      <span class="checkin-btn-emoji">${o.emoji}</span>
+      <div class="checkin-btn-text">
+        <span class="checkin-btn-label">${o.label}</span>
+        <span class="checkin-btn-desc">${o.desc}</span>
+      </div>
+    </button>`
+  ).join('');
+}
+
+function renderCheckinResultado() {
+  const p = CI.estado_prontidao;
+  const f = fatorProntidao(p);
+  const circ = 2 * Math.PI * 40;
+  const dash = circ * (p / 10);
+  const cor = p >= 8 ? '#6aa050' : p >= 6 ? '#c8a060' : p >= 4 ? '#a07840' : '#b84030';
+
+  const ajusteHTML = f.volume < 1.0
+    ? `<div class="checkin-ajuste">
+        Treino ajustado: <strong>${Math.round(f.volume*100)}% do volume</strong>
+        ${f.carga < 1.0 ? ` · <strong>${Math.round(f.carga*100)}% da carga</strong>` : ''}
+      </div>`
+    : `<div class="checkin-ajuste">Treino <strong>completo</strong> — sem ajustes necessários.</div>`;
+
+  document.getElementById('ci-result').innerHTML = `
+    <div class="checkin-arc">
+      <svg viewBox="0 0 90 90">
+        <circle cx="45" cy="45" r="40" fill="none" stroke="rgba(200,160,96,.08)" stroke-width="5"/>
+        <circle cx="45" cy="45" r="40" fill="none" stroke="${cor}" stroke-width="5"
+          stroke-dasharray="${circ}" stroke-dashoffset="${circ - dash}"
+          stroke-linecap="round" transform="rotate(-90 45 45)"/>
+      </svg>
+      <div class="checkin-arc-val">${p}</div>
+    </div>
+    <div class="checkin-result-label">${f.label}</div>
+    <div class="checkin-result-desc">${f.desc}</div>
+    ${ajusteHTML}
+  `;
+}
+
+// Seletores
+function selectDisposicao(v) {
+  CI.disposicao = v;
+  document.querySelectorAll('#ci-step-1 .checkin-btn').forEach((b, i) => {
+    b.classList.toggle('selected', [3,2,1][i] === v);
+  });
+  document.getElementById('ci-next-btn').disabled = false;
+}
+function selectCansaco(v) {
+  CI.cansaco_nivel = v;
+  document.querySelectorAll('#ci-step-2 .checkin-btn').forEach(b => b.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+  document.getElementById('ci-next-btn').disabled = false;
+}
+function selectSono(v) {
+  CI.sono = v;
+  document.querySelectorAll('#ci-step-3 .checkin-btn').forEach(b => {
+    b.classList.toggle('selected', b.textContent.includes(
+      {bom:'Bom', normal:'Normal', ruim:'Ruim'}[v]));
+  });
+  document.getElementById('ci-next-btn').disabled = false;
+}
+function selectAlimentacao(v) {
+  CI.alimentacao = v;
+  document.querySelectorAll('#ci-step-4 .checkin-btn').forEach(b => {
+    b.classList.toggle('selected', b.textContent.includes(
+      {boa:'Boa', normal:'Normal', ruim:'Ruim'}[v]));
+  });
+  document.getElementById('ci-next-btn').disabled = false;
+}
+
+function checkinNext() {
+  const step = CI.step;
+  if (step < 5) {
+    // Step 1 → 2 só se não pulou opcionais
+    renderCheckinStep(step + 1);
+  } else {
+    // Step 5 = resultado → iniciar treino
+    saveCheckinAndStart();
+  }
+}
+
+function checkinSkip() {
+  const step = CI.step;
+  if (step === 1) {
+    // Pula tudo — estado neutro
+    CI.disposicao = null; CI.cansaco_nivel = null;
+    CI.sono = null; CI.alimentacao = null;
+    CI.estado_prontidao = 5;
+    iniciarTreinoComCheckin(null);
+    fecharCheckin();
+    return;
+  }
+  // Pula step opcional → avança
+  if (step === 2) CI.cansaco_nivel = null;
+  if (step === 3) CI.sono = null;
+  if (step === 4) CI.alimentacao = null;
+  renderCheckinStep(step + 1);
+}
+
+async function saveCheckinAndStart() {
+  const p = CI.estado_prontidao || calcEstadoProntidao(CI);
+  const hoje = new Date().toLocaleDateString('pt-BR');
+  const checkinData = {
+    student_id: STUDENT_ID,
+    data: hoje,
+    disposicao: CI.disposicao,
+    cansaco_nivel: CI.cansaco_nivel,
+    sono: CI.sono,
+    alimentacao: CI.alimentacao,
+    estado_prontidao: p,
+    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+    session_id: null,
+  };
+  try {
+    const ref = await db.collection('checkins').add(checkinData);
+    checkinData.id = ref.id;
+    S.checkinHoje = checkinData;
+  } catch(e) {
+    console.warn('Erro ao salvar check-in', e);
+    S.checkinHoje = checkinData;
+  }
+  fecharCheckin();
+  iniciarTreinoComCheckin(checkinData);
+}
+
+function fecharCheckin() {
+  document.getElementById('checkin-screen').classList.remove('open');
+}
+
+function iniciarTreinoComCheckin(checkin) {
+  const p = checkin?.estado_prontidao ?? 5;
+  const f = fatorProntidao(p);
+  S.treino.prontidao = p;
+  S.treino.fator = f;
+  // Aplica ajuste aos exercícios
+  const s = S.student;
+  const profile = buildTreinoFromProfile(s);
+  S.treino.exs = profile.exs.map(ex => ({
+    ...ex,
+    r: Math.max(1, Math.round(ex.r * f.volume)),
+    s_original: ex.s,
+    r_original: ex.r,
+    ajustado: f.volume < 1.0,
+  }));
+  S.treino.ativo    = 0;
+  S.treino.expanded = {};
+  S.treino.phase    = 'idle';
+  S.treino.registros= [];
+  S.treino.clockSec = 0;
+  S.treino.sessaoId = `treino_${Date.now()}`;
+  S.treino.checkinId = checkin?.id || null;
+  S.treino.estado_prontidao = p;
+
+  document.getElementById('treino-title').textContent =
+    p >= 8 ? 'Treino de hoje' : p >= 4 ? 'Treino adaptado' : 'Sessão leve';
+  goPage('treino');
+  renderTreino();
+  startClock();
 }
 
 // ═══════════════════════════════════════════════════
