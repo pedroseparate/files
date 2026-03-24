@@ -719,7 +719,7 @@ function buildHeroCard(s) {
   const scores   = s.scores || {};
   const momentum = scores.momentum || 0;
   const circ     = 2 * Math.PI * 22;
-  const dash     = circ * Math.min(momentum / 5, 1);
+  const dash     = circ * Math.min(momentum / 10, 1);
 
   // Trajetória: IC÷PSE por sessão (proxy de momentum histórico)
   const sess    = S.sessions.filter(x => !x.simulado && (x.indice||x.indice_carga) && x.pse);
