@@ -724,65 +724,150 @@ function fmtTime(s){return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`
 // V2 com foto: ver buildHeroCardPhoto() abaixo
 // ═══════════════════════════════════════════════════
 function buildHeroCard(s) {
-  const scores   = s.scores || {};
-  const momentum = scores.momentum || 0;
-  const circ     = 2 * Math.PI * 22;
-  const dash     = circ * Math.min(momentum / 10, 1);
+  const scores = s.scores || {};
 
-  // Trajetória: IC÷PSE por sessão (proxy de momentum histórico)
-  const sess    = S.sessions.filter(x => !x.simulado && (x.indice||x.indice_carga) && x.pse);
-  const trajPts = sess.slice(0, 10).reverse();
+  // ── Lógica editorial: qual dimensão exibir ───────────────────────────
+  // 1. Se alguma em queda/sobrecarga → mostra essa (atenção)
+  // 2. Senão, dimensão dominante do ciclo em alta → mostra (confirmação)
+  // 3. Senão → dimensão com maior percentil recente (positivo)
+  const sess = S.sessions.filter(x => !x.simulado && (x.indice||x.indice_carga) && x.pse);
 
-  const STATE_COLOR = {
-    alta:'#6aa050', estavel:'#c8a060',
-    queda:'#a07040', sobrecarga:'#a07040', baixo:'#b84030',
+  // Calcula percentil rolante de cada dimensão (últimas 4 vs históricas)
+  function dimPercentile(field) {
+    const vals = sess.map(x => x[field]||0).filter(v=>v>0);
+    if(vals.length < 4) return 0.5;
+    const recent = vals.slice(-4);
+    const avgR = recent.reduce((a,b)=>a+b,0)/recent.length;
+    return vals.filter(v=>v<=avgR).length/vals.length;
+  }
+
+  const pN   = dimPercentile('ic_neural');
+  const pM   = dimPercentile('ic_mecanica');
+  const pMet = dimPercentile('ic_metabolica');
+
+  // Tendência (últimas 4 vs 4 anteriores)
+  function dimTrend(field) {
+    const vals = sess.map(x => x[field]||0).filter(v=>v>0);
+    if(vals.length < 8) return 0;
+    const r4 = vals.slice(-4), p4 = vals.slice(-8,-4);
+    const ar = r4.reduce((a,b)=>a+b)/4, ap = p4.reduce((a,b)=>a+b)/4;
+    return (ar-ap)/Math.max(ap,0.001);
+  }
+
+  const tN   = dimTrend('ic_neural');
+  const tM   = dimTrend('ic_mecanica');
+  const tMet = dimTrend('ic_metabolica');
+
+  // Classificação por dimensão
+  function dimEstado(p, t) {
+    if(p <= 0.25 || t <= -0.15) return 'queda';
+    if(p >= 0.70 && t >= 0.05)  return 'alta';
+    return 'estavel';
+  }
+
+  const estadoN   = dimEstado(pN,   tN);
+  const estadoM   = dimEstado(pM,   tM);
+  const estadoMet = dimEstado(pMet, tMet);
+
+  const dim_dominante = s.dim_dominante || 'mecanica';
+
+  const DIM_LABELS = {neural:'Neural', mecanica:'Mecânica', metabolica:'Metabólica'};
+  const DIM_COLS   = {
+    neural:     'rgba(150,144,220,.9)',
+    mecanica:   'var(--copper2)',
+    metabolica: 'rgba(106,160,80,.85)',
   };
 
+  // Seleciona dimensão a exibir
+  let heroKey, heroReason;
+  const estadoMap = {neural:estadoN, mecanica:estadoM, metabolica:estadoMet};
+  const percMap   = {neural:pN, mecanica:pM, metabolica:pMet};
+  const trendMap  = {neural:tN, mecanica:tM, metabolica:tMet};
+
+  const emQueda = ['neural','mecanica','metabolica'].find(k=>estadoMap[k]==='queda');
+  if(emQueda){
+    heroKey = emQueda;
+    heroReason = 'atenção';
+  } else if(estadoMap[dim_dominante]==='alta'){
+    heroKey = dim_dominante;
+    heroReason = 'confirmação';
+  } else {
+    heroKey = ['neural','mecanica','metabolica'].reduce((a,b)=>percMap[a]>=percMap[b]?a:b);
+    heroReason = 'positivo';
+  }
+
+  const heroPct   = Math.round(percMap[heroKey]*100);
+  const heroTrend = trendMap[heroKey];
+  const heroCol   = DIM_COLS[heroKey];
+  const heroArrow = heroTrend > 0.04 ? '↑' : heroTrend < -0.04 ? '↓' : '→';
+  const heroTrendTxt = Math.abs(Math.round(heroTrend*100));
+  const heroCtx = heroReason === 'atenção'
+    ? `atenção — queda recente`
+    : heroTrend > 0.04
+      ? `${heroArrow} +${heroTrendTxt}% nas últimas 4 sessões`
+      : `→ top ${heroPct}% do seu histórico`;
+
+  // ── Gráfico de trajetória — 3 linhas dimensionais ────────────────────
+  const trajPts = sess.slice(0, 12).reverse();
   let trajSVG = '';
-  if (trajPts.length >= 2) {
-    const W=320,H=44,PL=2,PR=2,PT=4,PB=12;
+  if(trajPts.length >= 3) {
+    const W=320, H=52, PL=2, PR=2, PT=4, PB=4;
     const cW=W-PL-PR, cH=H-PT-PB;
-    const vals = trajPts.map(x=>(x.indice||x.indice_carga||0)/Math.max(x.pse||1,1));
-    const lo=Math.min(...vals)*.88, hi=Math.max(...vals)*1.08;
-    const sx=i=>PL+(i/(trajPts.length-1))*cW;
-    const sy=v=>PT+cH-((v-lo)/(hi-lo||1))*cH;
-    const area=`M${sx(0)},${H-PB} `+vals.map((v,i)=>`L${sx(i)},${sy(v)}`).join(' ')+` L${sx(vals.length-1)},${H-PB} Z`;
-    const line=vals.map((v,i)=>`${i===0?'M':'L'}${sx(i).toFixed(1)},${sy(v).toFixed(1)}`).join(' ');
-    const col  = STATE_COLOR[s.ritmo_estado]||'#c8a060';
-    const dots = trajPts.map((_,i)=>{
-      const isLast=i===trajPts.length-1;
-      return `<circle cx="${sx(i).toFixed(1)}" cy="${sy(vals[i]).toFixed(1)}"
-        r="${isLast?3.2:2.4}" fill="${isLast?'#ddb870':col}"
-        ${isLast?'stroke="rgba(30,24,16,.8)" stroke-width="1.5"':''}/>`;
-    }).join('');
-    trajSVG=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" height="44" style="display:block;width:100%">
-      <defs><linearGradient id="hg" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="rgba(200,160,96,.18)"/>
-        <stop offset="100%" stop-color="rgba(200,160,96,0)"/>
-      </linearGradient></defs>
-      <path d="${area}" fill="url(#hg)"/>
-      <path d="${line}" fill="none" stroke="rgba(200,160,96,.65)" stroke-width="1.6" stroke-linejoin="round"/>
-      ${dots}
+
+    // Percentil rolante para cada ponto: posição na janela de 12 sessões
+    function rollingPct(field, pts) {
+      const allVals = pts.map(x=>x[field]||0);
+      return pts.map((x,i) => {
+        const v = x[field]||0;
+        const window = allVals.slice(0, i+1);
+        return window.filter(w=>w<=v).length/Math.max(window.length,1);
+      });
+    }
+
+    const ptsN   = rollingPct('ic_neural',    trajPts);
+    const ptsM   = rollingPct('ic_mecanica',  trajPts);
+    const ptsMet = rollingPct('ic_metabolica',trajPts);
+    const n = trajPts.length;
+
+    const sx = i => PL+(i/(n-1))*cW;
+    const sy = v => PT+cH-(v*cH);
+
+    function makeLine(pts) {
+      return pts.map((v,i)=>`${i===0?'M':'L'}${sx(i).toFixed(1)},${sy(v).toFixed(1)}`).join(' ');
+    }
+
+    const lN   = makeLine(ptsN);
+    const lM   = makeLine(ptsM);
+    const lMet = makeLine(ptsMet);
+
+    // Último ponto de cada linha
+    const lastN   = {x:sx(n-1), y:sy(ptsN[n-1])};
+    const lastM   = {x:sx(n-1), y:sy(ptsM[n-1])};
+    const lastMet = {x:sx(n-1), y:sy(ptsMet[n-1])};
+
+    trajSVG = `<svg viewBox="0 0 ${W} ${H}" height="${H}" style="display:block;width:100%">
+      <path d="${lMet}" fill="none" stroke="rgba(106,160,80,.5)"  stroke-width="1.2" stroke-linejoin="round"/>
+      <path d="${lN}"   fill="none" stroke="rgba(150,144,220,.55)" stroke-width="1.2" stroke-linejoin="round"/>
+      <path d="${lM}"   fill="none" stroke="rgba(200,160,96,.75)" stroke-width="1.8" stroke-linejoin="round"/>
+      <circle cx="${lastMet.x.toFixed(1)}" cy="${lastMet.y.toFixed(1)}" r="2.5" fill="rgba(106,160,80,.8)"/>
+      <circle cx="${lastN.x.toFixed(1)}"   cy="${lastN.y.toFixed(1)}"   r="2.5" fill="rgba(150,144,220,.85)"/>
+      <circle cx="${lastM.x.toFixed(1)}"   cy="${lastM.y.toFixed(1)}"   r="3.2" fill="#ddb870" stroke="rgba(30,24,16,.7)" stroke-width="1.2"/>
     </svg>`;
   }
 
-  // Bolinhas do mesociclo
+  // ── Bolinhas do mesociclo ─────────────────────────────────────────────
   const diasDecorr = sess.length;
   const totalDias  = (s.semanas_total||8) * 7;
-  // Lê disponibilidade da anamnese — ex: "3x semana · Seg/Qua/Sex"
   const DIAS_MAP = {
-    'seg':1,'seg.':1,'segunda':1,
-    'ter':2,'ter.':2,'terça':2,'terca':2,
-    'qua':3,'qua.':3,'quarta':3,
-    'qui':4,'qui.':4,'quinta':4,
-    'sex':5,'sex.':5,'sexta':5,
-    'sab':6,'sáb':6,'sáb.':6,'sábado':6,'sabado':6,
+    'seg':1,'seg.':1,'segunda':1,'ter':2,'ter.':2,'terça':2,'terca':2,
+    'qua':3,'qua.':3,'quarta':3,'qui':4,'qui.':4,'quinta':4,
+    'sex':5,'sex.':5,'sexta':5,'sab':6,'sáb':6,'sáb.':6,'sábado':6,'sabado':6,
     'dom':0,'dom.':0,'domingo':0,
   };
   const disponStr = (s.anamnese?.disponibilidade || '').toLowerCase();
   const FREQ = disponStr
     ? disponStr.split(/[/·,\s]+/).map(d => DIAS_MAP[d]).filter(x => x !== undefined)
-    : [1,3,5]; // fallback: Seg/Qua/Sex
+    : [1,3,5];
   const MCOL = {up:'var(--moss2)',stable:'var(--gold)',down:'var(--copper2)',
     off:'rgba(200,160,96,.10)',future:'rgba(200,160,96,.05)'};
   function dotSt(i){
@@ -804,33 +889,68 @@ function buildHeroCard(s) {
         <div class="hero-meso">${s.mesociclo||'—'} · ${s.divisao||''}</div>
       </div>
       <div class="hero-momentum-row" onclick="openModal('momentum')" style="flex-direction:column;align-items:stretch;gap:0;padding:0;cursor:pointer">
-        <div style="display:flex;align-items:center;gap:14px;padding:16px 16px 10px">
-          <div class="ms-arc">
-            <svg viewBox="0 0 56 56">
-              <circle cx="28" cy="28" r="22" fill="none" stroke="rgba(200,160,96,.08)" stroke-width="4"/>
-              <circle cx="28" cy="28" r="22" fill="none" stroke="url(#ag)" stroke-width="4"
-                stroke-dasharray="${circ}" stroke-dashoffset="${circ-dash}"
-                stroke-linecap="round" transform="rotate(-90 28 28)"/>
-              <defs><linearGradient id="ag" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stop-color="#8a6030"/>
-                <stop offset="100%" stop-color="#ddb870"/>
-              </linearGradient></defs>
-            </svg>
-            <div class="ms-arc-val">${momentum.toFixed(1)}</div>
+
+        <div style="display:flex;align-items:center;gap:14px;padding:16px 16px 12px">
+          <div style="width:52px;height:52px;border-radius:50%;border:2px solid ${heroCol};
+            display:flex;align-items:center;justify-content:center;flex-shrink:0;
+            background:rgba(0,0,0,.15)">
+            <div style="text-align:center">
+              <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;
+                font-size:18px;color:${heroCol};line-height:1">${heroPct}</div>
+              <div style="font-size:5px;text-transform:uppercase;letter-spacing:.1em;
+                color:${heroCol};opacity:.7">%ile</div>
+            </div>
           </div>
-          <div style="flex:1">
-            <div class="ms-label">Momentum <span style="font-size:7px;opacity:.4">↗ toque</span></div>
-            <div class="ms-title">${ritmoLabel(s.ritmo_estado)}</div>
-            <div class="ms-desc" id="ms-desc-txt">carregando…</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:7px;text-transform:uppercase;letter-spacing:.16em;
+              color:${heroCol};opacity:.8;margin-bottom:3px">${DIM_LABELS[heroKey]}</div>
+            <div class="ms-title" style="color:${heroCol}">${ritmoLabel(s.ritmo_estado)}</div>
+            <div style="font-size:8px;color:var(--ink2);margin-top:2px">${heroCtx}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
+            ${['neural','mecanica','metabolica'].map(k=>{
+              const p = percMap[k];
+              const col = DIM_COLS[k];
+              const lbl = {neural:'N',mecanica:'M',metabolica:'Met'}[k];
+              return `<div style="display:flex;align-items:center;gap:4px">
+                <div style="font-size:6px;color:${col};opacity:.7;width:12px">${lbl}</div>
+                <div style="width:36px;height:3px;background:rgba(200,160,96,.12);border-radius:2px;overflow:hidden">
+                  <div style="width:${Math.round(p*100)}%;height:100%;background:${col};border-radius:2px"></div>
+                </div>
+                <div style="font-size:6px;color:var(--ink3)">${Math.round(p*100)}</div>
+              </div>`;
+            }).join('')}
           </div>
         </div>
+
         ${trajSVG?`
-        <div style="padding:0 12px 4px">
-          <div style="font-size:7px;text-transform:uppercase;letter-spacing:.14em;color:var(--ink3);margin-bottom:4px">Trajetória IC÷PSE · últimas ${trajPts.length} sessões</div>
+        <div style="padding:0 14px 8px">
+          <div style="font-size:7px;text-transform:uppercase;letter-spacing:.14em;color:var(--ink3);margin-bottom:6px">
+            Trajetória dimensional · ${trajPts.length} sessões
+          </div>
           ${trajSVG}
+          <div style="display:flex;gap:10px;margin-top:6px;font-size:7px;color:var(--ink3)">
+            <span style="display:flex;align-items:center;gap:3px">
+              <span style="width:12px;height:2px;background:rgba(200,160,96,.75);display:inline-block;border-radius:1px"></span>Mecânica
+            </span>
+            <span style="display:flex;align-items:center;gap:3px">
+              <span style="width:12px;height:2px;background:rgba(150,144,220,.6);display:inline-block;border-radius:1px"></span>Neural
+            </span>
+            <span style="display:flex;align-items:center;gap:3px">
+              <span style="width:12px;height:2px;background:rgba(106,160,80,.55);display:inline-block;border-radius:1px"></span>Metabólica
+            </span>
+          </div>
         </div>
-        <div style="padding:8px 14px 12px;border-top:1px solid rgba(200,160,96,.07)">
-          <div style="font-size:8px;color:var(--ink2);line-height:1.6">Não é um número absoluto — é a <em>direção</em> que você está tomando em relação ao seu próprio histórico.</div>
+        <div style="padding:10px 14px 12px;border-top:1px solid rgba(200,160,96,.08)">
+          <div style="font-size:7px;text-transform:uppercase;letter-spacing:.14em;color:var(--ink3);margin-bottom:8px">${s.mesociclo||'Mesociclo'} · dia ${diasDecorr} de ${totalDias}</div>
+          <div class="hero-meso-dots">${dots56}</div>
+          <div class="hero-meso-legend" style="margin-top:8px">
+            <div class="hero-meso-leg-item"><div class="hero-meso-leg-dot" style="background:var(--moss2)"></div>alta</div>
+            <div class="hero-meso-leg-item"><div class="hero-meso-leg-dot" style="background:var(--gold)"></div>estável</div>
+            <div class="hero-meso-leg-item"><div class="hero-meso-leg-dot" style="background:var(--copper2)"></div>queda</div>
+            <div class="hero-meso-leg-item"><div class="hero-meso-leg-dot" style="background:rgba(200,160,96,.12)"></div>day off</div>
+            <div class="hero-meso-leg-item"><div class="hero-meso-leg-dot" style="background:rgba(200,160,96,.05);border:1px solid rgba(200,160,96,.14)"></div>futuro</div>
+          </div>
         </div>`:''}
       </div>
     </div>`;
