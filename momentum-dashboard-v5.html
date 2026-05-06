@@ -485,7 +485,7 @@ function calcRitmo(studentId) {
   const avgOld = older.reduce((a,b) => a+b, 0) / older.length;
   const avgNew = newer.reduce((a,b) => a+b, 0) / newer.length;
   const delta  = ((avgNew - avgOld) / avgOld) * 100;
-  const estado = delta >= 10 ? 'alta' : delta >= -10 ? 'estavel' : delta >= -20 ? 'queda' : 'critica';
+  const estado = delta >= 10 ? 'alta' : delta >= -10 ? 'estavel' : delta >= -20 ? 'baixo' : 'sobrecarga';
   return { estado, delta: Math.round(delta) };
 }
 
@@ -511,8 +511,8 @@ function calcRitmoRolling(studentId) {
 const RITMO_CFG = {
   alta:    { label:'Ritmo em alta',   color:'#5a8040', dot:'#7aaa50' },
   estavel: { label:'Ritmo estável',   color:'#a07040', dot:'#c8a060' },
-  queda:   { label:'⚠ Queda de ritmo',color:'#8a4020', dot:'#c86030' },
-  critica: { label:'⛔ Queda crítica', color:'#6a2010', dot:'#e03020' },
+  baixo:       { label:'⚠ Ritmo baixo',    color:'#8a4020', dot:'#c86030' },
+  sobrecarga:  { label:'⛔ Sobrecarga',     color:'#6a2010', dot:'#e03020' },
 };
 
 // Chips automáticos (RN 26) — só os que não requerem r_alvo/pse_alvo

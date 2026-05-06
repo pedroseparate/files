@@ -9,6 +9,16 @@ Documento de referência para contexto de desenvolvimento. Registra o que já fo
 
 Estas decisões foram tomadas após análise e **não devem ser revertidas sem justificativa fisiológica explícita.**
 
+
+### Decisão — Fórmula da Metabólica (Mar 2026)
+
+**Fechado:** SV removido do componente Metabólica.
+
+**Antes:** `Metabólica = CargaNorm × SV × FD`
+**Depois:** `Metabólica = CargaNorm × FTT × FD` (FTT=1 quando cadência não prescrita)
+
+**Razão fisiológica:** SV captura recrutamento de unidades motoras rápidas e coordenação intermuscular — custo neural, não metabólico. Exercícios explosivos têm via anaeróbia alática predominante, cujo custo metabólico total não é maior que séries longas e densas. FTT (tempo sob tensão) e FD (densidade de descanso) capturam o custo oxidativo e acúmulo de metabólitos de forma mais precisa e independente do caráter neural do exercício.
+
 ### Modelo Matemático
 
 | Decisão | O que é | Por quê está fechado |
@@ -216,6 +226,33 @@ Precisam de revisão antes de usar em produção com alunos reais.
 
 ---
 
+
+---
+
+## Pendência v2 — Metabólica com FTT e FD no engine de recálculo
+
+**Arquivo:** `momentum-pt-dashboard.html` · função `calcExIC()`
+
+**Implementação atual (incorreta):**
+```js
+ic_metabolica: round2(cn * c.SV)
+```
+
+**Implementação correta (documentação §2c):**
+```js
+// FTT = 1 quando cadência não prescrita (padrão fechado)
+// FD = 90 / descanso_s (fator de densidade; referência 90s)
+const FD = descanso_s > 0 ? 90 / descanso_s : 1;
+ic_metabolica: round2(cn * 1 * c.SV * FD)
+```
+
+**Impacto atual:** baixo — maioria das sessões tem descanso=90s → FD=1, resultado idêntico.
+Impacto real quando o PT passar a prescrever descansos diferentes de 90s.
+
+**Nota arquitetural:** o cálculo de IC acontece no PT Dashboard (engine de recálculo),
+não no app do aluno. O aluno salva o executado bruto; o PT Dashboard recalcula via
+`recalcStudentAfterSession()` ao detectar `_recalculated: false`.
+
 ## Roadmap v2 — Features para Usuário Avançado
 
 *Contexto: análise feita pensando como um usuário avançado de musculação com interesse específico em força e hipertrofia, familiarizado com periodização, MEV/MAV/MRV, RPE/RIR. Registrado em 26/Mar/2026.*
@@ -409,4 +446,144 @@ Para DUP/ondulatória: cada dimensão é comparada com ela mesma, não com IC to
 | iarima_nunes | 7.11 | 0.75 | alta | baixo | Fadiga real detectada corretamente |
 | mariana_costa | 7.21 | 2.57 | estavel | baixo | Overreaching confirmado |
 | roberto_silva | 6.88 | 3.02 | baixo | estavel | Reab conservadora — correto |
+
+
+---
+
+## Prescrição — Estrutura e Progressão (Abr 2026)
+
+### tipo_serie — Campo novo em `sessions.exercicios[]` e `prescricoes`
+
+**Status:** implementado como campo de linguagem (v1). Diferenciação de IC por tipo_serie documentada para v2.
+
+**Valores válidos para v1:**
+
+| tipo_serie | Frase exibida ao aluno | Contexto fisiológico |
+|---|---|---|
+| `forca_pura` | "Foco na carga — execute com máxima intenção" | Força máxima, 1–5 reps, PSE alvo como critério principal |
+| `forca_explosiva` | "Intenção máxima na fase concêntrica — velocidade é a carga" | Potência, pliométrico, olímpicos |
+| `hipertrofia` | "Complete todas as reps com controle" | 6–15 reps, carga + reps alvo |
+| `volume` | "A fadiga no final é o objetivo" | Muitas reps, descanso curto, acúmulo metabólico |
+| `tecnica` | "Carga leve — qualidade acima de tudo" | Aprendizado motor, amplitude, reabilitação |
+| `amrap` | "Máximo de reps com boa técnica" | Reps abertas, carga fixa |
+| `emom` | "Respeite o intervalo — ritmo constante" | Intervalo fixo define FD diretamente |
+| `densidade` | "Descanso curto intencional" | Mesma carga/reps, descanso reduzido |
+| `isometrico` | "Sustente a posição pelo tempo prescrito" | TUT = tempo_s, reps = 1 |
+| `excentrico` | "Controle total na descida — a fase negativa é o trabalho" | Excêntrico acentuado, nórdico, tempo na descida |
+| `pausa` | "Pause na posição de maior tensão — sem usar o elástico" | Supino com pausa, agachamento com pausa |
+
+**Para v2 (não implementar agora):**
+- `rest_pause` — mini-séries com pausa curta intra-série
+- `drop_set` — redução de carga sem pausa
+- `oclusão` — requer equipamento específico
+- `supersérie` / `bi-set` / `tri-set` — estrutura de múltiplos exercícios, não de série única
+
+**Como o sistema lê em v1:** puramente como texto de intenção exibido ao aluno na tela de execução. Não altera cálculo de IC.
+
+**Como o sistema lerá em v2:** cada tipo_serie define qual coeficiente domina o cálculo:
+- `forca_pura` / `forca_explosiva` → Neural domina; chip `colapso_de_reps` desativado
+- `volume` → Metabólica domina; chip `colapso_de_reps` altamente relevante
+- `tecnica` → IC intencionalmente baixo, não sinalizar como problema; PSE baixo esperado
+- `amrap` → ic_planejado estimado com média histórica de reps; comparação planejado vs executado especialmente valiosa
+
+---
+
+### Prescrição — Combinações de alvo por tipo_serie
+
+Nem todo exercício terá carga + reps alvo simultaneamente. A estrutura `alvo` é flexível por tipo_serie:
+
+| Contexto | O que é prescrito | O que fica livre |
+|---|---|---|
+| `forca_pura` | carga_kg + pse_alvo | reps (aluno executa até não conseguir com boa técnica) |
+| `hipertrofia` | carga_kg + reps_alvo + pse_alvo | — |
+| `volume` | reps_alvo + pse_alvo | carga (aluno escolhe o que permite completar) |
+| `tecnica` | carga_kg fixa baixa + reps_alvo | pse (irrelevante) |
+| `amrap` | carga_kg + tempo_s | reps (máximo possível) |
+| `emom` | carga_kg + reps_alvo + intervalo_s | — |
+| `densidade` | carga_kg + reps_alvo + descanso_s | — |
+| `isometrico` | carga_kg + tempo_s | — |
+| `excentrico` | carga_kg + reps_alvo + tut_descida_s | — |
+| `pausa` | carga_kg + reps_alvo + pausa_s | — |
+
+**Estrutura do objeto `alvo` no banco:**
+```json
+{
+  "nome": "Agachamento Livre",
+  "tipo_serie": "forca_pura",
+  "series": 5,
+  "progressao": "carga",
+  "alvo": {
+    "carga_kg": 100,
+    "reps": null,
+    "pse": 8.5,
+    "descanso_s": 180,
+    "tut_s": null,
+    "tempo_s": null,
+    "pausa_s": null,
+    "intervalo_s": null
+  }
+}
+```
+
+---
+
+### Prescrição — Tipos de progressão (v1)
+
+| Tipo | O que é | V1 |
+|---|---|---|
+| `carga` | Aumenta kg mantendo reps | ✅ |
+| `volume` | Aumenta reps mantendo kg | ✅ |
+| `densidade` | Reduz descanso_s mantendo carga+reps | ✅ |
+| `pse` | Mantém carga+reps, alvo é PSE ≤ threshold | ✅ |
+| `tecnica` | Carga estável, foco em amplitude e controle | ✅ |
+| `dupla` | Sobe reps até teto, depois sobe carga e reseta reps | ✅ requer `reps_teto` por exercício |
+| `ondulante` | Alterna carga alta/baixa entre sessões | ✅ lógica no engine |
+| `tut` | Aumenta tempo sob tensão via cadência | ⚠️ depende campo cadência (FTT) — v2 |
+| `cluster` | Pausa intra-série para mais volume | ⚠️ requer schema de série mais rico — v2 |
+| `1rm_percentual` | Prescreve % do 1RM estimado | ⚠️ requer 1RM no banco — v2 |
+
+---
+
+### Prescrição — Estrutura da coleção `prescricoes` no Firestore
+
+```
+prescricoes/{student_id}
+  ├── student_id: string
+  ├── mesociclo: string
+  ├── atualizado_em: timestamp
+  ├── progressao_mae: {
+  │     modelo: 'linear' | 'bloco' | 'dup'
+  │     logica_volume: 'carga_primeiro' | 'reps_primeiro'
+  │   }
+  └── sessoes: {
+        "[tipo]": {
+          ic_planejado: number,
+          dim_dominante: string,
+          notas_pt: string,
+          exercicios: [{
+            nome: string,
+            tipo_serie: string,
+            series: number,
+            progressao: 'herda_mae' | 'carga' | 'volume' | 'densidade' | 'pse' | 'tecnica' | 'dupla' | 'ondulante' | 'estavel',
+            alvo: {
+              carga_kg: number | null,
+              reps: number | null,
+              pse: number | null,
+              descanso_s: number,
+              tut_s: number | null,
+              tempo_s: number | null,
+              pausa_s: number | null,
+              intervalo_s: number | null
+            }
+          }]
+        }
+      }
+```
+
+**Nota:** `incremento_kg` por exercício foi removido da estrutura. A progressão de carga é calculada pelo engine com base no histórico real — não é um campo fixo. O PT define o *tipo* de progressão, não o delta específico.
+
+**Regras especiais por perfil** (hoje hardcoded no prompt do Claude Code — migrar para campos configuráveis na Tela de Prescrição do PT na v2):
+- `iarima_nunes`: exercícios com CT ≥ 7 → `progressao: 'estavel'`
+- `roberto_silva`: todos os exercícios → `progressao: 'volume'` (reps antes de carga)
+- `mariana_costa`: progressão calculada separadamente por tipo de sessão (Força vs Volume vs Hipertrofia)
 
