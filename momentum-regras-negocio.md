@@ -124,49 +124,24 @@ Ver fórmula completa em **Modelo Matemático §∑**.
 ```
 Ritmo = CargaObjetiva ÷ PSE_ritmo
 ```
-Janela rolante de 4 semanas. Comparação metade recente vs metade antiga das sessões válidas.
+Janela rolante de 4 semanas. Comparação S3–S4 vs S1–S2:
+- Alta: S3–S4 supera S1–S2 em +10% ou mais
+- Estável: variação dentro de ±10%
+- Queda: −10% a −20% → alerta PT · −20%+ → alerta urgente + sugestão de deload
 
-**Estados (nomenclatura unificada em todo o sistema):**
-- `alta`: delta ≥ +10% → corpo adaptado, candidato a progressão
-- `estavel`: delta −10% a +10% → dentro do esperado
-- `baixo`: delta −20% a −10% → alerta PT, possível fadiga
-- `sobrecarga`: delta < −20% → alerta urgente, sugestão de deload
-
-> **Importante:** `PSE_ritmo` (blend de PSE_calc e PSE_relatada, com α por nível) é obrigatório. Uso de `pse` cru é incorreto — ver Modelo Matemático §5b.
-
-**Adapter de periodização — o ritmo adapta a janela de comparação ao modelo:**
-
-| Modelo | Comportamento |
-|--------|--------------|
-| **Linear** | Global — todas as sessões, sem filtro |
-| **Block** | Compara dentro da fase atual. Queda de IC na transição Acum→Int é esperada e NÃO é queda de ritmo |
-| **DUP** | Ritmos paralelos por tipo_sessao. Alerta global só se TODOS os tipos em queda simultaneamente |
-| **Conjugado** | Ritmo por exercício principal. Progressão é por exercício, não por sessão |
-| **Assimétrico** | Ritmo por divisão (A/B/C/D/E). Compara cada dia consigo mesmo |
-
-**Campo:** `modelo_periodizacao` no student doc. Fallback: inferido do nome do mesociclo. Default: `linear`.
+**Comportamento especial — DUP:** Ritmo não calculado globalmente. Sistema mantém Ritmos paralelos por tipo de sessão (força · hipertrofia · volume). Alerta só dispara quando a queda aparece em **todos** os tipos simultaneamente. Queda isolada num único tipo é visível no painel analítico mas não gera notificação.
 
 PT pode visualizar três curvas: IC÷PSE_calc · IC÷PSE_relatada · ΔPSE ao longo do tempo.
 
 ### RN 21 · Dimensões por sessão e radar do aluno
-**Fórmula única** — mesma para IC por exercício, soma da sessão, e radar. Ver Modelo Matemático §2.
+Fórmula simplificada para radar agregado (calculado sobre o executado):
 ```
-Neural_sessao     = Σ (CargaNorm_i × FC_i × DN_i × (1 + CT_i×0.05 + SV_i×explos_i×0.05))
-Mecânica_sessao   = Σ (CargaNorm_i × IM_i)
-Metabólica_sessao = Σ (CargaNorm_i × FTT_i × SV_i × FD_i)
+Neural_sessao    = Σ (CargaNorm_i × FC_i × DN_i / 10)
+Mecânica_sessao  = Σ (CargaNorm_i × IM_i / 10)
+Metabólica_sessao = Σ (CargaNorm_i × FTT_i × SV_i)
 ```
-Radar do aluno: normaliza pela soma total (Neural/soma, Mecânica/soma, Metabólica/soma) — proporção, não valor absoluto.
-
-> **Fórmulas "simplificadas" foram eliminadas.** A diferença entre IC detalhado e radar é apenas a camada de apresentação (absoluto vs proporção).
-
-### RN 21b · Scores do aluno (0–10)
-Scores são **computados dinamicamente** a partir dos dados de sessão. Nunca hardcoded.
-```
-Score(dimensão) = percentil_rolling(últimas 4 sessões no histórico total) × 10
-```
-Score de Momentum = média ponderada: 0.25×Neural + 0.30×Mecânica + 0.25×Metabólica + 0.20×Ritmo.
-
-Ver Modelo Matemático §7 para tabela completa.
+Radar: janela rolante de 4 semanas, reset no início do mesociclo.
+> Esta fórmula simplificada é para o radar agregado. O Modelo Matemático §2 usa a fórmula completa (com CT, explos e FD) para ic_neural por exercício.
 
 ### RN 22 · Competência Técnica — propriedade do exercício
 CT é fixo no banco — propriedade do movimento, não do aluno. Score de Técnica no radar reflete a composição dos exercícios treinados. CT não é modificável por PT ou aluno.
@@ -213,17 +188,217 @@ Ver fórmulas completas em **Modelo Matemático §5b** (PSE_calc, PSE_relatada, 
 ### RN 26 · Detecção automática de padrões na sessão
 Chips automáticos por sessão no PT Dashboard — **nenhum campo extra precisa ser preenchido.**
 
+#### Chips que funcionam com dados existentes
+
 | Chip | Condição | Mensagem |
 |------|----------|----------|
 | `fadiga_precoce` | PSE médio nos 2 primeiros exercícios > PSE médio nos 2 últimos + 1.5 | "⚠ fadiga precoce — PSE caiu {delta}pts entre início e fim" |
-| `colapso_de_reps` | r < r_alvo × 0.75 em 2+ séries do mesmo exercício | "⚠ colapso de reps — {nome}: {r} de {r_alvo} em {n} séries" |
 | `sobrecarga_pse` | 3+ exercícios com PSE ≥ 9 na primeira metade da sessão | "⚠ PSE elevado no início — {n} exercícios com PSE ≥ 9 na 1ª metade" |
-| `progressão_ok` | Todas as séries com r ≥ r_alvo e PSE ≤ pse_alvo + 1 | "✓ execução dentro do prescrito — candidato a progressão de carga" |
-| `pse_ic_divergência` | PSE ≥ 9 com IC abaixo da média histórica −15% para aquele tipo | "⚠ esforço percebido alto com volume abaixo do usual — sinal de fadiga" |
+| `pse_ic_divergência` | PSE esperada ≥ 7.5 com IC simulado abaixo da média histórica (últimas 8 sessões) −15% | "⚠ esforço esperado alto com IC abaixo do usual — sinal de fadiga" |
 
-> `colapso_de_reps` e `progressão_ok` requerem `r_alvo` e `pse_alvo` por série — campo existe no schema, null nas sessões legacy.
+#### Chips que requerem prescrição com `r_alvo` e `pse_alvo` por série
+
+Esses campos existem no schema mas estão **null em sessões legadas**. São preenchidos automaticamente quando a tela de prescrição (PT) estiver implementada. Sessões sem prescrição: chips silenciosos.
+
+| Chip | Condição | Mensagem |
+|------|----------|----------|
+| `colapso_de_reps` | r < r_alvo × 0.75 em 2+ séries do mesmo exercício | "⚠ colapso de reps — {nome}: {r} de {r_alvo} em {n} séries" |
+| `progressão_ok` | Todas as séries com r ≥ r_alvo e PSE ≤ pse_alvo + 1 | "✓ execução dentro do prescrito — candidato a progressão de carga" |
 
 **Fundamentação do chip `fadiga_precoce`:** PSE alto no início consome reservas neural e metabólica — o aluno sente que treinou forte, mas o estímulo nos exercícios seguintes foi subótimo. É o custo oculto da ordem de exercícios inadequada ou chegada ao treino já fadigado.
+
+---
+
+### RN 27 · Detecção de tendências longitudinais (chips de série temporal)
+Chips calculados sobre a janela histórica do aluno — **requerem mínimo de 3 sessões registradas.**
+
+| Chip | Condição | Janela | Mensagem |
+|------|----------|--------|----------|
+| `delta_pse_crescente` | PSE relatada subindo em 3 sessões consecutivas com última ≥ 7.5 | 3 sessões | "⚠ delta_pse_crescente — PSE {s3}→{s2}→{s1} · fadiga acumulada silenciosa" |
+| `ritmo_em_queda` | IC÷PSE médio das últimas 4 sessões inferior às 4 anteriores em −10%+ | 8 sessões | "⚠ ritmo_em_queda — IC÷PSE caiu {delta}% · considerar deload" |
+| `ritmo_em_queda_leve` | Mesma lógica, queda entre −5% e −10% | 8 sessões | "⚠ ritmo_em_queda leve — IC÷PSE −{delta}% · monitorar" |
+
+**Fundamentação do `delta_pse_crescente`:** ΔPSE crescendo positivamente ao longo das semanas = aluno relatando consistentemente mais pesado que o calculado. Pode anteceder uma queda no RatioAdaptação em 1–2 semanas — é um sinal precoce que o IC sozinho não detecta. Ver §5b do Modelo Matemático.
+
+**Fundamentação do `ritmo_em_queda`:** Proxy do RitmoAdaptação (RN 20) operando com os dados disponíveis hoje. IC÷PSE é uma versão simplificada de CargaObjetiva÷PSE_ritmo. Quando a tela de prescrição estiver ativa e `duração_min` estiver no schema, substituir pelo RatioAdaptação formal.
+
+> **Dependências de RN 27:**
+> - `delta_pse_crescente` → requer campo `pse` por sessão (já existe)
+> - `ritmo_em_queda` → requer campos `indice` e `pse` por sessão (já existem)
+> - Versão completa de `ritmo_em_queda` → requer `duração_min` no schema (pendente — ver Modelo Matemático §pendências)
+
+---
+
+## 6 · Check-in Pré-treino e Ajuste por Prontidão (RN 28–29)
+
+### RN 28 · Check-in pré-treino
+
+**Fluxo:**
+1. Ao tocar em "Iniciar treino", o sistema abre o check-in antes de qualquer coisa
+2. Pergunta obrigatória: "Como você está se sentindo hoje?" — 3 botões grandes
+   - 😴 Cansado · 😐 Normal · ⚡ Disposto
+3. Aluno pode pular — sistema registra `disposicao: null` e `estado_prontidao: 5`
+4. Após responder, sistema oferece aprofundamento opcional (3 sub-questionários):
+   - **Nível de cansaço** (refina disposição em escala de 3 pontos)
+   - **Sono da noite anterior** — Ruim / Normal / Bom
+   - **Alimentação do dia** — Ruim / Normal / Boa
+5. Sistema calcula `estado_prontidao` (1–10) — ver Modelo Matemático §6a
+6. Check-in salvo na coleção `checkins` e vinculado à sessão via `checkin_id`
+
+**Exibição ao aluno após check-in:**
+- Estado de prontidão visualizado (barra ou score)
+- Ajuste comunicado: "Seu treino de hoje foi ajustado para X% do volume"
+- Só exibido se houver ajuste real (prontidão < 8)
+
+**Um check-in por aluno por dia.** Se aluno já fez check-in hoje e iniciar outro treino, sistema reutiliza o check-in existente sem perguntar novamente.
+
+### RN 29 · Ajuste automático de treino por prontidão
+
+**Condição:** `estado_prontidao` calculado no check-in.
+
+| Prontidão | Ajuste de volume | Ajuste de carga | Mensagem ao aluno |
+|-----------|-----------------|-----------------|-------------------|
+| 8–10 | 100% | 100% | "Você está no nível. Treino completo." |
+| 6–7 | 90% | 100% | "Disposição boa. Volume levemente reduzido." |
+| 4–5 | 75% | 90% | "Dia moderado. Sessão adaptada." |
+| 2–3 | 60% | 85% | "Chegou cansado. Sessão leve — qualidade > quantidade." |
+| 1 | 0% | 0% | "Repouso recomendado. Seu corpo pede recuperação." |
+
+**O ajuste não é bloqueante** — aluno pode ignorar e treinar no volume completo. PT vê no dashboard se o aluno ignorou o ajuste sugerido.
+
+**`ic_ajustado` vs `ic_executado`:** diferença entre o que foi sugerido e o que foi feito fica registrada na sessão. Alimenta os chips de divergência.
+
+**PT pode desativar ajuste automático por aluno** — campo `auto_adjust: false` no perfil.
+
+> **Dependências de RN 28–29:**
+> - Check-in requer tela de check-in no app do aluno (CK3)
+> - Ajuste automático requer `ic_planejado` na sessão — disponível quando tela de prescrição existir
+> - Enquanto `ic_planejado` não existir, ajuste usa média histórica como referência
+
+---
+
+## 6 · Insight Engine — Slot do Hero (RN 27–38)
+
+Motor de seleção do destaque visual do hero card. Mantém uma biblioteca de fatos celebráveis e sinais de atenção. A cada virada de semana (ou evento relevante), seleciona o fato/sinal mais pertinente via score composto.
+
+Fórmulas matemáticas em **Modelo Matemático §6**.
+
+### RN 27 · Acúmulo neural sustentado
+
+- **Gatilho fisiológico:** sistema nervoso tolerando carga e recuperando entre sessões consecutivas — adaptação neural em fase produtiva.
+- **Critérios:** `percentil_N ≥ 65` por `≥ 3 semanas consecutivas`, fora de deload.
+- **Raridade:** Comum
+- **Headline:** "Neural firme há 3 semanas"
+- **Contexto exibido:** "Seu sistema nervoso está absorvendo bem a carga — esse é o sinal que sustenta progressão real"
+- **Número do slot:** percentil_N atual
+
+### RN 28 · Aderência ao plano ondulatório
+
+- **Gatilho fisiológico:** aluno em DUP ou periodização assimétrica respeitando os tipos de sessão prescritos (volume vs intensidade) — não "puxando todo dia".
+- **Critérios:** modelo de periodização em `dup` ou perfil assimétrico, tipo_serie executado conforme planejado em `≥ 80%` das sessões, `≥ 2 semanas`.
+- **Raridade:** Contextual (só dispara para periodizações ondulatórias)
+- **Headline:** "Plano ondulatório em dia"
+- **Contexto exibido:** "Você está respeitando os dias certos de volume e intensidade — é assim que a ondulação rende"
+- **Número do slot:** % de aderência ao tipo_serie
+
+### RN 29 · Crescimento mecânico
+
+- **Gatilho fisiológico:** progressão clássica — tensão mecânica subindo via aumento de Volume Load semanal.
+- **Critérios:** `VolumeLoad_semanal` subindo `≥ 5%` em `3 semanas consecutivas`, fora de deload.
+- **Raridade:** Comum
+- **Headline:** "Volume crescendo há 3 semanas"
+- **Contexto exibido:** "Carga total subindo de forma sustentada — o estímulo clássico de hipertrofia e força"
+- **Número do slot:** delta % vs 3 semanas atrás
+
+### RN 30 · Recuperação no deload
+
+- **Gatilho fisiológico:** semana de deload cumprindo seu propósito — PSE caindo e sinais de fadiga normalizando.
+- **Critérios:** fase = `deload`, `PSE_médio` caindo `≥ 1 ponto` vs semana anterior, FC pós-sessão menor que baseline do mesociclo.
+- **Raridade:** Contextual (só em deload)
+- **Headline:** "Deload em ação"
+- **Contexto exibido:** "Esforço percebido e cardio voltando ao baseline — recuperação está acontecendo como planejado"
+- **Número do slot:** delta de PSE médio
+
+### RN 31 · Consolidação técnica
+
+- **Gatilho fisiológico:** execução de qualidade — RIR controlado, cadência estável, baixa falha de rep mesmo sob carga real.
+- **Critérios:** RIR planejado vs realizado dentro de `±1`, cadência dentro da tolerância prescrita, em `≥ 3 sessões consecutivas`.
+- **Raridade:** Comum
+- **Headline:** "Execução afiada"
+- **Contexto exibido:** "Carga real com técnica precisa — você está consolidando padrão motor"
+- **Número do slot:** % de séries dentro do prescrito
+
+### RN 32 · Streak de aderência
+
+- **Gatilho fisiológico:** consistência comportamental — frequência alta com sessões completas. O fator que mais move o resultado a longo prazo.
+- **Critérios:** `≥ 7 dias` com sessões completas conforme plano (sem perdidas).
+- **Raridade:** Comum
+- **Headline:** "{n} dias seguidos"
+- **Contexto exibido:** "Frequência sustentada — consistência é o multiplicador silencioso do treino"
+- **Número do slot:** n de dias
+
+### RN 33 · Percentil cruzando threshold
+
+- **Gatilho fisiológico:** marco de progressão dimensional — cruzar 50 ou 75 pela primeira vez no mesociclo significa mudança qualitativa de patamar.
+- **Critérios:** qualquer dimensão (N/M/Met) cruzando 50 ou 75 pela primeira vez no mesociclo atual.
+- **Raridade:** Raro
+- **Headline:** "Cruzou o p{threshold} em {dim}"
+- **Contexto exibido:** "Primeira vez que sua {dim} entra nesse patamar nesse ciclo — patamar novo, não pico isolado"
+- **Número do slot:** percentil da dimensão
+
+### RN 34 · Resiliência à carga
+
+- **Gatilho fisiológico:** mesma carga, custo menor — adaptação neural completa. O sistema absorveu o estímulo a ponto de torná-lo "barato".
+- **Critérios:** sessão de alta intensidade (top set, ou dia de força em DUP) executada com PSE médio igual ou `< PSE médio` de sessões anteriores de mesma intensidade prescrita, na janela das últimas `4 sessões` do mesmo tipo.
+- **Raridade:** Raro
+- **Headline:** "Carga ficou mais leve"
+- **Contexto exibido:** "Mesmo peso, esforço percebido caiu — adaptação neural completa nesse padrão"
+- **Número do slot:** delta de PSE
+
+### RN 35 · Equilíbrio dimensional
+
+- **Gatilho fisiológico:** as três dimensões progredindo juntas — ausência de sobre-ênfase. Especialmente valioso para perfis de hipertrofia/recomp.
+- **Critérios:** variância entre percentis N/M/Met `≤ 0.15` (em escala 0–1), `≥ 2 semanas`.
+- **Raridade:** Contextual (mais relevante para hipertrofia/recomp; menos para força pura)
+- **Headline:** "Três dimensões alinhadas"
+- **Contexto exibido:** "Neural, mecânica e metabólica caminhando juntas — sem buracos de estímulo"
+- **Número do slot:** variância dimensional
+
+### RN 36 · Retorno de fadiga
+
+- **Gatilho fisiológico:** auto-regulação funcionando — o aluno saiu de um estado de fadiga (baixo/sobrecarga) sem intervenção crítica, por recuperação ativa.
+- **Critérios:** `ritmo_estado` anterior em `baixo` ou `sobrecarga`, atual em `estável` ou `alta`, sem deload formal no intervalo.
+- **Raridade:** Raro
+- **Headline:** "Voltou ao ritmo"
+- **Contexto exibido:** "Depois de uma semana de fadiga, o sistema se reorganizou sozinho — sinal de boa reserva fisiológica"
+- **Número do slot:** ritmo_estado atual (label)
+
+### RN 37 · Sinais de atenção (fallback negativo)
+
+Quando nenhum fato celebrável dispara **e** há sinal de atenção ativo, o hero entra em modo alerta.
+
+| Sinal | Critério | Headline | Contexto |
+|-------|----------|----------|----------|
+| Ritmo em queda | `ritmo_estado = baixo` por `≥ 1 semana` | "Ritmo abaixo do normal" | "Algumas sessões com mais esforço relatado que o habitual — vale conversar com seu PT" |
+| Sobrecarga | `ritmo_estado = sobrecarga` | "Carga acumulada" | "Sinais de fadiga acumulada — pode ser hora de uma semana mais leve" |
+| Aderência caindo | aderência semanal `< 60%` por `2 semanas` | "Frequência abaixo do plano" | "Você está deixando treinos passar — quer ajustar o plano com seu PT?" |
+| Divergência PSE/IC | chip `pse_ic_divergência` ativo em `≥ 2` sessões da semana | "Esforço alto com pouco volume" | "Você está sentindo mais carga do que o registrado mostra — sinal de fadiga subjetiva" |
+
+Quando nenhum fato celebrável dispara **e** não há sinal de atenção, o hero exibe **estado neutro contextualizado pela fase do mesociclo**:
+
+- Deload → "Semana de descarga — cargas mais leves, execução precisa"
+- Acumulação → "Semana de acúmulo — volume é o protagonista"
+- Intensificação → "Semana de intensificação — cargas próximas do limite"
+- Realização/Pico → "Semana de realização — qualidade acima de quantidade"
+
+### RN 38 · Seleção via score composto
+
+Quando múltiplos fatos disparam simultaneamente, a headline é decidida por score composto:
+Score(fato) = Relevância × wR + Raridade × wRA + Recency × wRE
+
+Componentes em **Modelo Matemático §6**.
+
+**Regra de anti-repetição:** se o fato foi headline nas últimas 2 semanas consecutivas, seu Recency vai a 0 nessa semana (excluindo-o de fato da disputa). Exceção: fatos de raridade "Raro" ignoram anti-repetição — quando disparam, vencem sempre.
 
 ---
 
@@ -251,3 +426,12 @@ Chips automáticos por sessão no PT Dashboard — **nenhum campo extra precisa 
 | Chip fadiga precoce | PT | Dashboard | 26 |
 | Chip colapso de reps | PT | Dashboard | 26 |
 | Chip progressão ok | PT | Dashboard | 26 |
+| Chip pse_ic_divergência | PT | Dashboard | 26 |
+| Chip delta_pse_crescente | PT | Dashboard | 27 |
+| Chip ritmo_em_queda | PT | Push + Dashboard | 27 |
+| Check-in realizado | PT | Dashboard (badge) | 28 |
+| Check-in pulado | PT | Dashboard (badge) | 28 |
+| Ajuste de treino por prontidão | Aluno | Tela check-in | 29 |
+| Aluno ignorou ajuste sugerido | PT | Dashboard | 29 |
+| Insight Engine — fato celebrável selecionado | Aluno | Hero card | 27–36 |
+| Insight Engine — sinal de atenção | Aluno + PT | Hero + Push | 37 |

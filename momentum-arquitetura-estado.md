@@ -400,6 +400,82 @@ Para o gráfico de trajetória fazer sentido como linha única suave, o ideal é
 
 ---
 
+## Decisão Arquitetural — Insight Engine (Slot do Hero)
+
+**Data:** Mai 2026 · **Status:** FECHADO
+
+### O que foi decidido
+
+O destaque visual do hero card no app do aluno é um **slot elástico** alimentado por um motor de seleção chamado **Insight Engine**. Em vez de exibir uma métrica fixa (percentil, IC, score), o engine mantém uma biblioteca de **fatos celebráveis** — cada um com critérios fisiológicos próprios — e seleciona semanalmente o fato mais relevante para o momento do aluno.
+
+### Princípio fundamental
+
+Progressões reais não são lineares. O mesmo número significa coisas diferentes em fases diferentes do mesociclo:
+
+- Volume Load caindo em deload é **resultado planejado**, não regressão
+- PSE alto em intensificação é **esperado**, não fadiga descontrolada
+- Percentil mecânico baixo em semana técnica é **correto por design**
+
+Portanto, o destaque do hero também precisa mudar conforme o contexto. Uma métrica fixa universal sempre vai mentir para alguma fase ou perfil de aluno.
+
+### O que o Insight Engine resolve
+
+1. **Tradução técnica → linguagem natural sem perder auditabilidade**
+   Cada fato tem critérios numéricos fisiologicamente fundamentados (inputs auditáveis pelo PT) e uma headline em linguagem direta (consumível pelo aluno). O PT pode questionar "por que destacou isso essa semana?" e ver exatamente quais inputs ativaram aquele fato.
+
+2. **Padronização da expectativa por periodização**
+   Aluno em DUP, ondulatória, linear ou bloco vê fatos diferentes destacados porque o engine entende o que é esperado de cada periodização. O aluno linear celebra progressão de carga; o aluno em DUP celebra aderência ao plano ondulatório; o aluno em deload celebra recuperação ativa.
+
+3. **Eliminação do "número fora de contexto"**
+   Antes: "24" sem âncora semântica era lido como nota baixa. Agora: cada número exibido tem um fato declarado que o sustenta ("Acúmulo neural sustentado · percentil 65 há 3 semanas").
+
+### Classificação dos fatos (uso interno)
+
+| Categoria | Definição | Esperado |
+|-----------|-----------|----------|
+| **Comum** | Aplicável em qualquer fase, qualquer perfil | Garante presença mínima do slot |
+| **Contextual** | Depende da fase do mesociclo ou tipo de sessão | Aparece quando a fase permite |
+| **Raro** | Critério fisiológico estrito; quando aparece, é marco | Aceitar raridade — não calibrar para frequência |
+| **Perfil** | Só faz sentido para certos perfis/periodizações | Pode nunca disparar para alguns alunos |
+
+A raridade entra no **score composto de seleção** — fatos raros têm bônus de prioridade quando disparam, justamente porque carregam mais sinal.
+
+### Fallback e ausência de positivo
+
+Se nenhum fato celebrável dispara na semana:
+
+Há sinal de atenção ativo (ritmo_estado em baixo/sobrecarga)?
+→ SIM: hero entra em estado de alerta (frase + cor de atenção)
+→ NÃO: hero exibe estado neutro contextualizado pela fase
+(ex: "Semana de consolidação técnica — execução em foco")
+
+
+A ausência de positivo nunca vira vazio. Ou é alerta acionável, ou é narrativa neutra de fase.
+
+### Anti-repetição contextual
+
+Um fato que foi headline nas últimas 2 semanas perde prioridade na seleção da semana atual — mesmo que ainda esteja ativo. Isso evita banalização: ver "streak de 7 dias" três semanas seguidas vira ruído. O fato continua visível em chips secundários, mas a headline rotaciona para outro fato disponível.
+
+Fatos raros são exceção: se um fato raro dispara, ele ganha headline mesmo em janela de anti-repetição (raridade vence recency).
+
+### Auditabilidade — o diferencial
+
+O Insight Engine é a tradução prática do princípio estratégico do Momentum: "tecnicidade real, mastigada". A camada exibida ao aluno é narrativa; a camada subjacente — critérios numéricos, inputs, janelas temporais — é totalmente auditável pelo PT na Tela de Prescrição.
+
+### O que NÃO muda
+
+- Gráfico de trajetória dimensional (três linhas) permanece
+- Chips automáticos de sessão (RN 26) permanecem
+- ritmo_estado permanece como sinal independente
+- Modal do hero continua exibindo as bolinhas do mesociclo
+
+### Onde está especificado
+
+- **Regras de Negócio §6** — definição dos 10 fatos + sinais de atenção + score
+- **Modelo Matemático §6** — fórmulas de score composto e critérios numéricos
+
+---
+
 ## Decisão Arquitetural — Momentum Dimensional (v2)
 
 **Data:** Mar 2026 · **Status:** DOCUMENTADO PARA V2
