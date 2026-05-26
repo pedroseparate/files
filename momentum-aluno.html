@@ -99,7 +99,10 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;
 .hero-date{font-size:9px;color:var(--ink3);text-transform:uppercase;letter-spacing:.14em;margin-bottom:4px;}
 .hero-name{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;
   font-size:38px;line-height:.9;color:var(--gold);margin-bottom:4px;}
-.hero-meso{font-size:9px;color:var(--ink3);text-transform:uppercase;letter-spacing:.12em;margin-bottom:16px;}
+.hero-meso{font-size:9px;color:var(--ink3);text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px;}
+.meso-anchor{margin-bottom:16px;}
+.meso-anchor-line1{font-size:9px;color:var(--ink3);text-transform:uppercase;letter-spacing:.12em;line-height:1.7;}
+.meso-anchor-line2{font-size:9px;color:var(--ink2);letter-spacing:.05em;line-height:1.5;font-style:italic;}
 
 /* momentum row dentro do hero */
 .hero-momentum-row{display:flex;align-items:center;gap:14px;padding:14px 18px;
@@ -110,7 +113,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;
 .ms-arc-val{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
   font-family:'Bebas Neue',sans-serif;font-size:22px;line-height:1;letter-spacing:.02em;color:var(--gold);}
 .ms-label{font-size:8px;text-transform:uppercase;letter-spacing:.16em;color:var(--ink3);margin-bottom:3px;}
-.ms-title{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;color:var(--gold2);margin-bottom:2px;}
+.ms-title{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:13px;color:var(--gold2);margin-bottom:2px;}
 .ms-desc{font-size:9px;color:var(--ink2);line-height:1.7;}
 
 /* gráfico de trajetória */
@@ -143,7 +146,11 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;
 .sc-card-row{display:flex;align-items:center;gap:12px;padding:13px 14px 0;}
 .sc-card-left{flex:1;}
 .sc-card-name{font-size:9px;text-transform:uppercase;letter-spacing:.16em;color:var(--ink3);margin-bottom:3px;}
-.sc-card-name.has-tip{border-bottom:1px dashed rgba(200,160,96,.3);cursor:default;}
+.sc-card-name.has-tip{cursor:default;}
+.dim-info-icon{display:inline-flex;align-items:center;justify-content:center;
+  width:11px;height:11px;border-radius:50%;border:1px solid var(--ink3);
+  font-size:7px;color:var(--ink3);font-style:italic;font-weight:700;
+  margin-left:4px;vertical-align:middle;cursor:pointer;flex-shrink:0;}
 .sc-card-ctx{font-size:8px;color:var(--ink2);line-height:1.5;}
 .sc-card-ctx.up{color:rgba(106,160,80,.85);}
 .sc-card-ctx.dn{color:rgba(160,120,64,.9);}
@@ -194,20 +201,32 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;
 .msg-text{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:13px;color:var(--ink2);line-height:1.9;}
 .msg-date{font-size:8px;color:var(--ink3);margin-top:8px;}
 
-/* ── AI NARRATIVE (aluno — 2ª pessoa) ───────────── */
-.ai-card{background:var(--bg3);border:1px solid var(--b);border-radius:3px;
-  padding:14px 16px;position:relative;overflow:hidden;cursor:pointer;transition:border-color .15s;}
-.ai-card:hover{border-color:var(--b3);}
-.ai-card::before{content:'';position:absolute;top:0;left:0;width:2px;height:100%;
-  background:linear-gradient(180deg,var(--copper),var(--gold));}
-.ai-card-label{font-size:7px;text-transform:uppercase;letter-spacing:.2em;
-  color:var(--copper2);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+/* ── NARRATIVE SYSTEM ───────────────────────────── */
 .ai-dot{width:4px;height:4px;border-radius:50%;background:var(--copper2);animation:blink 2.4s ease infinite;}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
 .ai-text{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:13px;color:var(--ink2);line-height:1.85;}
 .ai-skeleton{display:flex;flex-direction:column;gap:6px;}
 .ai-skel-line{height:11px;background:linear-gradient(90deg,var(--b) 25%,var(--b2) 50%,var(--b) 75%);
   background-size:200% 100%;border-radius:2px;animation:shimmer 1.6s ease infinite;}
+/* narrative-card: inline, sem modal */
+.narrative-card{background:var(--bg3);border:1px solid var(--b);border-radius:3px;
+  padding:14px 16px 12px;position:relative;overflow:hidden;}
+.narrative-card::before{content:'';position:absolute;top:0;left:0;width:2px;height:100%;
+  background:linear-gradient(180deg,var(--copper),var(--gold));}
+.narrative-label{font-size:7px;text-transform:uppercase;letter-spacing:.2em;
+  color:var(--copper2);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.narrative-refresh{margin-top:10px;background:transparent;border:none;
+  font-family:'IBM Plex Mono',monospace;font-size:7px;text-transform:uppercase;
+  letter-spacing:.14em;color:var(--ink3);cursor:pointer;padding:0;display:block;}
+/* rest-narrative: frase contextual durante descanso */
+.rest-narrative{font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:11px;color:rgba(200,160,96,.55);text-align:center;
+  max-width:210px;margin:12px auto 0;line-height:1.7;}
+/* memoria-positiva: card no histórico */
+.memoria-card{padding:12px 16px;margin-bottom:2px;border-left:2px solid var(--gold);
+  background:var(--bg3);}
+.memoria-txt{font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:13px;color:var(--ink2);line-height:1.75;}
 .ai-skel-line:nth-child(2){width:88%;}
 .ai-skel-line:nth-child(3){width:72%;}
 @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
@@ -359,7 +378,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;
   text-align:left;}
 .checkin-btn:hover{border-color:var(--b3);background:var(--bg3);}
 .checkin-btn.selected{border-color:var(--copper);background:rgba(138,96,48,.10);color:var(--gold2);}
-.checkin-btn-emoji{font-size:24px;line-height:1;flex-shrink:0;}
+.checkin-btn-emoji{font-size:16px;line-height:1;flex-shrink:0;font-family:'IBM Plex Mono',monospace;}/* [emoji-pass] */
 .checkin-btn-text{display:flex;flex-direction:column;gap:3px;}
 .checkin-btn-label{font-size:11px;}
 .checkin-btn-desc{font-size:8px;color:var(--ink3);letter-spacing:.06em;}
@@ -668,9 +687,14 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;
     <button class="checkin-next" id="ci-next-btn" onclick="checkinNext()" disabled>
       Continuar →
     </button>
-    <button class="checkin-skip" id="ci-skip-btn" onclick="checkinSkip()">
-      Pular check-in
-    </button>
+    <button onclick="checkinSkip()" style="
+      background:none;border:none;
+      font-family:'IBM Plex Mono',monospace;font-size:9px;
+      text-transform:uppercase;letter-spacing:.16em;
+      color:var(--ink2);cursor:pointer;
+      padding:12px 20px;width:100%;text-align:center;
+      border-top:1px solid var(--b);margin-top:8px
+    ">pular → ir direto ao treino</button>
   </div>
 </div>
 
@@ -812,7 +836,7 @@ function scoreColor(v){
   return 'var(--danger2)';
 }
 function ritmoLabel(e){
-  return {alta:'Ritmo em alta',estavel:'Ritmo estável',sobrecarga:'Atenção — sobrecarga',baixo:'Ritmo baixo'}[e]||e;
+  return {alta:'em evolução',estavel:'estável',sobrecarga:'sobrecarregado',baixo:'em atenção'}[e]||e;
 }
 function pseColor(v){
   if(v>=9) return '#b84030';
@@ -917,7 +941,7 @@ function buildHeroCard(s) {
   const trajPts = sess.slice(0, 12).reverse();
   let trajSVG = '';
   if(trajPts.length >= 3) {
-    const W=320, H=52, PL=2, PR=2, PT=4, PB=4;
+    const W=320, H=72, PL=2, PR=2, PT=4, PB=4;
     const cW=W-PL-PR, cH=H-PT-PB;
 
     // Percentil rolante para cada ponto: posição na janela de 12 sessões
@@ -958,7 +982,15 @@ function buildHeroCard(s) {
       <circle cx="${lastMet.x.toFixed(1)}" cy="${lastMet.y.toFixed(1)}" r="2.5" fill="rgba(106,160,80,.8)"/>
       <circle cx="${lastN.x.toFixed(1)}"   cy="${lastN.y.toFixed(1)}"   r="2.5" fill="rgba(150,144,220,.85)"/>
       <circle cx="${lastM.x.toFixed(1)}"   cy="${lastM.y.toFixed(1)}"   r="3.2" fill="#ddb870" stroke="rgba(30,24,16,.7)" stroke-width="1.2"/>
-    </svg>`;
+      <text x="${(lastN.x+6).toFixed(1)}"   y="${lastN.y.toFixed(1)}"   fill="rgba(150,144,220,.7)"  font-size="8" dominant-baseline="middle" font-family="IBM Plex Mono,monospace">N</text>
+      <text x="${(lastM.x+6).toFixed(1)}"   y="${lastM.y.toFixed(1)}"   fill="var(--copper2)"        font-size="8" dominant-baseline="middle" font-family="IBM Plex Mono,monospace">M</text>
+      <text x="${(lastMet.x+6).toFixed(1)}" y="${lastMet.y.toFixed(1)}" fill="rgba(106,160,80,.8)"  font-size="8" dominant-baseline="middle" font-family="IBM Plex Mono,monospace">Met</text>
+    </svg>
+    <div style="display:flex;gap:10px;padding:0 0 8px;justify-content:flex-end">
+      <span style="font-size:7px;color:rgba(150,144,220,.6)">N</span>
+      <span style="font-size:7px;color:var(--copper2)">M</span>
+      <span style="font-size:7px;color:rgba(106,160,80,.7)">Met</span>
+    </div>`;
   }
 
   // ── Aderência ─────────────────────────────────────────────────────────
@@ -1035,6 +1067,25 @@ function buildHeroCard(s) {
   // Semana atual no mesociclo
   const semanaAtual = Math.min(Math.floor(diasDecorr / 7) + 1, s.semanas_total||8);
 
+  // Fase do mesociclo
+  const FASE_CFG = {
+    acumulacao:    {nome:'Acumulação',    cor:'var(--ink2)'},
+    intensificacao:{nome:'Intensificação',cor:'var(--copper2)'},
+    realizacao:    {nome:'Realização',    cor:'var(--gold)'},
+    deload:        {nome:'Deload',        cor:'var(--ink3)'},
+  };
+  function getFase(sem, total){
+    const pct = sem / (total||8);
+    if(sem >= (total||8)) return 'deload';
+    if(pct >= 0.75) return 'realizacao';
+    if(pct >= 0.40) return 'intensificacao';
+    return 'acumulacao';
+  }
+  const faseKey  = getFase(semanaAtual, s.semanas_total||8);
+  const faseNome = FASE_CFG[faseKey].nome;
+  const faseCor  = FASE_CFG[faseKey].cor;
+  const diasRestantes = Math.max(0, totalDias - diasDecorr);
+
   // Grade de bolinhas — baseada em datas reais, não em dias da semana
   // Cada bolinha representa um dia do mesociclo que é dia de treino
   // "dia de treino" = qualquer dia em que sessDateSet tem registro OU
@@ -1075,6 +1126,14 @@ function buildHeroCard(s) {
 
   const DIM_LABELS_FULL = {neural:'neural', mecanica:'mecânica', metabolica:'metabólica'};
 
+  // Streak — celebração proporcional
+  const streakCor    = streak >= 7 ? 'var(--gold)' : streak >= 3 ? 'var(--copper2)' : 'var(--ink3)';
+  const streakLabel  = streak >= 7 ? `${streak} dias · sequência forte`
+                     : streak >= 3 ? `${streak} dias`
+                     : streak > 0  ? `${streak} dia`
+                     : 'sem sequência ativa';
+  const streakBorder = streak >= 7 ? `1px solid rgba(200,160,96,.35)` : 'none';
+
   // Guarda trajSVG no estado global para o modal acessar
   S._heroTrajSVG   = trajSVG;
   S._heroTrajPts   = trajPts.length;
@@ -1086,7 +1145,10 @@ function buildHeroCard(s) {
       <div class="hero-clean">
         <div class="hero-date">${fmtDate()}</div>
         <div class="hero-name">${(s.name||'').split(' ')[0]}.</div>
-        <div class="hero-meso">${s.mesociclo||'—'} · semana ${semanaAtual} de ${s.semanas_total||8} · <span style="color:${heroCol}">foco em ${DIM_LABELS_FULL[heroKey]}</span></div>
+        <div class="meso-anchor">
+          <div class="meso-anchor-line1">${s.mesociclo||'—'} · semana ${semanaAtual} de ${s.semanas_total||8}</div>
+          <div class="meso-anchor-line2"><span style="color:${faseCor}">${faseNome}</span> · foco em <span style="color:${heroCol}">${DIM_LABELS_FULL[heroKey]}</span>${diasRestantes>0?' · '+diasRestantes+' dias restantes':''}</div>
+        </div>
         ${(()=>{
           const RITMO_CFG = {
             alta:       {col:'#6aa050', seta:'↑', lbl:'Crescente', desc:'Absorvendo bem a carga — continua assim'},
@@ -1104,7 +1166,7 @@ function buildHeroCard(s) {
       </div>
       <div class="hero-momentum-row" onclick="openModal('momentum')" style="flex-direction:row;align-items:center;gap:14px;padding:14px 16px;cursor:pointer">
 
-        <div style="width:52px;height:52px;border-radius:50%;border:2px solid ${heroCol};
+        <div style="width:64px;height:64px;border-radius:50%;border:2px solid ${heroCol};
           display:flex;align-items:center;justify-content:center;flex-shrink:0;background:rgba(0,0,0,.15)">
           <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:.02em;
             line-height:1;color:${heroCol};text-align:center">${heroPct}</div>
@@ -1113,6 +1175,7 @@ function buildHeroCard(s) {
         <div style="flex:1;min-width:0">
           <div class="ms-title" style="color:${heroCol}">${ritmoLabel(s.ritmo_estado)}</div>
           <div style="font-size:8px;color:var(--ink2);margin-top:2px">${heroCtx}</div>
+          <div style="font-size:8px;color:var(--ink3);margin-top:4px">foco em ${DIM_LABELS_FULL[heroKey]} · ${heroReason === 'atenção' ? 'atenção necessária' : heroReason === 'confirmação' ? 'ciclo confirmado' : 'em progressão'}</div>
         </div>
 
         <div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0">
@@ -1129,6 +1192,12 @@ function buildHeroCard(s) {
           }).join('')}
         </div>
 
+      </div>
+      <div style="padding:0 16px 14px">
+        <div style="display:inline-flex;align-items:center;gap:6px;padding:${streak>=7?'3px 10px':'0'};
+          border:${streakBorder};border-radius:3px;margin-top:8px">
+          <span style="font-size:9px;color:${streakCor};font-family:'IBM Plex Mono',monospace">${streakLabel}</span>
+        </div>
       </div>
     </div>`;
 }
@@ -1195,24 +1264,37 @@ function renderHome(){
   const el = document.getElementById('home-content');
   const scores = s.scores||{};
 
+  const divisaoHoje = s.divisao || 'treino de hoje';
+  const btnLabel    = `Iniciar · ${divisaoHoje}`;
+
   el.innerHTML = `
     ${buildHeroCard(s)}
+
+    <div class="sec">
+      <div class="sec-head"><div class="sec-title">Seu momento</div><div class="sec-line"></div></div>
+      <div class="narrative-card">
+        <div class="narrative-label"><span class="ai-dot"></span>análise · momentum</div>
+        <div class="ai-text" id="ai-text">
+          <div class="ai-skeleton">
+            <div class="ai-skel-line"></div>
+            <div class="ai-skel-line"></div>
+            <div class="ai-skel-line"></div>
+          </div>
+        </div>
+        <button class="narrative-refresh" onclick="refreshNarrativeInline()">↺ atualizar</button>
+      </div>
+    </div>
 
     <div style="padding:0 20px 14px">
       <button class="start-btn" onclick="openCheckin()">
         <span class="start-btn-ico">▶</span>
-        Iniciar treino de hoje
+        <span>${btnLabel}</span>
       </button>
     </div>
 
     <div class="sec">
       <div class="sec-head"><div class="sec-title">Esta semana</div><div class="sec-line"></div></div>
       <div class="sem-grid">${buildWeekStrip(s)}</div>
-    </div>
-
-    <div class="sec">
-      <div class="sec-head"><div class="sec-title">Seus scores</div><div class="sec-line"></div></div>
-      <div class="scores-list">${buildScoreCards(s)}</div>
     </div>
 
     ${s.notas?`
@@ -1225,18 +1307,10 @@ function renderHome(){
     </div>`:''}
 
     <div class="sec">
-      <div class="sec-head"><div class="sec-title">Seu momento</div><div class="sec-line"></div></div>
-      <div class="ai-card" id="ai-card" onclick="openModal('ai_narrative')">
-        <div class="ai-card-label"><span class="ai-dot"></span>Momentum · análise</div>
-        <div class="ai-text" id="ai-text">
-          <div class="ai-skeleton">
-            <div class="ai-skel-line"></div>
-            <div class="ai-skel-line"></div>
-            <div class="ai-skel-line"></div>
-          </div>
-        </div>
-      </div>
+      <div class="sec-head"><div class="sec-title">Seus scores</div><div class="sec-line"></div></div>
+      <div class="scores-list">${buildScoreCards(s)}</div>
     </div>
+
     <div style="height:24px"></div>
   `;
 
@@ -1305,6 +1379,7 @@ function scoreCtx(k, v, s) {
 }
 
 function buildScoreCards(s) {
+  // TODO: passar percMap para buildScoreCards
   const scores = s.scores || {};
   const dim = s.dim_dominante || 'mecanica';
 
@@ -1331,10 +1406,13 @@ function buildScoreCards(s) {
     return `<div class="sc-card" onclick="openModal('score_${k}')">
       <div class="sc-card-row">
         <div class="sc-card-left">
-          <div class="sc-card-name${DIM_TOOLTIP[k]?' has-tip':''}" ${DIM_TOOLTIP[k]?`data-tip="${DIM_TOOLTIP[k]}"`:''}>${lbl}</div>
+          <div class="sc-card-name${DIM_TOOLTIP[k]?' has-tip':''}" ${DIM_TOOLTIP[k]?`data-tip="${DIM_TOOLTIP[k]}"`:''}>${lbl}${DIM_TOOLTIP[k]?'<span class="dim-info-icon">i</span>':''}</div>
           <div class="sc-card-ctx ${ctx.type}">${arrow} ${ctx.txt}</div>
         </div>
-        <div class="sc-card-val" style="color:${col}">${v.toFixed(1)}</div>
+        <div style="text-align:right;flex-shrink:0">
+          <div class="sc-card-val" style="color:${col}">${v.toFixed(1)}</div>
+          <div style="font-size:7px;color:var(--ink3);margin-top:2px">top ${Math.round((1 - v/10)*100 + 10)}%</div>
+        </div>
       </div>
       <div class="sc-card-bar-wrap">
         <div class="sc-card-bar">
@@ -1479,10 +1557,10 @@ function buildWeekStrip(s){
         const freqDias = disp.split(/[/·,\s]+/).map(x=>DIAS_MAP[x]).filter(x=>x!==undefined);
         return freqDias.includes(dow);
       })();
-      slots.push(`<div class="dia ${isFreq&&offset<0?'rest':''}" style="opacity:${offset>0?0.3:isFreq?0.65:0.3}">
+      slots.push(`<div class="dia" style="opacity:${offset>0?0.3:isFreq?0.65:0.3}"><!-- [emoji-pass] -->
         <div class="dia-dot rest"></div>
         <div class="dia-lbl">${lbl}</div>
-        <div class="dia-tipo">${isFreq&&offset<0?'faltou':offset>0?'':'—'}</div>
+        <div class="dia-tipo">${isFreq&&offset<0?'—':offset>0?'':'—'}</div>
       </div>`);
     }
   }
@@ -1640,7 +1718,7 @@ function renderEvolucao(){
     </div>
 
     <div class="sec">
-      <div class="sec-head"><div class="sec-title">Índice de carga</div><div class="sec-line"></div></div>
+      <div class="sec-head"><div class="sec-title">Carga da sessão</div><div class="sec-line"></div></div>
       <div class="chart-card" onclick="openModal('ic_chart')">
         ${sess.length<2
           ? `<div style="font-size:9px;color:var(--ink3);padding:8px 0">mínimo 2 sessões para exibir</div>`
@@ -1824,7 +1902,9 @@ function renderHistorico(){
     el.innerHTML='<div class="empty-state">sem sessões registradas</div>';
     return;
   }
+  const memoriaHTML = renderMemoriaPositiva();
   el.innerHTML=`
+    ${memoriaHTML}
     <div class="sec">
       <div class="sec-head">
         <div class="sec-title">${sess.length} sessão${sess.length!==1?'s':''}</div>
@@ -1852,11 +1932,11 @@ function renderHistorico(){
           </div>
           <div class="hist-tags" style="justify-content:space-between">
             <div style="display:flex;gap:5px">
-              <span class="hist-tag">PSE ${(ss.pse||0).toFixed(1)}</span>
-              ${ic?`<span class="hist-tag">IC ${ic}</span>`:''}
+              <span class="hist-tag">esforço ${(ss.pse||0).toFixed(1)}</span>
+              ${ic?`<span class="hist-tag">carga ${ic}</span>`:''}
               <span class="hist-tag">${(ss.exercicios||[]).length} ex.</span>
             </div>
-            <span style="font-size:9px;color:var(--ink3)">↕</span>
+            <span style="font-size:8px;color:var(--ink3);text-transform:uppercase;letter-spacing:.08em">ver detalhes</span><!-- [emoji-pass] -->
           </div>
           <div class="hist-detail" id="hd-${i}"></div>
         </div>`;
@@ -1928,6 +2008,18 @@ function openHistSession(i){
 
   d.innerHTML=`
     <div style="padding-top:10px">
+      <!-- [emoji-pass] legenda N/M/Met — apenas no detalhe expandido -->
+      <div style="display:flex;gap:10px;margin-bottom:5px">
+        <span style="font-size:7px;color:rgba(150,144,220,.7);display:flex;align-items:center;gap:3px">
+          <span style="display:inline-block;width:7px;height:7px;border-radius:1px;background:rgba(150,144,220,.75)"></span>Neural
+        </span>
+        <span style="font-size:7px;color:var(--copper2);display:flex;align-items:center;gap:3px">
+          <span style="display:inline-block;width:7px;height:7px;border-radius:1px;background:var(--copper)"></span>Mecânica
+        </span>
+        <span style="font-size:7px;color:rgba(106,160,80,.8);display:flex;align-items:center;gap:3px">
+          <span style="display:inline-block;width:7px;height:7px;border-radius:1px;background:rgba(106,160,80,.65)"></span>Metabólica
+        </span>
+      </div>
       <div style="font-size:7px;text-transform:uppercase;letter-spacing:.16em;color:var(--ink3);text-align:center;margin-bottom:6px">
         Perfil da sessão vs sua média histórica
       </div>
@@ -1944,12 +2036,12 @@ function openHistSession(i){
       </div>
       <div style="display:flex;gap:10px;margin:14px 0 10px">
         <div style="flex:1;background:var(--bg2);border:1px solid var(--b);border-radius:4px;padding:8px;text-align:center">
-          <div style="font-size:6px;text-transform:uppercase;letter-spacing:.12em;color:var(--ink3);margin-bottom:3px">IC</div>
+          <div style="font-size:6px;text-transform:uppercase;letter-spacing:.12em;color:var(--ink3);margin-bottom:3px">Carga</div>
           <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.02em;line-height:1;color:var(--gold)">${ic}</div>
           <div style="font-size:6px;color:var(--ink3)">vs ${Math.round(avgIC)} méd.</div>
         </div>
         <div style="flex:1;background:var(--bg2);border:1px solid var(--b);border-radius:4px;padding:8px;text-align:center">
-          <div style="font-size:6px;text-transform:uppercase;letter-spacing:.12em;color:var(--ink3);margin-bottom:3px">PSE</div>
+          <div style="font-size:6px;text-transform:uppercase;letter-spacing:.12em;color:var(--ink3);margin-bottom:3px">Esforço</div>
           <div style="font-family:'IBM Plex Mono',monospace;font-size:14px;line-height:1;color:var(--gold)">${ss.pse||'—'}</div>
           <div style="font-size:6px;color:var(--ink3)">vs ${avgPse.toFixed(1)} méd.</div>
         </div>
@@ -1964,7 +2056,7 @@ function openHistSession(i){
         <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--b)">
           <div>
             <div style="font-size:9px;color:var(--ink);margin-bottom:2px">${ex.nome||'—'}</div>
-            <div style="font-size:7px;color:var(--ink3)">${ex.s||3}×${ex.r||ex.reps||'?'}${ex.pse?` · PSE ${ex.pse}`:''}</div>
+            <div style="font-size:7px;color:var(--ink3)">${ex.s||3}×${ex.r||ex.reps||'?'}${ex.pse?` · esforço ${ex.pse}`:''}</div>
           </div>
           <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.02em;line-height:1;color:var(--gold)">${ex.kg>0?ex.kg+'kg':'—'}</div>
         </div>`).join('')}`:''}
@@ -2058,7 +2150,7 @@ function renderTreino(){
   const bannerHTML = (p && f && f.volume < 1.0) ? `
     <div style="margin:8px 20px 0;padding:10px 14px;background:rgba(138,96,48,.08);
       border:1px solid var(--b2);border-radius:3px;display:flex;align-items:center;gap:10px">
-      <div style="font-size:18px">${p >= 6 ? '⚡' : p >= 4 ? '😐' : '😴'}</div>
+      <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;font-weight:600;color:${p >= 6 ? 'var(--gold)' : p >= 4 ? 'var(--copper2)' : 'var(--danger2)'}">${p >= 6 ? 'alto' : p >= 4 ? 'neutro' : 'baixo'}</div><!-- [emoji-pass] -->
       <div style="flex:1">
         <div style="font-size:8px;text-transform:uppercase;letter-spacing:.16em;color:var(--copper2);margin-bottom:2px">
           Prontidão ${p}/10 · ${f.label}
@@ -2086,7 +2178,7 @@ function renderTreino(){
           <div class="stbl-lbl">Série</div>
           <div class="stbl-lbl">Kg</div>
           <div class="stbl-lbl">Reps</div>
-          <div class="stbl-lbl">PSE</div>
+          <div class="stbl-lbl">Esforço</div>
           <div></div>
         </div>
         ${(()=>{ const proxIdx=ex.series.findIndex(s=>!s.done); return ex.series.map((sr,j)=>{
@@ -2202,7 +2294,7 @@ function buildSerieWidget(){
       </div>
 
       <!-- PSE da série -->
-      <div class="pse-lbl">PSE da série</div>
+      <div class="pse-lbl">Esforço da série</div>
       <div class="pse-track">
         ${[6,7,8,9,10].map(p=>`
           <button class="pse-btn ${t.curPSE===p?'on':''}"
@@ -2237,6 +2329,7 @@ function buildRestWidget(sec, target){
         </div>
       </div>
       <button class="rest-skip" onclick="skipRest()">Pular descanso</button>
+      <div class="rest-narrative" id="rest-narr">${getNarrativeDescanso()}</div>
     </div>`;
 }
 
@@ -2695,8 +2788,8 @@ function openModal(type){
         </div>
         <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:7px;color:var(--ink3)">
           <div style="display:flex;gap:8px">
-            <span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:3px;background:var(--copper);display:inline-block;border-radius:1px"></span>IC</span>
-            <span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:2px;background:rgba(184,64,48,.6);display:inline-block"></span>PSE médio</span>
+            <span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:3px;background:var(--copper);display:inline-block;border-radius:1px"></span>Carga</span>
+            <span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:2px;background:rgba(184,64,48,.6);display:inline-block"></span>Esforço médio</span>
             <span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:3px;background:var(--slate2);display:inline-block;border-radius:1px"></span>deload</span>
           </div>
         </div>
@@ -2718,19 +2811,6 @@ function openModal(type){
         ${exProgHTML}
       </div>`:''}`;
 
-  } else if(type==='ai_narrative'){
-    const cached=AI_CACHE[STUDENT_ID];
-    html=`<div class="modal-title">Análise do momento</div>
-      <div class="modal-sub">${s?.name}</div>
-      <div class="modal-prose ai-modal-text" style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;line-height:2">
-        ${cached||'<span style="color:var(--ink3)">gerando…</span>'}
-      </div>
-      <button onclick="refreshNarrative()"
-        style="margin-top:16px;width:100%;padding:12px;background:transparent;border:1px solid var(--b2);
-        color:var(--ink2);font-family:'IBM Plex Mono',monospace;font-size:8px;text-transform:uppercase;
-        letter-spacing:.14em;cursor:pointer;border-radius:2px;">
-        ↺ Atualizar análise
-      </button>`;
   } else if(type.startsWith('pr_')){
     const nome=decodeURIComponent(type.replace('pr_',''));
     // Coleta TODAS as aparições do exercício em ordem cronológica
@@ -2806,7 +2886,7 @@ function openModal(type){
         </svg>
         <div style="display:flex;justify-content:space-between;font-size:7px;color:var(--ink3);margin-top:4px">
           <span>${historico[0]?.data||''}</span>
-          <span>PSE: 🟢 baixo → 🟡 médio → 🔴 alto</span>
+          <span>PSE: <span style="color:var(--moss2)">baixo</span> → <span style="color:var(--gold)">médio</span> → <span style="color:var(--danger2)">alto</span></span><!-- [emoji-pass] -->
           <span>${historico[n-1]?.data||''}</span>
         </div>
       </div>
@@ -2818,7 +2898,7 @@ function openModal(type){
             <span style="font-size:8px;color:var(--ink3)">${h.data||'—'}</span>
             <span style="font-size:9px;color:var(--ink2)">${h.s}×${h.r}</span>
             <span style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.02em;line-height:1;color:${h.kg===pr.kg?'#ddb870':'var(--gold)'}">${h.kg>0?h.kg+'kg':'—'}</span>
-            <span style="font-size:8px;color:${h.pse>=9?'#b84030':h.pse>=7?'#a07040':'var(--ink3)'}">PSE ${h.pse||'—'}</span>
+            <span style="font-size:8px;color:${h.pse>=9?'#b84030':h.pse>=7?'#a07040':'var(--ink3)'}">esforço ${h.pse||'—'}</span>
           </div>`).join('')}
       </div>`;
 
@@ -2836,14 +2916,14 @@ function openModal(type){
       const tot=n+m+met||1;
       html=`
         <div class="modal-title">${sessHoje.tipo||'Treino'}</div>
-        <div class="modal-sub">${sessHoje.date||sessHoje.data||''} · PSE ${sessHoje.pse||'—'}</div>
+        <div class="modal-sub">${sessHoje.date||sessHoje.data||''} · esforço ${sessHoje.pse||'—'}</div>
         <div style="display:flex;gap:12px;margin:14px 0">
           <div style="flex:1;background:var(--bg3);border:1px solid var(--b);border-radius:4px;padding:10px;text-align:center">
-            <div style="font-size:6px;text-transform:uppercase;letter-spacing:.14em;color:var(--ink3);margin-bottom:4px">IC</div>
+            <div style="font-size:6px;text-transform:uppercase;letter-spacing:.14em;color:var(--ink3);margin-bottom:4px">Carga</div>
             <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:.02em;line-height:1;color:var(--gold)">${Math.round(ic)}</div>
           </div>
           <div style="flex:1;background:var(--bg3);border:1px solid var(--b);border-radius:4px;padding:10px;text-align:center">
-            <div style="font-size:6px;text-transform:uppercase;letter-spacing:.14em;color:var(--ink3);margin-bottom:4px">PSE</div>
+            <div style="font-size:6px;text-transform:uppercase;letter-spacing:.14em;color:var(--ink3);margin-bottom:4px">Esforço</div>
             <div style="font-family:'IBM Plex Mono',monospace;font-size:14px;line-height:1;color:var(--gold)">${sessHoje.pse||'—'}</div>
           </div>
           <div style="flex:1;background:var(--bg3);border:1px solid var(--b);border-radius:4px;padding:10px;text-align:center">
@@ -2908,7 +2988,7 @@ function openModal(type){
     const myY=sy(avg).toFixed(1);
 
     html=`
-      <div class="modal-title">Índice de Carga</div>
+      <div class="modal-title">Carga da sessão</div>
       <div class="modal-sub">${s?.name} · ${sess.length} sessões · média ${avg}</div>
 
       <div style="display:flex;align-items:baseline;gap:8px;margin:14px 0 4px">
@@ -2929,7 +3009,7 @@ function openModal(type){
       </svg>
 
       <div style="font-size:8px;color:var(--ink2);line-height:1.75;padding:12px 0 4px;border-top:1px solid var(--b)">
-        O Índice de Carga combina <strong>volume mecânico</strong>, <strong>demanda neural</strong> e <strong>custo metabólico</strong> em um único número. Variações são esperadas — sessões de força têm IC diferente de sessões de volume, e deloads produzem quedas programadas. Compare com a tendência, não sessão a sessão.
+        A carga da sessão combina <strong>volume mecânico</strong>, <strong>demanda neural</strong> e <strong>custo metabólico</strong> em um único número. Variações são esperadas — sessões de força têm carga diferente de sessões de volume, e deloads produzem quedas programadas. Compare com a tendência, não sessão a sessão.
       </div>
 
       <div style="margin-top:12px">
@@ -3215,13 +3295,82 @@ function closeModal(e){
     document.getElementById('modal').classList.remove('open');
 }
 
-function refreshNarrative(){
+// Slots do sistema de narração contínua
+const NARRATIVE_SLOTS = {
+  home:       {id:'ai-text',    fonte:'ai',       desc:'Análise do momento atual do aluno'},
+  descanso:   {id:'rest-narr',  fonte:'template', desc:'Frase contextual durante descanso'},
+  pos_sessao: {id:'pos-narr',   fonte:'template', desc:'Resumo narrativo pós-sessão'},
+  historico:  {id:'mem-narr',   fonte:'template', desc:'Memória positiva no histórico'},
+};
+
+function refreshNarrativeInline(){
   delete AI_CACHE[STUDENT_ID];
   const el=document.getElementById('ai-text');
   if(el){ el.innerHTML='<div class="ai-skeleton"><div class="ai-skel-line"></div><div class="ai-skel-line"></div><div class="ai-skel-line"></div></div>'; }
-  const m=document.querySelector('.ai-modal-text');
-  if(m) m.innerHTML='<span style="color:var(--ink3)">gerando…</span>';
   generateNarrative();
+}
+
+// Camada A — frases de descanso (determinísticas por PSE e séries feitas)
+function getNarrativeDescanso(){
+  const t = S.treino;
+  const ex = t.exs[t.ativo];
+  if(!ex) return '';
+  const feitas = ex.series.filter(s=>s.done).length;
+  const total  = ex.series.length;
+  const pse    = t.curPSE;
+  const nome   = ex.nome;
+
+  if(feitas === total) return `Último descanso em ${nome}. Mantenha a qualidade de execução.`;
+  if(pse >= 9) return `PSE alto — use esse descanso por completo antes de continuar.`;
+  if(pse >= 8) return `${feitas} de ${total} séries feitas. Recuperação ativa.`;
+  if(feitas === 1) return `Primeira série concluída. ${total - feitas} pela frente.`;
+  return `${feitas} de ${total} séries. Respire, hidrate-se.`;
+}
+
+// Camada A — resumo pós-sessão (determinístico)
+function getNarrativePosSessao(){
+  const t = S.treino;
+  const totalExs = t.exs.length;
+  const seriesFeitas = t.registros.length;
+  const pse = t.curPSE || (t.registros.map(r=>r.pse).filter(Boolean).reduce((a,b)=>a+b,0) / Math.max(t.registros.filter(r=>r.pse).length,1));
+  const kgMax = Math.max(...t.registros.map(r=>r.kg||0), 0);
+  const nome = (S.student?.name||'').split(' ')[0];
+
+  if(seriesFeitas === 0) return `Sessão registrada.`;
+  if(pse >= 9) return `Sessão intensa — ${seriesFeitas} séries concluídas. Recuperação vai ser importante.`;
+  if(kgMax > 0) return `${seriesFeitas} séries em ${totalExs} exercício${totalExs!==1?'s':''}. Carga máxima: ${kgMax}kg.`;
+  return `${seriesFeitas} séries concluídas em ${totalExs} exercício${totalExs!==1?'s':''}.`;
+}
+
+// Camada A — memória positiva para o histórico
+function renderMemoriaPositiva(){
+  const sess = S.sessions.filter(x=>!x.simulado);
+  if(sess.length === 0) return '';
+
+  // Procura PR em qualquer sessão recente
+  for(const ss of sess.slice(0,5)){
+    const exs = ss.exercicios||[];
+    for(const ex of exs){
+      if(ex.pr && ex.kg>0){
+        return `<div class="memoria-card">
+          <div style="font-size:7px;text-transform:uppercase;letter-spacing:.16em;color:var(--gold);margin-bottom:6px">memória · PR</div>
+          <div class="memoria-txt">Você estabeleceu recorde em <em>${ex.nome||ex.n}</em> com ${ex.kg}kg — um marco no mesociclo.</div>
+        </div>`;
+      }
+    }
+  }
+
+  // Senão: sessão com PSE baixo e IC alto (ótima eficiência)
+  const eficiente = sess.find(ss => ss.pse && ss.pse <= 7 && (ss.indice||ss.indice_carga||0) > 60);
+  if(eficiente){
+    const dtStr = fmtSessDate(eficiente.date||eficiente.data, S.student?.mesociclo_inicio);
+    return `<div class="memoria-card">
+      <div style="font-size:7px;text-transform:uppercase;letter-spacing:.16em;color:var(--gold);margin-bottom:6px">memória · eficiência</div>
+      <div class="memoria-txt">Em ${dtStr} você treinou com IC alto e PSE controlado — sinal de boa adaptação.</div>
+    </div>`;
+  }
+
+  return '';
 }
 
 // ═══════════════════════════════════════════════════
@@ -3325,24 +3474,25 @@ function renderCheckinStep(step) {
 
 function buildCansacoOpts() {
   const d = CI.disposicao;
+  // [emoji-pass] — emoji field removido; substituído por sym textual (IBM Plex Mono)
   const opts = d === 1
-    ? [{v:9, emoji:'😩', label:'Muito cansado',  desc:'pesado demais · baixa energia'},
-       {v:8, emoji:'😮‍💨', label:'Bastante cansado', desc:'acima do normal'},
-       {v:7, emoji:'😔', label:'Cansado',         desc:'dentro do comum para um dia ruim'}]
+    ? [{v:9, sym:'−−', label:'Muito cansado',  desc:'pesado demais · baixa energia'},
+       {v:8, sym:'−',  label:'Bastante cansado', desc:'acima do normal'},
+       {v:7, sym:'○',  label:'Cansado',         desc:'dentro do comum para um dia ruim'}]
     : d === 2
-    ? [{v:4, emoji:'🙂', label:'Levemente bem',   desc:'ligeiramente acima do normal'},
-       {v:5, emoji:'😐', label:'Neutro',           desc:'exatamente no médio'},
-       {v:6, emoji:'😑', label:'Levemente pesado', desc:'pouco abaixo do ideal'}]
-    : [{v:3, emoji:'💪', label:'Muito disposto',  desc:'acima do seu nível normal'},
-       {v:2, emoji:'⚡', label:'No pico',          desc:'melhor que o normal'},
-       {v:1, emoji:'🔥', label:'Imbatível',        desc:'dia excepcional'}];
+    ? [{v:4, sym:'○',  label:'Levemente bem',   desc:'ligeiramente acima do normal'},
+       {v:5, sym:'○',  label:'Neutro',           desc:'exatamente no médio'},
+       {v:6, sym:'−',  label:'Levemente pesado', desc:'pouco abaixo do ideal'}]
+    : [{v:3, sym:'+',  label:'Muito disposto',  desc:'acima do seu nível normal'},
+       {v:2, sym:'++', label:'No pico',          desc:'melhor que o normal'},
+       {v:1, sym:'+++',label:'Imbatível',        desc:'dia excepcional'}];
 
   const q2 = document.getElementById('ci-q2');
   if (q2) q2.textContent = d === 1 ? 'Quão cansado você está?' : d === 2 ? 'Como está sua energia?' : 'Qual o seu nível hoje?';
 
   document.getElementById('ci-opts-2').innerHTML = opts.map(o =>
     `<button class="checkin-btn" onclick="selectCansaco(${o.v})">
-      <span class="checkin-btn-emoji">${o.emoji}</span>
+      <span class="checkin-btn-emoji">${o.sym}</span>
       <div class="checkin-btn-text">
         <span class="checkin-btn-label">${o.label}</span>
         <span class="checkin-btn-desc">${o.desc}</span>
