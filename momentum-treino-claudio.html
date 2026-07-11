@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>Momentum — Treino Cláudio</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,600&family=IBM+Plex+Mono:wght@400;500&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --gold:#C9A84C;--copper:#A0632A;--amber:#D4862A;
+  --ink:#0D0B08;--night:#181510;--dusk:#22201A;--ember:#2C2820;--card:#242118;
+  --text:#F0EAD6;--muted:#8A8468;--faint:#4A4535;
+  --success:#2E7D52;
+  --ff-d:'Cormorant Garamond',serif;--ff-m:'IBM Plex Mono',monospace;--ff-n:'Bebas Neue',sans-serif;
+}
+html,body{background:var(--ink);color:var(--text);font-family:var(--ff-d);min-height:100vh;max-width:430px;margin:0 auto;overflow-x:hidden}
+.screen{display:none;animation:fadeUp .28s ease both;padding-bottom:120px}
+.screen.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.hdr{background:var(--night);padding:44px 20px 20px;border-bottom:1px solid rgba(201,168,76,.12);text-align:center}
+.hdr-logo{font-family:var(--ff-n);font-size:10px;letter-spacing:5px;color:rgba(201,168,76,.5);margin-bottom:6px}
+.hdr h1{font-size:26px;font-style:italic;font-weight:400;line-height:1.2}
+.hdr-meta{font-family:var(--ff-m);font-size:10px;color:var(--muted);margin-top:4px;letter-spacing:.5px}
+.hdr-pill{display:inline-flex;align-items:center;gap:5px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.25);border-radius:20px;padding:3px 10px;font-family:var(--ff-m);font-size:9px;color:var(--gold);margin-top:10px}
+.hdr-pill::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--gold);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.sticky-nav{position:sticky;top:0;z-index:50;background:var(--night);border-bottom:1px solid rgba(201,168,76,.1)}
+.tabs{display:flex}
+.tab{flex:1;padding:11px 0;text-align:center;font-family:var(--ff-m);font-size:10px;letter-spacing:1.5px;color:var(--faint);background:none;border:none;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s}
+.tab.on{color:var(--gold);border-bottom-color:var(--gold)}
+.tab.done-phase{color:var(--success);cursor:default}
+.sticky-prog{background:var(--dusk);padding:8px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,.04)}
+.prog-track{flex:1;height:2px;background:var(--faint);border-radius:2px}
+.prog-fill{height:2px;background:var(--gold);border-radius:2px;transition:width .5s ease}
+.prog-count{font-family:var(--ff-n);font-size:15px;color:var(--gold);white-space:nowrap;line-height:1}
+.prog-total{font-family:var(--ff-m);font-size:9px;color:var(--muted);white-space:nowrap}
+.section-intro{padding:20px 20px 4px}
+.section-intro-label{font-family:var(--ff-n);font-size:11px;letter-spacing:4px;color:var(--gold);opacity:.7;margin-bottom:4px}
+.section-intro-title{font-size:22px;font-style:italic;color:var(--text);margin-bottom:4px}
+.section-intro-meta{font-family:var(--ff-m);font-size:10px;color:var(--muted);letter-spacing:.3px}
+.ex-list{padding:14px 16px 16px}
+.wu-card{background:var(--card);border:1px solid rgba(255,255,255,.06);border-radius:12px;margin-bottom:10px;overflow:hidden}
+.wu-card-top{display:flex;align-items:flex-start;gap:12px;padding:14px 14px 10px}
+.wu-num{font-family:var(--ff-n);font-size:40px;color:rgba(201,168,76,.18);line-height:1;flex-shrink:0;margin-top:-4px}
+.wu-info{flex:1}
+.wu-name{font-size:18px;font-style:italic;color:var(--text);line-height:1.25;margin-bottom:3px}
+.wu-meta{font-family:var(--ff-m);font-size:10px;color:var(--gold);letter-spacing:.3px;margin-bottom:6px}
+.chips{display:flex;flex-wrap:wrap;gap:4px}
+.chip{font-family:var(--ff-m);font-size:9px;padding:2px 7px;border-radius:20px;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.15);color:var(--muted)}
+.chip.hi{background:rgba(201,168,76,.16);border-color:rgba(201,168,76,.38);color:var(--gold)}
+.wu-tip{font-family:var(--ff-m);font-size:10px;color:var(--muted);line-height:1.6;padding:10px 14px;border-top:1px solid rgba(255,255,255,.04)}
+.gif-toggle{display:flex;align-items:center;gap:8px;padding:9px 14px;border-top:1px solid rgba(255,255,255,.04);cursor:pointer;background:transparent;border-left:none;border-right:none;border-bottom:none;width:100%;text-align:left;transition:background .2s}
+.gif-toggle:active{background:rgba(201,168,76,.05)}
+.gif-toggle-icon{width:20px;height:20px;border-radius:5px;background:rgba(201,168,76,.15);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;transition:background .2s}
+.gif-toggle-label{font-family:var(--ff-m);font-size:9px;color:var(--muted);letter-spacing:.5px}
+.gif-toggle-arrow{margin-left:auto;font-family:var(--ff-m);font-size:11px;color:var(--faint);transition:transform .25s}
+.gif-toggle.open .gif-toggle-arrow{transform:rotate(90deg)}
+.gif-toggle.open .gif-toggle-icon{background:rgba(201,168,76,.25)}
+.gif-toggle.open .gif-toggle-label{color:var(--gold)}
+.gif-panel-wu{max-height:0;overflow:hidden;transition:max-height .35s ease}
+.gif-panel-wu.open{max-height:320px}
+.gif-panel-wu img{width:100%;display:block;max-height:260px;object-fit:cover}
+.gif-panel-wu .gif-caption{font-family:var(--ff-m);font-size:9px;color:var(--muted);padding:6px 12px 10px}
+.bottom-cta-wu{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;padding:12px 16px 28px;background:linear-gradient(0deg,var(--ink) 65%,transparent);pointer-events:none}
+.btn-start-wu{width:100%;background:var(--gold);color:var(--ink);border:none;border-radius:10px;padding:15px;font-family:var(--ff-m);font-size:12px;font-weight:500;letter-spacing:2px;cursor:pointer;transition:all .2s;pointer-events:all}
+.btn-start-wu:active{transform:scale(.97);background:var(--amber)}
+.sec-lbl{padding:18px 20px 6px;font-family:var(--ff-m);font-size:9px;color:var(--gold);letter-spacing:3px}
+.sec-rule{height:1px;background:linear-gradient(90deg,rgba(201,168,76,.35),transparent);margin:0 20px 12px}
+.ex-collapsed{margin:0 16px 8px;background:var(--card);border:1px solid rgba(255,255,255,.05);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:10px;transition:all .35s;opacity:.45}
+.ex-collapsed.next-up{opacity:.7;border-color:rgba(201,168,76,.12)}
+.ex-collapsed.done-ex{opacity:.35}
+.ex-col-num{font-family:var(--ff-n);font-size:28px;color:var(--faint);line-height:1;flex-shrink:0;width:28px}
+.ex-col-info{flex:1;min-width:0}
+.ex-col-name{font-size:15px;font-style:italic;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ex-col-meta{font-family:var(--ff-m);font-size:9px;color:var(--faint);margin-top:2px;letter-spacing:.3px}
+.ex-col-badge{font-family:var(--ff-m);font-size:9px;padding:3px 8px;border-radius:6px;flex-shrink:0;white-space:nowrap}
+.badge-remaining{background:rgba(74,69,53,.35);color:var(--muted)}
+.badge-done{background:rgba(46,125,82,.15);color:#3aaa6e}
+.badge-biset{background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.2);color:var(--gold)}
+.biset-collapsed{margin:0 16px 8px;background:var(--card);border:1.5px solid rgba(201,168,76,.15);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;opacity:.5;transition:all .35s}
+.biset-collapsed.next-up{opacity:.75;border-color:rgba(201,168,76,.25)}
+.biset-collapsed.done-ex{opacity:.3}
+.bsc-icon{font-family:var(--ff-n);font-size:10px;letter-spacing:1px;color:var(--gold);background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.3);padding:3px 8px;border-radius:20px;flex-shrink:0}
+.bsc-info{flex:1}
+.bsc-name{font-size:14px;font-style:italic;color:var(--muted)}
+.bsc-meta{font-family:var(--ff-m);font-size:9px;color:var(--faint);margin-top:2px}
+.biset-active-wrap{margin:0 16px 14px;border:1.5px solid rgba(201,168,76,.4);border-radius:14px;overflow:hidden;background:var(--dusk)}
+.biset-hdr{display:flex;align-items:center;gap:8px;padding:10px 14px;background:rgba(201,168,76,.09);border-bottom:1px solid rgba(201,168,76,.2)}
+.biset-badge{font-family:var(--ff-n);font-size:11px;letter-spacing:2px;color:var(--gold);background:rgba(201,168,76,.2);border:1px solid rgba(201,168,76,.45);padding:3px 10px;border-radius:20px}
+.biset-round-info{font-family:var(--ff-m);font-size:9px;color:var(--gold);flex:1;text-align:right}
+.ex-active-card{background:var(--ember);border-bottom:1px solid rgba(255,255,255,.05);animation:exFocus .3s ease}
+@keyframes exFocus{from{opacity:.6}to{opacity:1}}
+.ex-hdr{display:flex;align-items:flex-start;gap:10px;padding:12px 14px 6px}
+.biset-letter{font-family:var(--ff-n);font-size:36px;line-height:1;flex-shrink:0;margin-top:-2px;color:var(--gold)}
+.ex-name-active{font-size:20px;font-style:italic;color:var(--text);line-height:1.2;margin-bottom:2px}
+.ex-detail-active{font-family:var(--ff-m);font-size:10px;color:var(--muted)}
+.ex-tech{padding:0 14px 8px;font-family:var(--ff-m);font-size:10px;color:var(--muted);line-height:1.65;border-bottom:1px solid rgba(255,255,255,.04)}
+.ex-tech strong{color:rgba(240,234,214,.75);font-size:10px}
+.gif-btn{display:flex;align-items:center;gap:6px;margin-top:8px;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:8px;padding:7px 10px;font-family:var(--ff-m);font-size:9px;color:var(--muted);cursor:pointer;width:100%;text-align:left;transition:all .2s}
+.gif-btn.seen{border-color:rgba(201,168,76,.4);color:rgba(201,168,76,.8)}
+.gif-btn-icon{width:18px;height:18px;border-radius:4px;background:rgba(201,168,76,.2);display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0}
+.gif-panel{display:none;margin-top:8px;border-radius:8px;overflow:hidden;background:var(--night);border:1px solid rgba(201,168,76,.15)}
+.gif-panel.open{display:block}
+.gif-panel img{width:100%;display:block;max-height:220px;object-fit:cover}
+.gif-panel .gif-caption{font-family:var(--ff-m);font-size:9px;color:var(--muted);padding:6px 10px}
+.ex-dormant{padding:10px 14px;display:flex;align-items:center;gap:10px;opacity:.3;background:rgba(0,0,0,.15)}
+.dormant-letter{font-family:var(--ff-n);font-size:28px;color:var(--faint);line-height:1;flex-shrink:0;width:28px}
+.dormant-name{font-size:15px;font-style:italic;color:var(--muted)}
+.dormant-status{font-family:var(--ff-m);font-size:9px;color:var(--faint);margin-top:2px}
+.series-block{padding:10px 14px 12px}
+.series-active{background:rgba(201,168,76,.06);border:1.5px solid rgba(201,168,76,.28);border-radius:10px;padding:12px;margin-bottom:8px}
+.series-active-num{font-family:var(--ff-m);font-size:9px;letter-spacing:2px;color:var(--gold);margin-bottom:10px}
+.series-inputs{display:flex;gap:10px;margin-bottom:12px}
+.inp-group{flex:1;display:flex;flex-direction:column;gap:4px}
+.inp-label{font-family:var(--ff-m);font-size:8px;color:var(--muted);letter-spacing:1px}
+.inp-field{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:var(--text);font-family:var(--ff-m);font-size:17px;font-weight:500;text-align:center;width:100%;padding:9px 4px;-webkit-appearance:none;transition:all .2s}
+.inp-field:focus{outline:none;border-color:var(--gold);background:rgba(201,168,76,.1)}
+.inp-steppers{display:flex;gap:4px;margin-top:3px}
+.inp-step{flex:1;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:6px;color:var(--muted);font-family:var(--ff-m);font-size:13px;padding:5px;cursor:pointer;transition:all .15s;line-height:1}
+.inp-step:active{background:rgba(201,168,76,.12);color:var(--gold)}
+.inp-hint{font-family:var(--ff-m);font-size:8px;color:var(--faint);text-align:center;margin-top:2px}
+.btn-done-serie{width:100%;background:var(--gold);color:var(--ink);border:none;border-radius:8px;padding:13px;font-family:var(--ff-m);font-size:11px;font-weight:500;letter-spacing:1.5px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.btn-done-serie:active{transform:scale(.97)}
+.btn-done-serie .ripple{position:absolute;inset:0;background:rgba(255,255,255,.25);border-radius:8px;animation:rippleOut .4s ease forwards}
+@keyframes rippleOut{from{opacity:1;transform:scale(.9)}to{opacity:0;transform:scale(1.05)}}
+.past-series{display:flex;flex-direction:column;gap:3px;margin-bottom:6px}
+.past-row{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:6px;background:rgba(201,168,76,.04);border:1px solid rgba(201,168,76,.1)}
+@keyframes flashGreen{0%{background:rgba(46,125,82,.25);border-color:rgba(46,125,82,.5)}100%{background:rgba(201,168,76,.04);border-color:rgba(201,168,76,.1)}}
+.flash-confirm{animation:flashGreen .5s ease forwards}
+.ps-num{font-family:var(--ff-n);font-size:18px;color:var(--faint);width:20px;flex-shrink:0}
+.ps-val{font-family:var(--ff-m);font-size:11px;color:var(--muted);flex:1}
+.ps-val span{color:var(--text);font-weight:500}
+.ps-check{width:20px;height:20px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ps-check svg{width:10px;height:10px;stroke:var(--ink);stroke-width:2.5;fill:none}
+.upcoming-summary{display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:6px;background:rgba(255,255,255,.015);font-family:var(--ff-m);font-size:9px;color:var(--faint);margin-bottom:6px}
+.upcoming-summary::before{content:'';width:4px;height:4px;border-radius:50%;border:1px solid var(--faint);flex-shrink:0}
+.timed-active{background:rgba(201,168,76,.06);border:1.5px solid rgba(201,168,76,.28);border-radius:10px;padding:16px;margin-bottom:8px;display:flex;flex-direction:column;align-items:center;gap:10px}
+.timed-ring{position:relative;margin:4px 0}
+.timed-ring svg{transform:rotate(-90deg)}
+.timed-ring-num{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:var(--ff-n);font-size:36px;color:var(--gold);line-height:1}
+.btn-timed-start{width:100%;background:transparent;border:1.5px solid rgba(201,168,76,.4);border-radius:8px;color:var(--gold);font-family:var(--ff-m);font-size:11px;padding:12px;cursor:pointer;letter-spacing:1.5px;transition:all .2s}
+.btn-timed-start.running{background:rgba(201,168,76,.1);border-color:var(--gold)}
+.cta-to-b{display:none;margin:0 14px 12px;background:rgba(201,168,76,.1);border:1.5px solid rgba(201,168,76,.5);border-radius:10px;padding:14px 16px;font-family:var(--ff-m);font-size:11px;color:var(--gold);letter-spacing:1px;cursor:pointer;width:calc(100% - 28px);text-align:center;transition:all .2s}
+.cta-to-b.show{display:block;animation:slideDown .25s ease}
+@keyframes slideDown{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.cta-to-b:active{transform:scale(.97)}
+.rest-bar{display:none;padding:0 14px 12px}
+.rest-bar.show{display:block;animation:slideDown .2s ease}
+.rest-inner{background:var(--dusk);border:1px solid rgba(201,168,76,.2);border-radius:10px;padding:14px;display:flex;align-items:center;gap:12px}
+.rest-ring-big{position:relative;flex-shrink:0}
+.rest-ring-big svg{transform:rotate(-90deg)}
+.rest-num-big{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:var(--ff-n);font-size:22px;color:var(--gold);line-height:1;white-space:nowrap}
+.rest-info{flex:1}
+.rest-info p{font-family:var(--ff-m);font-size:9px;color:var(--muted);letter-spacing:1px}
+.rest-info strong{font-family:var(--ff-m);font-size:12px;color:var(--text);display:block;margin-top:2px}
+.rest-skip{background:transparent;border:1px solid rgba(255,255,255,.1);border-radius:6px;color:var(--muted);font-family:var(--ff-m);font-size:9px;padding:7px 10px;cursor:pointer;flex-shrink:0}
+.cta-next-ex{margin:12px 14px 14px;background:var(--dusk);border:1px solid rgba(201,168,76,.3);border-radius:10px;padding:14px 16px;display:none;align-items:center;justify-content:space-between;cursor:pointer;transition:all .2s}
+.cta-next-ex.show{display:flex;animation:slideDown .3s ease}
+.cta-next-ex:active{transform:scale(.98)}
+.cta-next-label{font-family:var(--ff-m);font-size:9px;color:var(--muted);letter-spacing:1px;margin-bottom:2px}
+.cta-next-name{font-size:16px;font-style:italic;color:var(--text)}
+.cta-next-arrow{font-family:var(--ff-n);font-size:24px;color:var(--gold);line-height:1}
+.ex-standalone-active{background:var(--ember);border:1.5px solid rgba(201,168,76,.35);border-radius:14px;overflow:hidden}
+.overlay{position:fixed;inset:0;background:rgba(8,7,5,.88);display:none;align-items:flex-end;justify-content:center;z-index:200;backdrop-filter:blur(6px)}
+.overlay.open{display:flex;animation:fadeUp .2s ease}
+.sheet{background:var(--night);border:1px solid rgba(201,168,76,.2);border-radius:20px 20px 0 0;padding:24px 20px 44px;width:100%;max-width:430px}
+.handle{width:32px;height:3px;background:var(--faint);border-radius:2px;margin:0 auto 18px}
+.sheet-title{font-size:22px;font-style:italic;text-align:center;color:var(--text);margin-bottom:3px}
+.sheet-sub{font-family:var(--ff-m);font-size:10px;color:var(--gold);text-align:center;letter-spacing:1px;margin-bottom:20px}
+.pse-opts{display:flex;flex-direction:column;gap:8px}
+.pse-opt{display:flex;align-items:center;gap:12px;padding:15px 14px;border-radius:12px;background:var(--dusk);border:1.5px solid transparent;cursor:pointer;transition:all .2s;text-align:left}
+.pse-opt:active{transform:scale(.98)}
+.pse-opt.leve{border-color:rgba(46,125,82,.35)}.pse-opt.mod{border-color:rgba(201,168,76,.35)}.pse-opt.heavy{border-color:rgba(176,48,32,.35)}
+.pse-ico{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.pse-ico.leve{background:rgba(46,125,82,.15)}.pse-ico.mod{background:rgba(201,168,76,.12)}.pse-ico.heavy{background:rgba(176,48,32,.12)}
+.pse-txt strong{display:block;font-size:16px;font-style:italic;color:var(--text);margin-bottom:1px}
+.pse-txt span{font-family:var(--ff-m);font-size:9px;color:var(--muted)}
+.pse-range{font-family:var(--ff-m);font-size:9px;padding:2px 7px;border-radius:4px;margin-left:auto;flex-shrink:0}
+.pse-range.leve{background:rgba(46,125,82,.2);color:#3aaa6e}.pse-range.mod{background:rgba(201,168,76,.2);color:var(--gold)}.pse-range.heavy{background:rgba(176,48,32,.2);color:#e05040}
+.finish-title{font-size:32px;font-style:italic;color:var(--gold);text-align:center;margin-bottom:3px}
+.finish-sub{font-family:var(--ff-m);font-size:9px;color:var(--muted);text-align:center;letter-spacing:2px;margin-bottom:18px}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.stat-cell{background:var(--ember);border-radius:10px;padding:14px;text-align:center}
+.stat-val{font-family:var(--ff-n);font-size:30px;color:var(--gold);line-height:1}
+.stat-lbl{font-family:var(--ff-m);font-size:8px;color:var(--muted);margin-top:3px;letter-spacing:1px}
+.finish-ex-list{display:flex;flex-direction:column;gap:5px;margin-bottom:16px}
+.finish-ex-item{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:var(--ember);border-radius:8px}
+.fex-name{font-size:14px;font-style:italic;color:var(--text)}
+.pse-badge{font-family:var(--ff-m);font-size:9px;padding:2px 8px;border-radius:10px}
+.pse-badge.leve{background:rgba(46,125,82,.2);color:#3aaa6e}.pse-badge.mod{background:rgba(201,168,76,.2);color:var(--gold)}.pse-badge.heavy{background:rgba(176,48,32,.2);color:#e05040}.pse-badge.pend{background:rgba(74,69,53,.3);color:var(--faint)}
+.global-pse-label{font-family:var(--ff-m);font-size:9px;color:var(--muted);text-align:center;letter-spacing:1.5px;margin-bottom:8px}
+.global-pse-btns{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:16px}
+.gpse-btn{background:var(--dusk);border:1.5px solid rgba(255,255,255,.08);border-radius:10px;padding:11px 4px;font-family:var(--ff-m);font-size:9px;color:var(--muted);cursor:pointer;transition:all .2s;text-align:center}
+.gpse-btn.sel.leve{background:rgba(46,125,82,.12);border-color:rgba(46,125,82,.5);color:#3aaa6e}
+.gpse-btn.sel.mod{background:rgba(201,168,76,.12);border-color:rgba(201,168,76,.5);color:var(--gold)}
+.gpse-btn.sel.heavy{background:rgba(176,48,32,.12);border-color:rgba(176,48,32,.5);color:#e05040}
+.btn-gold{background:var(--gold);color:var(--ink);border:none;border-radius:8px;padding:13px;font-family:var(--ff-m);font-size:11px;font-weight:500;letter-spacing:1.5px;cursor:pointer;transition:all .2s}
+.btn-gold:active{transform:scale(.97);background:var(--amber)}
+</style>
+</head>
+<body>
+
+<div class="screen active" id="scr-wu">
+  <div class="hdr">
+    <div class="hdr-logo">MOMENTUM</div>
+    <h1>Costas, Bíceps<br>&amp; Post. de Coxa</h1>
+    <div class="hdr-meta">CLÁUDIO · 21 MAI 2025</div>
+    <div class="hdr-pill">Treino iniciado</div>
+  </div>
+  <div class="sticky-nav">
+    <div class="tabs">
+      <button class="tab on" id="tab-wu">Aquecimento</button>
+      <button class="tab" onclick="goScreen('main')">Parte Principal</button>
+    </div>
+  </div>
+  <div class="section-intro">
+    <div class="section-intro-label">AQUECIMENTO</div>
+    <div class="section-intro-title">2 voltas em circuito</div>
+    <div class="section-intro-meta">Colchonete + banco do puxador · Sem descanso entre exercícios</div>
+  </div>
+  <div class="ex-list">
+    <div class="wu-card">
+      <div class="wu-card-top">
+        <div class="wu-num">1</div>
+        <div class="wu-info">
+          <div class="wu-name">Extensão de tronco no banco do puxador</div>
+          <div class="wu-meta">5 repetições · Peso do corpo</div>
+          <div class="chips"><span class="chip hi">Eretores da coluna</span><span class="chip hi">Glúteo máximo</span><span class="chip">Isquiotibiais</span></div>
+        </div>
+      </div>
+      <div class="wu-tip">Alongue a coluna ao descer, contraia o glúteo ao subir. Movimento lento e controlado — não é velocidade, é amplitude.</div>
+      <button class="gif-toggle" id="gt-0" onclick="toggleGifWu(0)">
+        <div class="gif-toggle-icon">▶</div><div class="gif-toggle-label">VER DEMONSTRAÇÃO</div><div class="gif-toggle-arrow">›</div>
+      </button>
+      <div class="gif-panel-wu" id="gp-0">
+        <img src="https://fitnessprogramer.com/wp-content/uploads/2026/01/kneeling-lat-stretch-on-bench.gif" loading="lazy" alt="">
+        <div class="gif-caption">Extensão de tronco no banco do puxador</div>
+      </div>
+    </div>
+    <div class="wu-card">
+      <div class="wu-card-top">
+        <div class="wu-num">2</div>
+        <div class="wu-info">
+          <div class="wu-name">Mobilidade de quadril lateral</div>
+          <div class="wu-meta">5 reps cada lado · Sem alternar · Apoio no banco</div>
+          <div class="chips"><span class="chip hi">Adutores</span><span class="chip hi">Glúteo médio</span><span class="chip">Piriforme</span><span class="chip">TFL</span></div>
+        </div>
+      </div>
+      <div class="wu-tip">Complete as 5 reps de um lado antes de trocar. O banco é só apoio — o foco é a amplitude do quadril.</div>
+      <button class="gif-toggle" id="gt-1" onclick="toggleGifWu(1)">
+        <div class="gif-toggle-icon">▶</div><div class="gif-toggle-label">VER DEMONSTRAÇÃO</div><div class="gif-toggle-arrow">›</div>
+      </button>
+      <div class="gif-panel-wu" id="gp-1">
+        <img src="https://i.makeagif.com/media/3-11-2016/54YT2G.gif" loading="lazy" alt="">
+        <div class="gif-caption">Mobilidade de quadril lateral</div>
+      </div>
+    </div>
+    <div class="wu-card">
+      <div class="wu-card-top">
+        <div class="wu-num">3</div>
+        <div class="wu-info">
+          <div class="wu-name">Ativação escapular no puxador</div>
+          <div class="wu-meta">10 reps · 30 kg · Só ombros, sem dobrar o cotovelo</div>
+          <div class="chips"><span class="chip hi">Trapézio médio</span><span class="chip hi">Romboides</span><span class="chip">Serrátil anterior</span></div>
+        </div>
+      </div>
+      <div class="wu-tip">Cotovelos quase estendidos. Mova só as escápulas: desce e junta. Prepara o manguito para o puxador frontal.</div>
+      <button class="gif-toggle" id="gt-2" onclick="toggleGifWu(2)">
+        <div class="gif-toggle-icon">▶</div><div class="gif-toggle-label">VER DEMONSTRAÇÃO</div><div class="gif-toggle-arrow">›</div>
+      </button>
+      <div class="gif-panel-wu" id="gp-2">
+        <img src="https://i0.wp.com/www.strengthlog.com/wp-content/uploads/2024/10/scap-pull-ups.gif?fit=600%2C600&ssl=1" loading="lazy" alt="">
+        <div class="gif-caption">Ativação escapular — depressão e retração</div>
+      </div>
+    </div>
+  </div>
+  <div class="bottom-cta-wu">
+    <button class="btn-start-wu" onclick="goScreen('main')">INICIAR PARTE PRINCIPAL ›</button>
+  </div>
+</div>
+
+<div class="screen" id="scr-main">
+  <div class="hdr">
+    <div class="hdr-logo">MOMENTUM</div>
+    <h1>Parte Principal</h1>
+    <div class="hdr-meta">CLÁUDIO · 21 MAI 2025</div>
+  </div>
+  <div class="sticky-nav">
+    <div class="tabs">
+      <button class="tab done-phase" onclick="goScreen('wu')">✓ Aquecimento</button>
+      <button class="tab on">Parte Principal</button>
+    </div>
+    <div class="sticky-prog">
+      <div class="prog-count" id="prog-count">0/6</div>
+      <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+      <div class="prog-total" id="prog-total">exercícios</div>
+    </div>
+  </div>
+  <div style="margin-top:16px" id="main-list"></div>
+  <div style="padding:4px 16px 16px">
+    <button class="btn-gold" style="width:100%" onclick="openFinish()">Finalizar Treino</button>
+  </div>
+</div>
+
+<div class="overlay" id="pse-overlay">
+  <div class="sheet">
+    <div class="handle"></div>
+    <div class="sheet-title">Como foi esse exercício?</div>
+    <div class="sheet-sub" id="pse-exname">—</div>
+    <div class="pse-opts">
+      <button class="pse-opt leve" onclick="setPSE('leve')"><div class="pse-ico leve">🌿</div><div class="pse-txt"><strong>Leve</strong><span>Sobrou bastante. Poderia ter ido mais.</span></div><span class="pse-range leve">1–4</span></button>
+      <button class="pse-opt mod" onclick="setPSE('mod')"><div class="pse-ico mod">🔥</div><div class="pse-txt"><strong>Moderado</strong><span>Desafiador mas controlado. No ponto.</span></div><span class="pse-range mod">5–7</span></button>
+      <button class="pse-opt heavy" onclick="setPSE('heavy')"><div class="pse-ico heavy">⚡</div><div class="pse-txt"><strong>Pesado</strong><span>Última rep foi difícil. No limite.</span></div><span class="pse-range heavy">8–10</span></button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="fin-overlay">
+  <div class="sheet">
+    <div class="handle"></div>
+    <div class="finish-title">Treino concluído</div>
+    <div class="finish-sub">CLÁUDIO · 21 MAI 2025</div>
+    <div class="stats-grid">
+      <div class="stat-cell"><div class="stat-val" id="fin-series">0</div><div class="stat-lbl">SÉRIES</div></div>
+      <div class="stat-cell"><div class="stat-val" id="fin-volume">0</div><div class="stat-lbl">VOLUME kg</div></div>
+    </div>
+    <div style="font-family:var(--ff-m);font-size:9px;color:var(--muted);letter-spacing:1.5px;margin-bottom:8px">PSE POR EXERCÍCIO</div>
+    <div class="finish-ex-list" id="fin-ex-list"></div>
+    <div class="global-pse-label">PSE GERAL DA SESSÃO</div>
+    <div class="global-pse-btns">
+      <button class="gpse-btn leve" onclick="setGPSE(this,'leve')">🌿 Leve</button>
+      <button class="gpse-btn mod" onclick="setGPSE(this,'mod')">🔥 Moderado</button>
+      <button class="gpse-btn heavy" onclick="setGPSE(this,'heavy')">⚡ Pesado</button>
+    </div>
+    <button class="btn-gold" style="width:100%;margin-top:4px" onclick="saveSession()">Salvar sessão</button>
+  </div>
+</div>
+
+<script>
+const EX={
+  1:{name:'Puxador Frontal',sets:4,reps:8,load:30,timed:false,biset:1,role:'a',partner:2,detail:'Barra · Pegada pronada · 4×8 · 30kg',tech:'<strong>Pegada pronada</strong> maximiza recrutamento do dorsal. Puxe em direção ao esterno, escápulas para baixo e para trás.',chips:['Grande dorsal','Redondo maior','Bíceps braquial','Romboides'],hi:[0,1],gif:'ex1'},
+  2:{name:'Prancha Baixa',sets:4,reps:0,load:0,timed:true,dur:20,biset:1,role:'b',partner:1,detail:'Banco do puxador · 4×20s',tech:'<strong>Core ativo</strong> sem comprometer o dorsal para a próxima série. Cotovelos sob os ombros, quadril neutro.',chips:['Transverso abdominal','Reto abdominal','Oblíquos','Eretores'],hi:[0,1],gif:'ex2'},
+  3:{name:'Ponte nos Calcanhares',sets:3,reps:12,load:0,timed:false,biset:2,role:'a',partner:4,detail:'Peso do corpo · 3×12',tech:'<strong>Calcanhares apoiados</strong> isolam os isquiotibiais. Excêntrica lenta de 3 segundos ao descer.',chips:['Isquiotibiais','Glúteo máximo','Eretores lombares','Adutores'],hi:[0,1],gif:'ex3'},
+  4:{name:'Rosca Direta',sets:3,reps:12,load:6,timed:false,biset:2,role:'b',partner:3,detail:'Halteres · 3×12 · 6kg cada lado',tech:'<strong>Após a ponte</strong>, o bíceps descansou enquanto os isquiotibiais trabalharam. Cotovelo fixo ao tronco.',chips:['Bíceps braquial','Braquial','Braquiorradial'],hi:[0,1],gif:'ex4'},
+  5:{name:'Facepull',sets:3,reps:12,load:12,timed:false,biset:0,detail:'Polia · Corda · 3×12 · 12kg',tech:'<strong>Saúde do ombro.</strong> Puxe para a altura dos olhos, separando as mãos ao final. Compensa a protração gerada pelo puxador frontal.',chips:['Deltóide posterior','Manguito rotador','Trapézio médio','Romboides'],hi:[0,1],gif:'ex5'},
+  6:{name:'Cadeira Flexora',sets:3,reps:12,load:30,timed:false,biset:0,detail:'Máquina · 3×12 · 30kg',tech:'<strong>Fecha a cadeia posterior.</strong> Excêntrica de 3s ao estender. Joelho alinhado ao eixo da máquina.',chips:['Isquiotibiais','Bíceps femoral','Semitendíneo','Semimembranoso'],hi:[0,1],gif:'ex6'}
+};
+const GIFS={ex1:'https://www.vidafitness.com.au/wp-content/uploads/2020/03/58-3498309-Lat-Pulldown-GIF-26427b91730d4039a39d557e21c9e494.gif',ex2:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSN3NK9vIIM8Jqi0QqSkXl8WOWSakvjBz8Pww&s',ex3:'https://i0.wp.com/images-prod.healthline.com/hlcmsresource/images/topic_centers/Fitness-Exercise/648x364_5_Glute_Bridge_Variations_Press_Through_Heels.gif?w=1155&h=764',ex4:'https://i.pinimg.com/originals/9e/91/a4/9e91a46c2650aa45fb1eebd14b0eaf19.gif',ex5:'https://www.powrpersonaltraining.com/wp-content/uploads/2025/09/Cable-Face-Pull-Exercise-Demo.gif',ex6:'https://cdn.fisiculturismo.com.br/monthly_2017_03/cadeira-flexora-animacao.gif.90e391e83229726537404de3a3af9104.gif'};
+const ORDER=[{type:'biset',group:1,exA:1,exB:2},{type:'biset',group:2,exA:3,exB:4},{type:'solo',exId:5},{type:'solo',exId:6}];
+const S={series:{},activeSerie:{},pse:{},globalPSE:null,completed:new Set(),restIv:{},timedIv:{},activeBlock:0,bisetSide:{1:'a',2:'a'}};
+Object.entries(EX).forEach(([id,ex])=>{const arr=[];for(let i=0;i<ex.sets;i++)arr.push({reps:ex.reps,load:ex.load,done:false,timerLeft:ex.dur||0});S.series[id]=arr;S.activeSerie[id]=0;});
+
+function goScreen(s){document.querySelectorAll('.screen').forEach(el=>el.classList.remove('active'));document.getElementById('scr-'+s).classList.add('active');if(s==='main')renderAll();window.scrollTo(0,0);}
+
+function toggleGifWu(i){const btn=document.getElementById('gt-'+i);const panel=document.getElementById('gp-'+i);const open=panel.classList.toggle('open');btn.classList.toggle('open',open);btn.querySelector('.gif-toggle-icon').textContent=open?'■':'▶';btn.querySelector('.gif-toggle-label').textContent=open?'FECHAR':'VER DEMONSTRAÇÃO';}
+
+function toggleGif(id){const panel=document.getElementById('gif-'+id);if(!panel)return;const open=panel.classList.toggle('open');const btn=document.getElementById('gifbtn-'+id);if(btn){btn.querySelector('.gif-btn-icon').textContent=open?'■':'👁';btn.classList.add('seen');btn.querySelector('span').textContent=open?'Fechar':'Ver demonstração';}}
+
+function renderAll(){
+  const container=document.getElementById('main-list');if(!container)return;container.innerHTML='';
+  ORDER.forEach((block,blockIdx)=>{
+    const isActive=blockIdx===S.activeBlock;
+    if(block.type==='biset'){
+      const {group,exA,exB}=block;const aDone=S.completed.has(String(exA));const bDone=S.completed.has(String(exB));const groupDone=aDone&&bDone;
+      if(!isActive){const el=document.createElement('div');const rem=calcRemaining(block);el.className='biset-collapsed'+(groupDone?' done-ex':blockIdx===S.activeBlock+1?' next-up':'');el.id='block-'+blockIdx;el.innerHTML=`<div class="bsc-icon">BI-SET ${group}</div><div class="bsc-info"><div class="bsc-name">${EX[exA].name} + ${EX[exB].name}</div><div class="bsc-meta">${groupDone?'Concluído':rem+' séries restantes'}</div></div><span class="ex-col-badge ${groupDone?'badge-done':'badge-biset'}">${groupDone?'✓':rem+' sér.'}</span>`;container.appendChild(el);return;}
+      const side=S.bisetSide[group];const activeExId=side==='a'?exA:exB;const dormantExId=side==='a'?exB:exA;const dormantEx=EX[dormantExId];
+      const totalRounds=EX[exA].sets;const currentRound=Math.min(Math.max(S.series[exA].filter(s=>s.done).length,S.series[exB].filter(s=>s.done).length)+1,totalRounds);
+      const wrap=document.createElement('div');wrap.className='biset-active-wrap';wrap.id='block-'+blockIdx;
+      wrap.innerHTML=`<div class="biset-hdr"><div class="biset-badge">BI-SET ${group}</div><div class="biset-round-info">Rodada ${currentRound} de ${totalRounds} · Agora: ${side.toUpperCase()}</div></div><div class="ex-active-card" id="excard-${activeExId}">${buildActiveExInner(activeExId)}</div><button class="cta-to-b" id="cta-${group}" onclick="activateSide(${group},'${side==='a'?'b':'a'}')">▼ &nbsp;IR PARA ${side==='a'?'B':'A'} AGORA</button><div class="ex-dormant"><div class="dormant-letter">${dormantEx.role.toUpperCase()}</div><div><div class="dormant-name">${dormantEx.name}</div><div class="dormant-status">aguardando · ${dormantEx.timed?dormantEx.dur+'s':dormantEx.reps+' reps'}</div></div></div>${buildNextCTA(blockIdx)}`;
+      container.appendChild(wrap);renderSeries(activeExId);
+    } else {
+      const {exId}=block;const ex=EX[exId];const done=S.completed.has(String(exId));const rem=S.series[exId].filter(s=>!s.done).length;
+      if(!isActive){const el=document.createElement('div');el.className='ex-collapsed'+(done?' done-ex':blockIdx===S.activeBlock+1?' next-up':'');el.id='block-'+blockIdx;el.innerHTML=`<div class="ex-col-num">${exId}</div><div class="ex-col-info"><div class="ex-col-name">${ex.name}</div><div class="ex-col-meta">${ex.detail}</div></div><span class="ex-col-badge ${done?'badge-done':'badge-remaining'}">${done?'✓':rem+' séries'}</span>`;container.appendChild(el);return;}
+      const wrap=document.createElement('div');wrap.id='block-'+blockIdx;wrap.style.cssText='margin:0 16px 12px';
+      wrap.innerHTML=`<div class="ex-standalone-active" id="excard-${exId}">${buildActiveExInner(exId,true)}${buildNextCTA(blockIdx)}</div>`;
+      container.appendChild(wrap);renderSeries(exId);
+    }
+  });
+}
+
+function buildActiveExInner(exId,solo=false){
+  const ex=EX[exId];const chipsHtml=ex.chips.map((c,i)=>`<span class="chip${ex.hi.includes(i)?' hi':''}">${c}</span>`).join('');
+  const letter=ex.biset?`<div class="biset-letter">${ex.role.toUpperCase()}</div>`:`<div style="font-family:var(--ff-n);font-size:36px;color:rgba(201,168,76,.3);line-height:1;margin-top:-2px;flex-shrink:0">${exId}</div>`;
+  return `<div class="ex-hdr">${letter}<div><div class="ex-name-active">${ex.name}</div><div class="ex-detail-active">${ex.detail}</div></div></div><div class="chips" style="padding:0 14px 6px">${chipsHtml}</div><div class="ex-tech">${ex.tech}</div><div style="padding:6px 14px 4px"><button class="gif-btn" id="gifbtn-${ex.gif}" onclick="toggleGif('${ex.gif}')"><div class="gif-btn-icon">▶</div><span>Ver demonstração</span></button><div class="gif-panel" id="gif-${ex.gif}"><img src="${GIFS[ex.gif]}" loading="lazy" alt=""><div class="gif-caption">${ex.name}</div></div></div><div class="series-block" id="sb-${exId}"></div><div class="rest-bar" id="rest-${exId}"><div class="rest-inner"><div class="rest-ring-big"><svg width="56" height="56" viewBox="0 0 56 56"><circle cx="28" cy="28" r="23" fill="none" stroke="rgba(74,69,53,.5)" stroke-width="3"/><circle cx="28" cy="28" r="23" fill="none" stroke="var(--gold)" stroke-width="3" stroke-dasharray="144.5" stroke-dashoffset="144.5" id="rring-${exId}" stroke-linecap="round"/></svg><div class="rest-num-big" id="rnum-${exId}">1:00</div></div><div class="rest-info"><p>DESCANSE</p><strong>Próxima série</strong></div><button class="rest-skip" onclick="skipRest(${exId})">pular ›</button></div></div>`;
+}
+
+function buildNextCTA(blockIdx){const next=ORDER[blockIdx+1];if(!next)return'';const name=next.type==='biset'?`BI-SET ${next.group} — ${EX[next.exA].name} + ${EX[next.exB].name}`:EX[next.exId].name;return `<div class="cta-next-ex" id="next-cta-${blockIdx}" onclick="advanceBlock(${blockIdx})"><div><div class="cta-next-label">PRÓXIMO EXERCÍCIO</div><div class="cta-next-name">${name}</div></div><div class="cta-next-arrow">›</div></div>`;}
+
+function calcRemaining(block){if(block.type==='biset'){const a=EX[block.exA].sets-S.series[block.exA].filter(s=>s.done).length;const b=EX[block.exB].sets-S.series[block.exB].filter(s=>s.done).length;return Math.max(a,b)*2;}return S.series[block.exId].filter(s=>!s.done).length;}
+
+function activateSide(group,side){S.bisetSide[group]=side;renderAll();const exId=side==='a'?ORDER[S.activeBlock].exA:ORDER[S.activeBlock].exB;setTimeout(()=>{const c=document.getElementById('excard-'+exId);if(c)c.scrollIntoView({behavior:'smooth',block:'start'});},80);}
+
+function advanceBlock(fromIdx){S.activeBlock=fromIdx+1;renderAll();setTimeout(()=>{const el=document.getElementById('block-'+(fromIdx+1));if(el)el.scrollIntoView({behavior:'smooth',block:'start'});},80);}
+
+function renderSeries(exId){
+  const ex=EX[exId];const series=S.series[exId];const active=S.activeSerie[exId];const container=document.getElementById('sb-'+exId);if(!container)return;let html='';
+  if(series.filter(s=>s.done).length>0){html+='<div class="past-series">';series.forEach((s,i)=>{if(!s.done)return;html+=`<div class="past-row" id="prow-${exId}-${i}"><div class="ps-num">${i+1}</div><div class="ps-val">${ex.timed?'<span>20s</span> concluído':`<span>${s.reps}</span> reps · <span>${s.load}kg</span>`}</div><div class="ps-check"><svg viewBox="0 0 10 10"><polyline points="1.5,5 4,8 8.5,2"/></svg></div></div>`;});html+='</div>';}
+  if(active<series.length){
+    const s=series[active];html+=`<div style="font-family:var(--ff-m);font-size:9px;color:var(--gold);letter-spacing:2px;padding:${active>0?'10px':'0'} 0 8px;display:flex;align-items:center;gap:6px">SÉRIE ${active+1} DE ${ex.sets}<span style="flex:1;height:1px;background:rgba(201,168,76,.15);display:block"></span></div>`;
+    if(ex.timed){html+=`<div class="timed-active" style="margin-bottom:8px"><div style="font-family:var(--ff-m);font-size:9px;color:var(--muted);letter-spacing:1px">DURAÇÃO DA SÉRIE</div><div class="timed-ring"><svg width="80" height="80" viewBox="0 0 80 80"><circle cx="40" cy="40" r="34" fill="none" stroke="rgba(74,69,53,.4)" stroke-width="4"/><circle cx="40" cy="40" r="34" fill="none" stroke="var(--gold)" stroke-width="4" stroke-dasharray="213.6" stroke-dashoffset="213.6" id="tring-${exId}" stroke-linecap="round" style="transform:rotate(-90deg);transform-origin:40px 40px"/></svg><div class="timed-ring-num" id="tnum-${exId}">${ex.dur}s</div></div><button class="btn-timed-start" id="tbtn-${exId}" onclick="toggleTimed(${exId})">INICIAR ${ex.dur}s</button></div>`;}
+    else{html+=`<div class="series-active"><div class="series-active-num">SÉRIE ${active+1} DE ${ex.sets}</div><div class="series-inputs"><div class="inp-group"><div class="inp-label">REPS</div><input type="number" inputmode="numeric" class="inp-field" id="inp-reps-${exId}" value="${s.reps}" min="0" max="99" onchange="updateVal(${exId},'reps',this.value)" onfocus="this.select()"><div class="inp-steppers"><button class="inp-step" onclick="step(${exId},'reps',-1)">−</button><button class="inp-step" onclick="step(${exId},'reps',1)">+</button></div></div><div class="inp-group"><div class="inp-label">CARGA</div><input type="number" inputmode="decimal" step="0.5" class="inp-field" id="inp-load-${exId}" value="${s.load}" min="0" max="999" onchange="updateVal(${exId},'load',this.value)" onfocus="this.select()"><div class="inp-steppers"><button class="inp-step" onclick="step(${exId},'load',-2.5)">−</button><button class="inp-step" onclick="step(${exId},'load',2.5)">+</button></div><div class="inp-hint">±2,5 kg</div></div></div><button class="btn-done-serie" id="bdone-${exId}" onclick="doneSerie(${exId})">✓ &nbsp;SÉRIE ${active+1} CONCLUÍDA</button></div>`;}
+    const rem=series.length-active-1;if(rem>0)html+=`<div class="upcoming-summary">${rem} série${rem>1?'s':''} restante${rem>1?'s':''}</div>`;
+  }
+  container.innerHTML=html;
+}
+
+function updateVal(exId,field,val){S.series[exId][S.activeSerie[exId]][field]=parseFloat(val)||0;save();}
+function step(exId,field,delta){const a=S.activeSerie[exId];const s=S.series[exId][a];s[field]=Math.max(0,+(s[field]||0)+delta);const inp=document.getElementById('inp-'+field+'-'+exId);if(inp)inp.value=field==='load'?s[field].toFixed(1):s[field];save();}
+
+function doneSerie(exId){
+  const ex=EX[exId];const active=S.activeSerie[exId];
+  const btn=document.getElementById('bdone-'+exId);if(btn){const r=document.createElement('span');r.className='ripple';btn.appendChild(r);setTimeout(()=>r.remove(),400);}
+  if(navigator.vibrate)navigator.vibrate(60);
+  S.series[exId][active].done=true;const next=active+1;S.activeSerie[exId]=next;
+  if(next<ex.sets){S.series[exId][next].load=S.series[exId][active].load;S.series[exId][next].reps=S.series[exId][active].reps;}
+  if(next>=ex.sets){
+    S.completed.add(String(exId));updateProgress();setTimeout(()=>openPSE(exId),800);
+    if(ex.biset&&ex.role==='a'){renderAll();setTimeout(()=>{const c=document.getElementById('cta-'+ex.biset);if(c)c.classList.add('show');},100);}
+    else if(ex.biset&&ex.role==='b'){if(S.completed.has(String(ex.partner))){renderAll();setTimeout(()=>{const nc=document.getElementById('next-cta-'+S.activeBlock);if(nc)nc.classList.add('show');},200);}else{activateSide(ex.biset,'a');}}
+    else{renderAll();setTimeout(()=>{const nc=document.getElementById('next-cta-'+S.activeBlock);if(nc)nc.classList.add('show');},200);}
+  } else {
+    if(ex.biset){if(ex.role==='a'){renderSeries(exId);setTimeout(()=>{const c=document.getElementById('cta-'+ex.biset);if(c)c.classList.add('show');},50);}else{renderSeries(exId);setTimeout(()=>{activateSide(ex.biset,'a');startRest(exId);},80);}}
+    else{renderSeries(exId);startRest(exId);}
+    setTimeout(()=>{const p=document.getElementById('prow-'+exId+'-'+active);if(p)p.classList.add('flash-confirm');},50);
+  }
+  save();
+}
+
+function toggleTimed(exId){const key='t'+exId;if(S.timedIv[key]){clearInterval(S.timedIv[key]);delete S.timedIv[key];const btn=document.getElementById('tbtn-'+exId);if(btn){btn.textContent='RETOMAR';btn.classList.remove('running')}return;}const ex=EX[exId];const active=S.activeSerie[exId];const s=S.series[exId][active];if(!s.timerLeft)s.timerLeft=ex.dur;const total=ex.dur;const ring=document.getElementById('tring-'+exId);const num=document.getElementById('tnum-'+exId);const btn=document.getElementById('tbtn-'+exId);if(btn){btn.textContent='PAUSAR';btn.classList.add('running')}const circ=213.6;S.timedIv[key]=setInterval(()=>{s.timerLeft--;if(num)num.textContent=s.timerLeft+'s';if(ring)ring.style.strokeDashoffset=circ-(circ*(total-s.timerLeft)/total);if(s.timerLeft<=0){clearInterval(S.timedIv[key]);delete S.timedIv[key];s.timerLeft=total;if(navigator.vibrate)navigator.vibrate([80,40,80]);doneSerie(exId);}},1000);}
+
+function startRest(exId){const bar=document.getElementById('rest-'+exId);const ring=document.getElementById('rring-'+exId);const num=document.getElementById('rnum-'+exId);if(!bar)return;if(S.restIv[exId])clearInterval(S.restIv[exId]);bar.classList.add('show');let left=60;const circ=144.5;function tick(){if(num)num.textContent=Math.floor(left/60)+':'+(left%60<10?'0':'')+left%60;if(ring)ring.style.strokeDashoffset=circ-(circ*(60-left)/60);}tick();S.restIv[exId]=setInterval(()=>{left--;tick();if(left<=0){clearInterval(S.restIv[exId]);delete S.restIv[exId];bar.classList.remove('show');if(navigator.vibrate)navigator.vibrate([80,40,80]);}},1000);}
+function skipRest(exId){if(S.restIv[exId]){clearInterval(S.restIv[exId]);delete S.restIv[exId];}const bar=document.getElementById('rest-'+exId);if(bar)bar.classList.remove('show');}
+
+function updateProgress(){const done=S.completed.size,total=6,pct=Math.round((done/total)*100);const f=document.getElementById('prog-fill');const c=document.getElementById('prog-count');const t=document.getElementById('prog-total');if(f)f.style.width=pct+'%';if(c)c.textContent=done+'/'+total;if(t)t.textContent=done===total?'concluídos ✓':'exercícios';}
+
+let pendingPSEex=null;
+function openPSE(exId){pendingPSEex=exId;const el=document.getElementById('pse-exname');if(el)el.textContent=EX[exId].name.toUpperCase();document.getElementById('pse-overlay').classList.add('open');}
+function setPSE(level){if(pendingPSEex)S.pse[pendingPSEex]=level;document.getElementById('pse-overlay').classList.remove('open');pendingPSEex=null;save();}
+
+function openFinish(){let totalS=0,totalV=0;const list=document.getElementById('fin-ex-list');if(list){list.innerHTML='';for(let id=1;id<=6;id++){const ex=EX[id];S.series[id].forEach(s=>{if(s.done){totalS++;if(!ex.timed)totalV+=(s.reps*s.load);}});const pse=S.pse[id];const lbl=pse?({leve:'🌿 Leve',mod:'🔥 Moderado',heavy:'⚡ Pesado'}[pse]):'—';list.innerHTML+=`<div class="finish-ex-item"><span class="fex-name">${ex.name}</span><span class="pse-badge ${pse||'pend'}">${lbl}</span></div>`;}}document.getElementById('fin-series').textContent=totalS;document.getElementById('fin-volume').textContent=Math.round(totalV).toLocaleString('pt-BR');document.getElementById('fin-overlay').classList.add('open');}
+function setGPSE(btn,level){S.globalPSE=level;document.querySelectorAll('.gpse-btn').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');save();}
+function saveSession(){save();document.getElementById('fin-overlay').classList.remove('open');alert('Sessão salva ✓');}
+function save(){try{sessionStorage.setItem('mc-v5',JSON.stringify({series:S.series,activeSerie:S.activeSerie,pse:S.pse,completed:[...S.completed],activeBlock:S.activeBlock,bisetSide:S.bisetSide}));}catch(e){}}
+['pse-overlay','fin-overlay'].forEach(id=>{document.getElementById(id).addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});});
+</script>
+</body>
+</html>

@@ -52,9 +52,33 @@ Estas decisões foram tomadas após análise e **não devem ser revertidas sem j
 | **Timeout de sessão: 10 minutos** | Sem interação por 10min → `abandonada`. Tudo calculado com o executado. |
 | **Modo progressão: manual vs automático** | PT configura por microciclo. Manual = PT aprova. Automático = aplica direto. |
 
+### Decisões pré-lançamento Jacqueline (jun/2026)
+
+Decisões tomadas para viabilizar o lançamento do app para a primeira aluna real (Jacqueline), enquanto a calibração do modelo segue em desenvolvimento. **Não são decisões definitivas do produto — são decisões da v1 da home.**
+
+**1. Barras dimensionais (N/M/Met) ocultadas da home v1.**
+Razão: os scores atuais da Jacqueline retornam valores uniformes (8.67 em todas as dimensões), o que é artefato dos dados sintéticos atuais, não reflexo do modelo. Exibir três barras idênticas comunicaria "o sistema não diferencia" — o oposto do diferencial Momentum.
+Reativação: após re-simulação com scores derivados sessão a sessão do modelo matemático (`momentum-modelo-matematico.md`), com dispersão real entre dimensões.
+
+**2. Score Técnica removido da home v1.**
+Razão: discrepância evidente (Técnica=3.07 vs N=M=Met=8.67) sem explicação fisiológica consistente. A questão de fundo — se Técnica deveria ser score derivado, flag binária do PT, ou exclusivo da fase estúdio com supervisão — não está resolvida. Lançar com o score atual seria comunicar uma medição que não está validada.
+Resolução pendente: ver Pendências Críticas.
+
+**3. Layer A determinística é mandatória na home v1.**
+Razão: checkins da Jacqueline retornam `prontidao`, `cansaco` e `motivacao` null em todos os 11 registros — Layer B/IA não tem como funcionar sem esses dados. Layer A construída a partir de variáveis observáveis no banco (ritmo_estado, PSE médio recente, semana do meso, aderência) é a única narrativa confiável agora.
+Conteúdo da Layer A v1: hardcoded para o estado atual da Jacqueline; motor de regras Layer A genérico fica para v1.1.
+
+**4. Re-simulação dos dados da Jacqueline antes do lançamento.**
+Razão: os scores uniformes e o Técnica discrepante indicam que a simulação atual foi feita sem derivar os scores do modelo matemático. Re-simular significa: gerar/importar sessões coerentes e calcular N/M/Met/Ritmo sessão a sessão usando as fórmulas documentadas, não atribuir valores agregados sintéticos.
+Inclui: popular checkins esparsos (1–2 por semana) com valores coerentes para que a tela de check-in tenha histórico de exemplo quando ela explorar, mesmo que a home v1 não dependa desses dados.
+
 ---
 
 ## Pendências Críticas (bloqueadoras)
+
+### ⚠ Score Técnica — validade do proxy
+Sem observação direta (vídeo, presença, supervisão), Técnica só pode ser inferida por proxies frágeis (PSE vs carga vs reps prescritas vs executadas). Decisão pendente: Técnica deveria ser (a) score derivado com proxy melhor calibrado, (b) flag binária preenchida pelo PT, (c) exclusiva da fase estúdio com supervisão presencial, ou (d) removida do conjunto dimensional?
+Bloqueia: reativação do score na home, comunicação do diferencial técnico em material de marketing, futuro PT-facing dashboard.
 
 ### ⚠ IM — recalibração nos exercícios isolados
 Com FC fora de CargaNorm, exercícios isolados (Extensora, Flexora, Rosca, Adutora, Abdutora, etc.) terão Mecânica maior do que o calibrado originalmente. IM foi definido assumindo que FC já comprimia a CargaNorm. Revisão exercício a exercício necessária — **julgamento fisiológico do PT.**
