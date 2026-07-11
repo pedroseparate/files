@@ -737,6 +737,9 @@ let S = {
     clockSec: 0, clockTimer: null,
     sessaoId: null,
     registros: [],      // séries confirmadas
+    sessaoNome: null,   // chave da prescrição usada (ex: "Lower A")
+    prontidao: null,    // score de prontidão do check-in
+    checkinId: null,    // id do doc de check-in vinculado
   }
 };
 
@@ -2068,24 +2071,6 @@ function openHistSession(i){
 // ═══════════════════════════════════════════════════
 // TREINO — execução real
 // ═══════════════════════════════════════════════════
-function startTreino(){
-  // Monta exercícios a partir do perfil do aluno (até prescrição real existir)
-  const s = S.student;
-  const profile = buildTreinoFromProfile(s);
-  S.treino.exs      = profile.exs;
-  S.treino.ativo    = 0;
-  S.treino.expanded = {};
-  S.treino.phase    = 'idle';
-  S.treino.registros= [];
-  S.treino.clockSec = 0;
-  S.treino.sessaoId = `sim_${Date.now()}`;
-
-  document.getElementById('treino-title').textContent = `Treino de hoje`;
-  goPage('treino');
-  renderTreino();
-  startClock();
-}
-
 function buildTreinoFromProfile(s){
   // Exercícios genéricos por perfil — substituídos pela prescrição real quando disponível
   const templates = {
@@ -2138,31 +2123,108 @@ function buildTreinoFromProfile(s){
   return { exs };
 }
 
+// ═══════════════════════════════════════════════════
+// INSIGHT DETERMINÍSTICO (Layer A)
+// ═══════════════════════════════════════════════════
+function buildInsight(tipoSerie, alvo) {
+  const tut    = alvo?.tut_s    ? ` — ${alvo.tut_s}s de TUT`         : '';
+  const pausa  = alvo?.pausa_s  ? ` — pausa de ${alvo.pausa_s}s`     : '';
+  const tempo  = alvo?.tempo_s  ? ` — ${alvo.tempo_s}s`              : '';
+  const reps   = alvo?.reps     ? ` — ${alvo.reps} reps`             : '';
+  const intv   = alvo?.intervalo_s ? ` · ${alvo.intervalo_s}s/intervalo` : '';
+  const map = {
+    forca_pura:  `Força pura${reps}. Recuperação total entre séries.`,
+    hipertrofia: `Hipertrofia — tensão mecânica máxima${tut}.`,
+    volume:      `Volume — acúmulo de estímulo${reps}.`,
+    excentrico:  `Fase excêntrica controlada${tut || pausa}.`,
+    pausa:       `Pausa na posição inferior${pausa || reps}.`,
+    isometrico:  `Contração isométrica${tempo}.`,
+    amrap:       `Máximo de reps com técnica${reps ? ` (alvo ${alvo.reps})` : ''}.`,
+    emom:        `Ritmo constante — foco em cadência${intv}.`,
+    densidade:   `Alta densidade de trabalho. Descanso mínimo.`,
+    tecnica:     `Foco em qualidade de execução — carga secundária.`,
+  };
+  return map[tipoSerie] || '';
+}
+
+// ═══════════════════════════════════════════════════
+// CARREGA SESSÃO DE PRESCRICOES COM ROTAÇÃO
+// ═══════════════════════════════════════════════════
+async function carregarSessaoDePrescricao(studentId) {
+  try {
+    const snap = await db.collection('prescricoes').doc(studentId).get();
+    if (!snap.exists) return null;
+
+    const data = snap.data();
+    const sessoes = data.sessoes;
+    if (!sessoes || typeof sessoes !== 'object') return null;
+
+    // Ordenar chaves pelo campo 'ordem' dentro de cada sessão
+    const chaves = Object.keys(sessoes).sort((a, b) => {
+      return (sessoes[a].ordem || 999) - (sessoes[b].ordem || 999);
+    });
+
+    if (!chaves.length) return null;
+
+    // Descobrir qual foi a última sessão executada
+    const ultimaSessaoNome = S.sessions[0]?.sessao_nome || null;
+
+    let proximaChave;
+    if (!ultimaSessaoNome) {
+      // Estado zero ou sessao_nome não salvo — começa pela ordem 1
+      proximaChave = chaves[0];
+    } else {
+      const idxUltima = chaves.indexOf(ultimaSessaoNome);
+      if (idxUltima === -1) {
+        // Última sessão não encontrada no mapa — fallback para ordem 1
+        proximaChave = chaves[0];
+      } else {
+        // Avança para a próxima com wrap
+        proximaChave = chaves[(idxUltima + 1) % chaves.length];
+      }
+    }
+
+    return { sessaoNome: proximaChave, sessao: sessoes[proximaChave] };
+  } catch (e) {
+    console.warn('[Momentum] Erro ao carregar prescrição:', e);
+    return null;
+  }
+}
+
+function mapPrescricaoParaExs(sessao) {
+  const exercicios = sessao.exercicios || [];
+  return exercicios.map((ex, i) => {
+    const numSeries = ex.series || 3;
+    const kgAlvo   = ex.alvo?.carga_kg  || 0;
+    const repsAlvo = ex.alvo?.reps      || 10;
+    const descanso = ex.alvo?.descanso_s || 90;
+    return {
+      id:       i,
+      nome:     ex.nome,
+      s:        numSeries,
+      r:        repsAlvo,
+      kg:       kgAlvo,
+      descanso: descanso,
+      tipo:     ex.tipo_serie || '',
+      insight:  buildInsight(ex.tipo_serie, ex.alvo),
+      series:   Array.from({ length: numSeries }, (_, j) => ({
+        n:    j + 1,
+        kg:   kgAlvo,
+        reps: repsAlvo,
+        pse:  null,
+        done: false,
+      })),
+    };
+  });
+}
+
 function renderTreino(){
   const t = S.treino;
   const total = t.exs.length;
   const done = t.exs.filter((_,i)=>t.expanded[i]==='done').length;
   document.getElementById('prog-fill').style.width = `${(done/total)*100}%`;
 
-  // Banner de prontidão
-  const p = t.estado_prontidao;
-  const f = t.fator;
-  const bannerHTML = (p && f && f.volume < 1.0) ? `
-    <div style="margin:8px 20px 0;padding:10px 14px;background:rgba(138,96,48,.08);
-      border:1px solid var(--b2);border-radius:3px;display:flex;align-items:center;gap:10px">
-      <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;font-weight:600;color:${p >= 6 ? 'var(--gold)' : p >= 4 ? 'var(--copper2)' : 'var(--danger2)'}">${p >= 6 ? 'alto' : p >= 4 ? 'neutro' : 'baixo'}</div><!-- [emoji-pass] -->
-      <div style="flex:1">
-        <div style="font-size:8px;text-transform:uppercase;letter-spacing:.16em;color:var(--copper2);margin-bottom:2px">
-          Prontidão ${p}/10 · ${f.label}
-        </div>
-        <div style="font-size:8px;color:var(--ink3)">
-          Reps ajustadas para ${Math.round(f.volume*100)}%
-          ${f.carga < 1.0 ? ` · carga sugerida ${Math.round(f.carga*100)}%` : ''}
-        </div>
-      </div>
-    </div>` : '';
-
-  let html = bannerHTML + '<div style="height:8px"></div>';
+  let html = '<div style="height:8px"></div>';
 
   html += t.exs.map((ex,i)=>{
     const isDone   = t.expanded[i]==='done';
@@ -2170,8 +2232,6 @@ function renderTreino(){
     const isOpen   = t.expanded[i]==='open'||isActive;
     const badge    = isDone?'badge-done done-ex':isActive?'badge-active active-ex':'badge-pending';
     const badgeTxt = isDone?'✓ feito':isActive?'em andamento':'pendente';
-    const ajustado = ex.ajustado && ex.r_original && ex.r !== ex.r_original;
-
     const seriesHTML = isOpen ? `
       <div class="series-tbl">
         <div class="stbl-head">
@@ -2213,7 +2273,6 @@ function renderTreino(){
             <div class="ex-card-name">${ex.nome}</div>
             <div class="ex-card-pre">
               ${ex.s} séries · ${ex.r} reps${ex.kg>0?' · '+ex.kg+'kg':''} · ${ex.descanso}s desc.
-              ${ajustado?`<span style="color:var(--copper2);margin-left:4px">↓ ajustado de ${ex.r_original}</span>`:''}
             </div>
           </div>
           <div class="ex-badge ${badge}">${badgeTxt}</div>
@@ -2479,12 +2538,13 @@ async function finishTreino(){
   try{
     const sessaoRef = await db.collection('sessions').add({
       student_id: STUDENT_ID,
-      tipo: S.treino.estado_prontidao >= 8 ? 'Treino · completo' : S.treino.estado_prontidao >= 4 ? 'Treino · adaptado' : 'Treino · leve',
+      tipo:       S.treino.sessaoNome || 'treino',
+      sessao_nome: S.treino.sessaoNome || null,
       data: new Date().toLocaleDateString('pt-BR'),
       timestamp: firebase.firestore.FieldValue.serverTimestamp(),
       pse: +pseMedia.toFixed(1),
       duracao_min: durMin,
-      estado_prontidao_entrada: S.treino.estado_prontidao || null,
+      estado_prontidao_entrada: S.treino.prontidao || null,
       checkin_id: S.treino.checkinId || null,
       exercicios: S.treino.registros,
     });
@@ -3398,14 +3458,6 @@ function calcEstadoProntidao(ci) {
   return Math.min(10, Math.max(1, Math.round(raw)));
 }
 
-function fatorProntidao(p) {
-  if (p >= 8) return { volume: 1.00, carga: 1.00, label: 'Treino completo', desc: 'Você está no nível. Volume e carga completos.' };
-  if (p >= 6) return { volume: 0.90, carga: 1.00, label: 'Volume levemente reduzido', desc: 'Disposição boa. Volume −10%, carga mantida.' };
-  if (p >= 4) return { volume: 0.75, carga: 0.90, label: 'Sessão adaptada', desc: 'Dia moderado. Volume −25%, carga −10%. Qualidade acima de quantidade.' };
-  if (p >= 2) return { volume: 0.60, carga: 0.85, label: 'Sessão leve', desc: 'Você chegou cansado. Treino ajustado para preservar recuperação.' };
-  return      { volume: 0.00, carga: 0.00, label: 'Repouso recomendado', desc: 'Seu corpo pede recuperação hoje. Considere descansar.' };
-}
-
 function openCheckin() {
   // Verifica se já fez check-in hoje
   const hoje = new Date().toLocaleDateString('pt-BR');
@@ -3503,17 +3555,14 @@ function buildCansacoOpts() {
 
 function renderCheckinResultado() {
   const p = CI.estado_prontidao;
-  const f = fatorProntidao(p);
   const circ = 2 * Math.PI * 40;
   const dash = circ * (p / 10);
   const cor = p >= 8 ? '#6aa050' : p >= 6 ? '#c8a060' : p >= 4 ? '#a07840' : '#b84030';
-
-  const ajusteHTML = f.volume < 1.0
-    ? `<div class="checkin-ajuste">
-        Treino ajustado: <strong>${Math.round(f.volume*100)}% do volume</strong>
-        ${f.carga < 1.0 ? ` · <strong>${Math.round(f.carga*100)}% da carga</strong>` : ''}
-      </div>`
-    : `<div class="checkin-ajuste">Treino <strong>completo</strong> — sem ajustes necessários.</div>`;
+  const label = p >= 8 ? 'Ótimo' : p >= 6 ? 'Bem' : p >= 4 ? 'Ok' : 'Cansado';
+  const desc  = p >= 8 ? 'Energia alta. Check-in registrado.'
+              : p >= 6 ? 'Disposição boa. Check-in registrado.'
+              : p >= 4 ? 'Dia moderado. Check-in registrado.'
+              : 'Chegou cansado. Check-in registrado.';
 
   document.getElementById('ci-result').innerHTML = `
     <div class="checkin-arc">
@@ -3525,9 +3574,8 @@ function renderCheckinResultado() {
       </svg>
       <div class="checkin-arc-val">${p}</div>
     </div>
-    <div class="checkin-result-label">${f.label}</div>
-    <div class="checkin-result-desc">${f.desc}</div>
-    ${ajusteHTML}
+    <div class="checkin-result-label">${label}</div>
+    <div class="checkin-result-desc">${desc}</div>
   `;
 }
 
@@ -3621,32 +3669,37 @@ function fecharCheckin() {
   document.getElementById('checkin-screen').classList.remove('open');
 }
 
-function iniciarTreinoComCheckin(checkin) {
+async function iniciarTreinoComCheckin(checkin) {
   const p = checkin?.estado_prontidao ?? 5;
-  const f = fatorProntidao(p);
-  S.treino.prontidao = p;
-  S.treino.fator = f;
-  // Aplica ajuste aos exercícios
-  const s = S.student;
-  const profile = buildTreinoFromProfile(s);
-  S.treino.exs = profile.exs.map(ex => ({
-    ...ex,
-    r: Math.max(1, Math.round(ex.r * f.volume)),
-    s_original: ex.s,
-    r_original: ex.r,
-    ajustado: f.volume < 1.0,
-  }));
-  S.treino.ativo    = 0;
-  S.treino.expanded = {};
-  S.treino.phase    = 'idle';
-  S.treino.registros= [];
-  S.treino.clockSec = 0;
-  S.treino.sessaoId = `treino_${Date.now()}`;
-  S.treino.checkinId = checkin?.id || null;
-  S.treino.estado_prontidao = p;
 
-  document.getElementById('treino-title').textContent =
-    p >= 8 ? 'Treino de hoje' : p >= 4 ? 'Treino adaptado' : 'Sessão leve';
+  // Tenta carregar sessão real de prescricoes
+  const prescricao = await carregarSessaoDePrescricao(STUDENT_ID);
+
+  let exs;
+  let sessaoNome;
+
+  if (prescricao) {
+    exs        = mapPrescricaoParaExs(prescricao.sessao);
+    sessaoNome = prescricao.sessaoNome;
+  } else {
+    // Fallback: template genérico por perfil
+    const profile = buildTreinoFromProfile(S.student);
+    exs        = profile.exs;
+    sessaoNome = null;
+  }
+
+  S.treino.exs        = exs;
+  S.treino.ativo      = 0;
+  S.treino.expanded   = {};
+  S.treino.phase      = 'idle';
+  S.treino.registros  = [];
+  S.treino.clockSec   = 0;
+  S.treino.sessaoId   = `treino_${Date.now()}`;
+  S.treino.sessaoNome = sessaoNome;
+  S.treino.prontidao  = p;
+  S.treino.checkinId  = checkin?.id || null;
+
+  document.getElementById('treino-title').textContent = sessaoNome || 'Treino de hoje';
   goPage('treino');
   renderTreino();
   startClock();
