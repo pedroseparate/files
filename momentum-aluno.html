@@ -743,7 +743,6 @@ let S = {
   }
 };
 
-const AI_CACHE = {};
 
 // ═══════════════════════════════════════════════════
 // FIRESTORE — LOAD STUDENT
@@ -1317,7 +1316,7 @@ function renderHome(){
     <div style="height:24px"></div>
   `;
 
-  generateNarrative();
+  renderNarrativeText();
   setTimeout(initTooltips, 50);
 }
 
@@ -1571,118 +1570,74 @@ function buildWeekStrip(s){
 }
 
 // ═══════════════════════════════════════════════════
-// AI NARRATIVA — 2ª pessoa, tom motivacional
+// NARRATIVA HOME — Layer A determinístico
 // ═══════════════════════════════════════════════════
-function buildNarrativePrompt(){
-  const s = S.student;
-  const scores = s.scores||{};
-  const sess = S.sessions.slice(0,5);
-  const pses = sess.map(x=>x.pse).filter(Boolean);
-  const pse_media = pses.length?(pses.reduce((a,b)=>a+b,0)/pses.length).toFixed(1):null;
-  const ics = sess.map(x=>x.indice||x.indice_carga).filter(Boolean);
-  const ic_trend = ics.length>=2?(ics[0]>ics[1]?'subindo':ics[0]<ics[1]?'caindo':'estável'):null;
+function buildNarrativaHome() {
+  const s    = S.student;
+  const sess = S.sessions.filter(x => !x.simulado);
 
-  return `Você é o sistema de análise do Momentum, app de personal training.
-Gere uma mensagem curta (2–3 frases, máximo 55 palavras) para o ALUNO sobre o momento atual do treino dele.
-Tom: encorajador, direto, baseado em dados. Sem emojis. Sem "parabéns". Sem "continue assim".
-Use 2ª pessoa (você, seu, sua). Comece direto pelo dado mais relevante.
-Foque no que é mais útil para o aluno entender onde está e o que esperar do próximo treino.
-
-DADOS:
-- Objetivo: ${s.goal} · Nível: ${s.nivel}
-- Mesociclo: ${s.mesociclo}
-- Ritmo: ${s.ritmo_estado}
-- Scores: Neural ${scores.neural} · Mecânica ${scores.mecanica} · Metabólica ${scores.metabolica} · Técnica ${scores.tecnica} · Ritmo ${scores.ritmo} · Momentum ${scores.momentum}
-${pse_media?`- PSE média últimas ${pses.length} sessões: ${pse_media}`:''}
-${ic_trend?`- Tendência IC: ${ic_trend}`:''}
-${s.anamnese?.objetivo?`- Objetivo declarado: ${s.anamnese.objetivo}`:''}`;
-}
-
-async function generateNarrative(){
-  if(AI_CACHE[STUDENT_ID]){
-    renderNarrativeText(AI_CACHE[STUDENT_ID]);
-    return;
+  // Estado zero — sem sessões registradas ainda
+  if (sess.length === 0) {
+    const mesociclo = s.mesociclo || 'Mesociclo';
+    const divisao   = s.divisao   ? ` · ${s.divisao}` : '';
+    const restricao = s.anamnese?.restricoes
+      ? ` Atenção: ${s.anamnese.restricoes}.`
+      : '';
+    return `${mesociclo}${divisao} carregado. Primeira sessão te espera.${restricao}`;
   }
-  if(!S.student) return;
-  try{
-    const res = await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:110,
-        system:'Você é o sistema de análise do Momentum. Responda APENAS com o texto da mensagem, sem aspas, sem prefixo, sem formatação.',
-        messages:[{role:'user',content:buildNarrativePrompt()}]
-      })
-    });
-    const data = await res.json();
-    const text = data?.content?.[0]?.text?.trim()||null;
-    if(text){ AI_CACHE[STUDENT_ID]=text; renderNarrativeText(text); }
-    else renderNarrativeText(null);
-  } catch(e){ renderNarrativeText(null); }
+
+  // Com histórico — usa ritmo, PSE e IC
+  const RITMO_TEXT = {
+    alta:       'Ritmo em alta.',
+    estavel:    'Ritmo estável.',
+    baixo:      'Frequência abaixo do planejado.',
+    sobrecarga: 'PSE elevado — atenção à recuperação.',
+  };
+
+  const pses     = sess.slice(0, 5).map(x => x.pse).filter(Boolean);
+  const pseMedia = pses.length
+    ? (pses.reduce((a, b) => a + b, 0) / pses.length).toFixed(1)
+    : null;
+  const ics      = sess.slice(0, 3)
+    .map(x => x.ic_executado || x.indice_carga)
+    .filter(Boolean);
+  const icTrend  = ics.length >= 2
+    ? (ics[0] > ics[1] ? 'subindo' : ics[0] < ics[1] ? 'caindo' : 'estável')
+    : null;
+
+  const ritmoFrase = RITMO_TEXT[s.ritmo_estado] || '';
+  const pseFrase   = pseMedia ? `PSE médio: ${pseMedia}.` : '';
+  const icFrase    = icTrend === 'subindo' ? 'Carga crescendo bem.'
+                   : icTrend === 'caindo'  ? 'Carga em queda — revisar volume.'
+                   : '';
+
+  return [ritmoFrase, pseFrase, icFrase].filter(Boolean).join(' ')
+    || 'Dados sendo coletados.';
 }
 
-function renderNarrativeText(text){
+function renderNarrativeText() {
   const el = document.getElementById('ai-text');
-  if(!el) return;
-  if(text){ el.textContent=text; }
-  else { el.style.color='var(--ink3)'; el.textContent='Análise indisponível.'; }
+  if (!el) return;
+  const text = buildNarrativaHome();
+  el.style.color = '';
+  el.textContent = text;
   const desc = document.getElementById('ms-desc-txt');
-  if(desc){
-    const map={alta:'Consistência boa. Carga crescendo de forma saudável.',estavel:'Progresso regular. Mantendo volume.',sobrecarga:'PSE acima do esperado — atenção à recuperação.',baixo:'Frequência abaixo do planejado.'};
-    desc.textContent = map[S.student?.ritmo_estado]||'—';
+  if (desc) {
+    const map = {
+      alta:       'Consistência boa. Carga crescendo de forma saudável.',
+      estavel:    'Progresso regular. Mantendo volume.',
+      sobrecarga: 'PSE acima do esperado — atenção à recuperação.',
+      baixo:      'Frequência abaixo do planejado.',
+    };
+    desc.textContent = map[S.student?.ritmo_estado] || '—';
   }
 }
 
-// ── Análise contextual do score (Opção B — IA no modal) ──────────────────
-const SCORE_AI_CACHE = {};
-
-async function generateScoreAnalysis(key, val, s) {
-  const cacheKey = `${STUDENT_ID}_${key}`;
+// ── Análise contextual do score — Layer A determinístico ──────────────────
+function renderScoreAnalysis(key) {
   const el = document.getElementById('score-ai-txt');
-  if(!el) return;
-
-  if(SCORE_AI_CACHE[cacheKey]){
-    el.textContent = SCORE_AI_CACHE[cacheKey];
-    return;
-  }
-
-  const LABEL = {neural:'Neural',mecanica:'Estresse Muscular',metabolica:'Metabólica',
-                 tecnica:'Técnica',ritmo:'Ritmo de Adaptação',momentum:'Momentum'};
-  const scores = s.scores||{};
-  const sess = S.sessions.slice(0,5);
-  const pses = sess.map(x=>x.pse).filter(Boolean);
-  const pse_media = pses.length?(pses.reduce((a,b)=>a+b,0)/pses.length).toFixed(1):null;
-
-  const prompt = `Você é o sistema de análise do Momentum, app de personal training científico.
-Gere uma análise curta (2 frases, máximo 40 palavras) sobre o score ${LABEL[key]} deste aluno.
-Tom: direto, contextualizado no mesociclo atual. Use 2ª pessoa (você, seu). Sem emojis. Comece pela observação mais relevante.
-
-DADOS:
-- Aluno: ${s.name} · Nível: ${s.nivel} · Objetivo: ${s.goal}
-- Mesociclo: ${s.mesociclo} · Ritmo: ${s.ritmo_estado}
-- Score ${LABEL[key]}: ${val.toFixed(1)}/10
-- Todos os scores: N=${scores.neural} M=${scores.mecanica} Met=${scores.metabolica} T=${scores.tecnica} R=${scores.ritmo} Mom=${scores.momentum}
-${pse_media?`- PSE médio últimas sessões: ${pse_media}`:''}`;
-
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:80,
-        system:'Você é o sistema de análise do Momentum. Responda APENAS com o texto, sem aspas, sem prefixo.',
-        messages:[{role:'user',content:prompt}]
-      })
-    });
-    const data = await res.json();
-    const text = data?.content?.[0]?.text?.trim()||null;
-    if(text && el){ SCORE_AI_CACHE[cacheKey]=text; el.textContent=text; }
-    else if(el){ el.style.color='var(--ink3)'; el.textContent='Análise indisponível.'; }
-  } catch(e){
-    if(el){ el.style.color='var(--ink3)'; el.textContent='Análise indisponível.'; }
-  }
+  if (!el) return;
+  el.textContent = SCORE_INFO[key]?.desc || '—';
 }
 
 // ═══════════════════════════════════════════════════
@@ -2704,7 +2659,7 @@ function openModal(type){
         </div>
       </div>`;
     // Dispara análise contextual da IA para este score
-    setTimeout(() => generateScoreAnalysis(k, v, s), 50);
+    renderScoreAnalysis(k);
   } else if(type==='msg_pt'){
     html=`<div class="modal-title">Mensagem do PT</div>
       <div class="modal-sub">João Pedro Almeida</div>
@@ -3357,17 +3312,14 @@ function closeModal(e){
 
 // Slots do sistema de narração contínua
 const NARRATIVE_SLOTS = {
-  home:       {id:'ai-text',    fonte:'ai',       desc:'Análise do momento atual do aluno'},
+  home:       {id:'ai-text',    fonte:'template', desc:'Narrativa determinística Layer A — estado do aluno'},
   descanso:   {id:'rest-narr',  fonte:'template', desc:'Frase contextual durante descanso'},
   pos_sessao: {id:'pos-narr',   fonte:'template', desc:'Resumo narrativo pós-sessão'},
   historico:  {id:'mem-narr',   fonte:'template', desc:'Memória positiva no histórico'},
 };
 
-function refreshNarrativeInline(){
-  delete AI_CACHE[STUDENT_ID];
-  const el=document.getElementById('ai-text');
-  if(el){ el.innerHTML='<div class="ai-skeleton"><div class="ai-skel-line"></div><div class="ai-skel-line"></div><div class="ai-skel-line"></div></div>'; }
-  generateNarrative();
+function refreshNarrativeInline() {
+  renderNarrativeText();
 }
 
 // Camada A — frases de descanso (determinísticas por PSE e séries feitas)
