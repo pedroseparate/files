@@ -937,7 +937,6 @@ const SESSOES = {
     blocos:['Aquecimento · 4min','Contínuo · 8km @ 8km/h']},
 };
 
-const BLOCO_ICONS = {aquecimento:'ti-flame',contínuo:'ti-circle',tiros:'ti-bolt',descanso:'ti-hourglass',volta:'ti-arrow-down',tiro:'ti-bolt'};
 function iconeBloco(txt){
   const t = txt.toLowerCase();
   if (t.includes('aquecimento')) return 'ti-flame';
@@ -979,6 +978,8 @@ function abrirTreino(id) {
       if (timerInt) { clearInterval(timerInt); timerInt = null; }
       blockIdx = 0;
       timerSec = BLOCKS[0].startAt;
+      Object.keys(excState).forEach(k => excState[k] = false);
+      document.querySelectorAll('.exc-btn').forEach(b => b.classList.remove('on'));
       nav('s-exec');
     };
     noteEl.style.display = '';
