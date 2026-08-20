@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Momentum — Minhas Medidas</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600;1,700&family=IBM+Plex+Mono:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:   #271f13;
+  --bg2:  #2e2618;
+  --bg3:  #352d1e;
+  --bg4:  #3c3425;
+  --ink:  rgba(200,160,96,.90);
+  --ink2: rgba(200,160,96,.78);
+  --ink3: rgba(200,160,96,.52);
+  --b:    rgba(200,160,96,.10);
+  --b2:   rgba(200,160,96,.18);
+  --b3:   rgba(200,160,96,.30);
+  --copper:#8a6030;--copper2:#a07840;
+  --gold:  #c8a060;--gold2:#ddb870;--gold3:#e8cc90;
+  --moss:  #4a6832;--moss2:#5a8040;--moss3:#6aa050;
+  --danger:#8a3020;--danger2:#b84030;
+  --page:  #f5f0e6;
+  --card-bg:var(--bg2);--card-border:var(--b);
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{min-height:100%;}
+body{background:var(--bg);color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:13px;
+  position:relative;}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.88' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23g)' opacity='.018'/%3E%3C/svg%3E");}
+
+.app{width:100%;max-width:430px;margin:0 auto;position:relative;z-index:1;padding-bottom:40px;}
+
+/* topbar */
+.topbar{padding:20px 20px 14px;display:flex;align-items:baseline;justify-content:space-between;
+  border-bottom:1px solid var(--b);position:sticky;top:0;background:rgba(39,31,19,.94);
+  backdrop-filter:blur(14px);z-index:10;}
+.tb-logo{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;font-size:20px;color:var(--gold);}
+.tb-title{font-size:9px;text-transform:uppercase;letter-spacing:.2em;color:var(--ink3);}
+
+/* shared */
+.sec{padding:0 20px;margin-top:22px;}
+.sec-head{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.sec-title{font-size:9px;text-transform:uppercase;letter-spacing:.22em;color:var(--copper2);}
+.sec-line{flex:1;height:1px;background:var(--b);}
+.card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:3px;}
+
+/* hero / intro */
+.hero{padding:22px 20px 4px;}
+.hero-eyebrow{font-size:9px;text-transform:uppercase;letter-spacing:.2em;color:var(--ink3);margin-bottom:6px;}
+.hero-title{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;
+  font-size:30px;line-height:1.05;color:var(--gold);margin-bottom:10px;}
+.hero-p{font-size:11px;line-height:1.7;color:var(--ink2);}
+.hero-p + .hero-p{margin-top:8px;}
+
+.accordion{margin:14px 20px 0;border:1px solid var(--b2);border-radius:3px;overflow:hidden;}
+.acc-head{padding:12px 14px;display:flex;align-items:center;justify-content:space-between;
+  cursor:pointer;background:var(--bg3);}
+.acc-head-label{font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:var(--gold2);}
+.acc-chevron{color:var(--ink3);font-size:11px;transition:transform .2s;}
+.accordion.open .acc-chevron{transform:rotate(180deg);}
+.acc-body{max-height:0;overflow:hidden;transition:max-height .25s ease;background:var(--bg2);}
+.accordion.open .acc-body{max-height:600px;}
+.acc-body-in{padding:4px 14px 14px;}
+.rule-item{font-size:10.5px;line-height:1.7;color:var(--ink2);padding:6px 0;
+  border-top:1px solid var(--b);display:flex;gap:8px;}
+.rule-item:first-child{border-top:none;}
+.rule-dot{color:var(--copper2);flex-shrink:0;}
+.acc-note{margin-top:8px;font-size:9.5px;line-height:1.6;color:var(--ink3);font-style:italic;}
+
+/* meta card */
+.meta-card{margin:0 20px;padding:16px;display:flex;flex-direction:column;gap:12px;}
+.meta-row{display:flex;flex-direction:column;gap:5px;}
+.meta-label{font-size:8.5px;text-transform:uppercase;letter-spacing:.14em;color:var(--ink3);}
+.meta-input,.meta-select{background:var(--bg);border:1px solid var(--b2);border-radius:3px;
+  color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:12px;padding:9px 10px;
+  width:100%;-webkit-appearance:none;appearance:none;}
+.meta-input:focus,.meta-select:focus{outline:none;border-color:var(--copper2);}
+
+/* progress ring */
+.progress-wrap{margin:20px 20px 4px;display:flex;align-items:center;gap:14px;
+  padding:14px 16px;}
+.pg-arc{position:relative;width:52px;height:52px;flex-shrink:0;}
+.pg-arc svg{width:52px;height:52px;transform:rotate(-90deg);}
+.pg-arc-val{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:.02em;color:var(--gold);}
+.pg-text-lbl{font-size:8px;text-transform:uppercase;letter-spacing:.16em;color:var(--ink3);margin-bottom:3px;}
+.pg-text-desc{font-size:10.5px;color:var(--ink2);line-height:1.5;}
+.pg-text-desc b{color:var(--gold2);font-weight:400;}
+
+/* ponto card */
+.pontos-list{display:flex;flex-direction:column;gap:10px;margin-top:12px;}
+.ponto-card{margin:0 20px;padding:14px 14px 16px;transition:border-color .2s;}
+.ponto-card.done{border-color:var(--moss3);}
+.ponto-card.atencao{border-color:var(--danger2);}
+.ponto-head{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;}
+.ponto-num{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--copper2);
+  line-height:1.2;width:26px;flex-shrink:0;}
+.ponto-nome{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;
+  font-size:17px;color:var(--gold2);line-height:1.2;}
+.ponto-local{font-size:9.5px;color:var(--ink3);line-height:1.5;margin-top:3px;}
+.ponto-status{margin-left:auto;flex-shrink:0;font-size:14px;width:22px;height:22px;
+  display:flex;align-items:center;justify-content:center;border-radius:50%;
+  border:1px solid var(--b2);color:var(--ink3);}
+.ponto-status.ok{color:var(--moss3);border-color:var(--moss3);}
+.ponto-status.warn{color:var(--danger2);border-color:var(--danger2);}
+
+.ponto-view-btn{display:inline-flex;align-items:center;gap:5px;margin:8px 0 12px;
+  padding:6px 10px 6px 6px;background:var(--bg3);border:1px solid var(--b2);border-radius:20px;
+  cursor:pointer;transition:border-color .15s;}
+.ponto-view-btn:hover{border-color:var(--b3);}
+.ponto-view-btn svg{width:18px;height:18px;flex-shrink:0;}
+.ponto-view-btn span{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--gold2);}
+
+.input-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;
+  animation:slidein .2s ease;}
+@keyframes slidein{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:translateY(0);}}
+.input-row label{font-size:9.5px;color:var(--ink3);width:64px;flex-shrink:0;
+  text-transform:uppercase;letter-spacing:.08em;}
+.input-row input{flex:1;background:var(--bg);border:1px solid var(--b2);border-radius:3px;
+  color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:13px;padding:8px 10px;
+  min-width:0;}
+.input-row input:focus{outline:none;border-color:var(--copper2);}
+.input-row .unit{font-size:9.5px;color:var(--ink3);width:16px;flex-shrink:0;}
+
+/* estado indisponível da 3ª medida quando 1ª e 2ª já bateram */
+.input-row.locked{opacity:.35;pointer-events:none;}
+.locked-note{font-size:9px;color:var(--ink3);font-style:italic;margin:2px 0 8px;}
+
+.ponto-msg{font-size:10px;line-height:1.6;padding:8px 10px;border-radius:3px;margin:6px 0;}
+.ponto-msg.info{background:rgba(200,160,96,.06);color:var(--ink2);}
+.ponto-msg.warn{background:rgba(184,64,48,.10);color:var(--gold3);}
+
+.ponto-result{margin-top:10px;padding-top:10px;border-top:1px solid var(--b);
+  display:flex;align-items:baseline;justify-content:space-between;}
+.pr-label{font-size:8.5px;text-transform:uppercase;letter-spacing:.14em;color:var(--ink3);}
+.pr-val{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--gold);letter-spacing:.02em;}
+.pr-val small{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--ink3);
+  letter-spacing:0;margin-left:3px;}
+.pr-discard{font-size:9px;color:var(--ink3);margin-top:2px;}
+.pr-discard s{color:var(--danger2);}
+
+.ponto-links{margin-top:8px;}
+.ponto-link{font-size:9px;color:var(--copper2);text-decoration:underline;cursor:pointer;
+  text-underline-offset:2px;}
+
+/* modal — localização no corpo */
+.body-modal-overlay{position:fixed;inset:0;background:rgba(14,11,8,.82);z-index:100;
+  display:flex;align-items:center;justify-content:center;padding:20px;
+  opacity:0;pointer-events:none;transition:opacity .2s ease;}
+.body-modal-overlay.open{opacity:1;pointer-events:all;}
+.body-modal{width:100%;max-width:320px;background:var(--bg2);border:1px solid var(--b2);
+  border-radius:6px;padding:20px 20px 22px;position:relative;
+  transform:translateY(8px);transition:transform .2s ease;}
+.body-modal-overlay.open .body-modal{transform:translateY(0);}
+.body-modal-close{position:absolute;top:12px;right:12px;width:28px;height:28px;
+  border-radius:50%;border:1px solid var(--b2);background:transparent;color:var(--ink2);
+  font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.body-modal-eyebrow{font-size:8.5px;text-transform:uppercase;letter-spacing:.18em;color:var(--copper2);margin-bottom:4px;}
+.body-modal-title{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;
+  font-size:22px;color:var(--gold2);margin-bottom:14px;padding-right:30px;}
+.body-modal-svg-wrap{background:var(--bg);border:1px solid var(--b);border-radius:4px;
+  padding:10px 0;margin-bottom:14px;}
+.body-modal-svg-wrap svg{width:100%;height:auto;display:block;}
+.body-modal-desc{font-size:10.5px;line-height:1.7;color:var(--ink2);}
+
+@keyframes markerpulse{0%{opacity:.9;}50%{opacity:.35;}100%{opacity:.9;}}
+
+/* actions */
+.actions{margin:26px 20px 0;display:flex;flex-direction:column;gap:12px;}
+.btn{width:100%;padding:15px;border-radius:3px;border:none;cursor:pointer;
+  font-family:'IBM Plex Mono',monospace;font-size:10.5px;text-transform:uppercase;
+  letter-spacing:.2em;transition:opacity .15s;text-align:center;}
+.btn:active{opacity:.8;}
+.btn-primary{background:linear-gradient(135deg,var(--copper),var(--copper2));color:var(--page);}
+.save-note{text-align:center;font-size:9.5px;color:var(--moss3);min-height:14px;
+  opacity:0;transition:opacity .2s;}
+.save-note.show{opacity:1;}
+.privacy-note{text-align:center;font-size:9px;color:var(--ink3);line-height:1.6;
+  font-style:italic;margin-top:2px;}
+.restart-link{text-align:center;font-size:9px;color:var(--ink3);text-decoration:underline;
+  text-underline-offset:2px;cursor:pointer;margin-top:6px;}
+
+.footer{margin:34px 20px 0;padding-top:16px;border-top:1px solid var(--b);
+  text-align:center;}
+.footer-p{font-size:10px;color:var(--ink2);line-height:1.6;margin-bottom:10px;}
+.footer-name{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:12px;color:var(--ink2);}
+.footer-cref{font-size:8.5px;color:var(--ink3);letter-spacing:.08em;margin-top:2px;}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="topbar">
+    <span class="tb-logo">Momentum</span>
+    <span class="tb-title">Minhas Medidas</span>
+  </div>
+
+  <div class="hero">
+    <div class="hero-eyebrow">Protocolo de circunferências</div>
+    <div class="hero-title">Suas Medidas<br>Corporais</div>
+    <p class="hero-p">Preencha os 7 pontos abaixo com calma — sem pressa, principalmente nesta primeira vez. Isso é o que garante que a gente consiga comparar sua evolução daqui a 4–6 semanas.</p>
+    <p class="hero-p">Em cada ponto você vai ver um pequeno botão "ver no corpo" — toque nele se tiver qualquer dúvida de onde passar a fita.</p>
+    <p class="hero-p">Esse acompanhamento é complementar e não substitui uma avaliação presencial.</p>
+  </div>
+
+  <div class="accordion" id="acc">
+    <div class="acc-head" onclick="document.getElementById('acc').classList.toggle('open')">
+      <span class="acc-head-label">Antes de começar</span>
+      <span class="acc-chevron">▾</span>
+    </div>
+    <div class="acc-body"><div class="acc-body-in">
+      <div class="rule-item"><span class="rule-dot">—</span>Meça sempre do lado direito do seu corpo, em pé, relaxada, com o peso bem distribuído nos dois pés.</div>
+      <div class="rule-item"><span class="rule-dot">—</span>Deixe a fita em contato com a pele, sem apertar — nem frouxa a ponto de folgar, nem apertada a ponto de marcar.</div>
+      <div class="rule-item"><span class="rule-dot">—</span>Mantenha a fita bem paralela ao chão, sem inclinar para nenhum lado.</div>
+      <div class="rule-item"><span class="rule-dot">—</span>Na cintura e no abdômen, leia a medida ao final de uma expiração normal — solte o ar, sem contrair a barriga.</div>
+      <div class="rule-item"><span class="rule-dot">—</span>Remova e reposicione a fita entre uma tentativa e outra — não deixe encostada no corpo.</div>
+      <div class="acc-note">Repita esse protocolo a cada 4–6 semanas, no mesmo período do dia e nas mesmas condições. Evite medir logo depois do treino.</div>
+    </div></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-head"><span class="sec-title">Dados da avaliação</span><span class="sec-line"></span></div>
+  </div>
+  <div class="card meta-card">
+    <div class="meta-row">
+      <span class="meta-label">Condição</span>
+      <select class="meta-select" id="meta-condicao">
+        <option value="jejum">Em jejum</option>
+        <option value="pos-treino">Pós-treino</option>
+        <option value="outro">Outro / não sei precisar</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="card progress-wrap">
+    <div class="pg-arc">
+      <svg viewBox="0 0 52 52">
+        <circle cx="26" cy="26" r="22" fill="none" stroke="var(--b2)" stroke-width="4"/>
+        <circle id="pg-ring" cx="26" cy="26" r="22" fill="none" stroke="var(--gold)" stroke-width="4"
+          stroke-linecap="round" stroke-dasharray="138.2" stroke-dashoffset="138.2"
+          style="transition:stroke-dashoffset .3s ease;"/>
+      </svg>
+      <span class="pg-arc-val" id="pg-val">0/7</span>
+    </div>
+    <div>
+      <div class="pg-text-lbl">Progresso</div>
+      <div class="pg-text-desc" id="pg-desc">Você ainda não registrou nenhum ponto.</div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-head"><span class="sec-title">Pontos de circunferência</span><span class="sec-line"></span></div>
+  </div>
+  <div class="pontos-list" id="pontos-list"></div>
+
+  <div class="actions">
+    <button class="btn btn-primary" id="btn-save">Salvar</button>
+    <div class="save-note" id="save-note">Medidas salvas neste dispositivo.</div>
+    <div class="privacy-note">Seus dados ficam salvos apenas neste navegador, neste aparelho.</div>
+    <div class="restart-link" id="btn-restart">recomeçar do zero</div>
+  </div>
+
+  <div class="footer">
+    <p class="footer-p">Qualquer dúvida durante o preenchimento, me chama. 🙂</p>
+    <div class="footer-name">João Pedro Almeida</div>
+    <div class="footer-cref">Profissional de Educação Física — CREF 207171-G/SP</div>
+  </div>
+
+</div>
+
+<!-- modal: localização no corpo -->
+<div class="body-modal-overlay" id="body-modal">
+  <div class="body-modal">
+    <button class="body-modal-close" id="body-modal-close">×</button>
+    <div class="body-modal-eyebrow">Onde medir</div>
+    <div class="body-modal-title" id="body-modal-title"></div>
+    <div class="body-modal-svg-wrap" id="body-modal-svg-wrap"></div>
+    <div class="body-modal-desc" id="body-modal-desc"></div>
+  </div>
+</div>
+
+<script>
+const PROXIMIDADE = 0.5;   // cm — diferença aceitável entre duas medidas
+const VARIABILIDADE_ALTA = 1.0; // cm — acima disso, sinaliza atenção mesmo com 3 medidas
+
+const PONTOS = [
+  {id:'pescoco',     nome:'Pescoço',        local:'Logo abaixo da laringe (“pomo de adão”), fita levemente inclinada para baixo na parte de trás.',
+    marker:{cx:110,cy:80,rx:20,ry:11}, guide:true},
+  {id:'cintura',     nome:'Cintura',        local:'Ponto mais estreito do tronco, entre a última costela e a crista ilíaca. Ler ao final de uma expiração normal.',
+    marker:{cx:110,cy:148,rx:46,ry:14}, guide:true},
+  {id:'abdomen',     nome:'Abdômen',        local:'Na altura do umbigo, contornando todo o abdômen. Ler ao final de uma expiração normal, sem contrair.',
+    marker:{cx:110,cy:172,rx:50,ry:14}, guide:true},
+  {id:'quadril',     nome:'Quadril',        local:'Ponto de maior saliência dos glúteos, com os pés juntos.',
+    marker:{cx:110,cy:204,rx:54,ry:15}, guide:true},
+  {id:'braco',       nome:'Braço relaxado', local:'Ponto médio entre o ombro (acrômio) e o cotovelo (olécrano), braço solto ao lado do corpo.',
+    marker:{cx:166,cy:150,rx:14,ry:19}, guide:false},
+  {id:'coxa',        nome:'Coxa',           local:'Cerca de 1 cm abaixo da prega glútea, na parte de trás da perna.',
+    marker:{cx:134,cy:232,rx:18,ry:24}, guide:false},
+  {id:'panturrilha', nome:'Panturrilha',    local:'Ponto de maior circunferência da perna, na região central, na parte de trás.',
+    marker:{cx:139,cy:350,rx:16,ry:22}, guide:false}
+];
+
+const STORAGE_KEY = 'momentum_medidas_draft';
+
+let state = {
+  meta: {condicao:'jejum'},
+  pontos: {}
+};
+PONTOS.forEach(p => state.pontos[p.id] = {m1:null, m2:null, m3:null});
+
+// ── persistência local ──────────────────────────────
+function save(showNote){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  if(showNote){
+    const note = document.getElementById('save-note');
+    note.classList.add('show');
+    clearTimeout(save._t);
+    save._t = setTimeout(() => note.classList.remove('show'), 2600);
+  }
+}
+function load(){
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if(!raw) return;
+  try{
+    const parsed = JSON.parse(raw);
+    if(parsed.meta) state.meta = Object.assign(state.meta, parsed.meta);
+    if(parsed.pontos){
+      PONTOS.forEach(p => { if(parsed.pontos[p.id]) state.pontos[p.id] = Object.assign(state.pontos[p.id], parsed.pontos[p.id]); });
+    }
+  }catch(e){ /* rascunho corrompido, ignora */ }
+}
+
+// ── avaliação de cada ponto ──────────────────────────
+function evaluate(pid){
+  const s = state.pontos[pid];
+  const {m1, m2, m3} = s;
+  const result = {media:null, status:'pendente', discardIndex:null, msg:null, needsM3:false};
+
+  if(m1 == null){ return result; }
+  if(m2 == null){ result.status = 'aguardando-m2'; return result; }
+
+  const diff12 = Math.abs(m1 - m2);
+
+  if(m3 == null){
+    if(diff12 <= PROXIMIDADE){
+      result.media = (m1 + m2) / 2;
+      result.status = 'confirmado';
+    } else {
+      result.needsM3 = true;
+      result.status = 'divergente';
+      result.msg = 'As medidas 1 e 2 variaram ' + diff12.toFixed(1) + ' cm — registre uma 3ª medida.';
+    }
+    return result;
+  }
+
+  // três medidas presentes — encontrar o par mais próximo
+  const pares = [
+    {vals:[m1,m2], excl:2, d:Math.abs(m1-m2)},
+    {vals:[m1,m3], excl:1, d:Math.abs(m1-m3)},
+    {vals:[m2,m3], excl:0, d:Math.abs(m2-m3)}
+  ];
+  pares.sort((a,b) => a.d - b.d);
+  const melhor = pares[0];
+
+  if(melhor.d <= PROXIMIDADE){
+    result.media = (melhor.vals[0] + melhor.vals[1]) / 2;
+    result.discardIndex = melhor.excl;
+    result.status = 'confirmado';
+  } else if(melhor.d <= VARIABILIDADE_ALTA){
+    result.media = (m1 + m2 + m3) / 3;
+    result.status = 'confirmado';
+    result.msg = 'Nenhum par ficou dentro de ' + PROXIMIDADE + ' cm — usando a média das três.';
+  } else {
+    result.media = (m1 + m2 + m3) / 3;
+    result.status = 'atencao';
+    result.msg = 'As medidas variaram bastante (mín. Δ' + melhor.d.toFixed(1) + ' cm). Se puder, refaça este ponto.';
+  }
+  return result;
+}
+
+// ── render ────────────────────────────────────────────
+function renderPonto(p){
+  const s = state.pontos[p.id];
+  const r = evaluate(p.id);
+  const card = document.getElementById('card-' + p.id);
+  card.classList.toggle('done', r.status === 'confirmado');
+  card.classList.toggle('atencao', r.status === 'atencao');
+
+  const statusEl = document.getElementById('status-' + p.id);
+  statusEl.classList.remove('ok','warn');
+  if(r.status === 'confirmado'){ statusEl.textContent = '✓'; statusEl.classList.add('ok'); }
+  else if(r.status === 'atencao'){ statusEl.textContent = '!'; statusEl.classList.add('warn'); }
+  else { statusEl.textContent = '·'; }
+
+  const m2Wrap = document.querySelector('[data-slot-wrap="2"][data-for="'+p.id+'"]');
+  const m3Wrap = document.querySelector('[data-slot-wrap="3"][data-for="'+p.id+'"]');
+  const m3Locked = document.querySelector('[data-locked-note="'+p.id+'"]');
+
+  m2Wrap.hidden = (s.m1 == null);
+
+  // 3ª medida: só aparece se as duas primeiras divergiram. Se já bateram, fica indisponível.
+  if(r.needsM3){
+    m3Wrap.hidden = false;
+    m3Wrap.classList.remove('locked');
+    m3Locked.hidden = true;
+  } else if(s.m1 != null && s.m2 != null && r.status === 'confirmado' && s.m3 == null){
+    m3Wrap.hidden = true;
+    m3Locked.hidden = false;
+  } else {
+    m3Wrap.hidden = true;
+    m3Locked.hidden = true;
+  }
+
+  const msgEl = document.querySelector('[data-msg="'+p.id+'"]');
+  if(r.msg){
+    msgEl.hidden = false;
+    msgEl.textContent = r.msg;
+    msgEl.className = 'ponto-msg ' + (r.status === 'atencao' ? 'warn' : 'info');
+  } else {
+    msgEl.hidden = true;
+  }
+
+  const resultEl = document.querySelector('[data-result="'+p.id+'"]');
+  if(r.media != null){
+    resultEl.hidden = false;
+    const vals = [s.m1, s.m2, s.m3];
+    let discardHtml = '';
+    if(r.discardIndex != null){
+      const labels = ['1ª','2ª','3ª'];
+      discardHtml = '<div class="pr-discard">Descartamos a ' + labels[r.discardIndex] + ' medida (<s>' + vals[r.discardIndex].toFixed(1) + ' cm</s>)</div>';
+    }
+    resultEl.innerHTML =
+      '<div><div class="pr-label">Média final</div>' + discardHtml + '</div>' +
+      '<div class="pr-val">' + r.media.toFixed(1) + '<small>cm</small></div>';
+  } else {
+    resultEl.hidden = true;
+  }
+
+  const linksEl = document.querySelector('[data-links="'+p.id+'"]');
+  if(linksEl){
+    if(s.m1 != null || s.m2 != null || s.m3 != null){
+      linksEl.innerHTML = '<span class="ponto-link" data-action="reset-ponto" data-for="' + p.id + '">refazer este ponto</span>';
+    } else {
+      linksEl.innerHTML = '';
+    }
+  }
+}
+
+function renderProgress(){
+  const total = PONTOS.length;
+  let done = 0;
+  PONTOS.forEach(p => { if(evaluate(p.id).media != null) done++; });
+  const circumference = 138.2;
+  const ring = document.getElementById('pg-ring');
+  ring.setAttribute('stroke-dashoffset', String(circumference * (1 - done/total)));
+  document.getElementById('pg-val').textContent = done + '/' + total;
+  const desc = document.getElementById('pg-desc');
+  if(done === 0) desc.innerHTML = 'Você ainda não registrou nenhum ponto.';
+  else if(done < total) desc.innerHTML = '<b>' + done + ' de ' + total + '</b> pontos concluídos.';
+  else desc.innerHTML = '<b>Todos os pontos concluídos!</b> Toque em salvar.';
+}
+
+function renderAll(){
+  PONTOS.forEach(renderPonto);
+  renderProgress();
+}
+
+// ── ícone pequeno usado no botão "ver no corpo" ────────
+const ICON_BODY = '<svg viewBox="0 0 24 24" fill="none" stroke="var(--gold2)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2.6"/><path d="M8 10c0-1.4 1.6-2.4 4-2.4s4 1 4 2.4c0 2-1 3.4-1 5v2.4c0 .6.2 1 .5 1.6l1 3"/><path d="M8 22l1-3c.3-.6.5-1 .5-1.6V15c0-1.6-1-3-1-5"/><path d="M8.4 10.4L6 15" /><path d="M15.6 10.4L18 15"/></svg>';
+
+// ── build DOM dos cards ───────────────────────────────
+function buildPontos(){
+  const list = document.getElementById('pontos-list');
+  list.innerHTML = PONTOS.map((p, i) => `
+    <div class="card ponto-card" id="card-${p.id}">
+      <div class="ponto-head">
+        <span class="ponto-num">${String(i+1).padStart(2,'0')}</span>
+        <div>
+          <div class="ponto-nome">${p.nome}</div>
+          <div class="ponto-local">${p.local}</div>
+        </div>
+        <span class="ponto-status" id="status-${p.id}">·</span>
+      </div>
+
+      <div class="ponto-view-btn" data-action="view-body" data-for="${p.id}">
+        ${ICON_BODY}
+        <span>ver no corpo</span>
+      </div>
+
+      <div class="input-row">
+        <label>Medida 1</label>
+        <input type="number" inputmode="decimal" step="0.1" min="0" max="200" data-point="${p.id}" data-slot="1">
+        <span class="unit">cm</span>
+      </div>
+      <div class="input-row" data-slot-wrap="2" data-for="${p.id}" hidden>
+        <label>Medida 2</label>
+        <input type="number" inputmode="decimal" step="0.1" min="0" max="200" data-point="${p.id}" data-slot="2">
+        <span class="unit">cm</span>
+      </div>
+      <div class="ponto-msg" data-msg="${p.id}" hidden></div>
+      <div class="input-row" data-slot-wrap="3" data-for="${p.id}" hidden>
+        <label>Medida 3</label>
+        <input type="number" inputmode="decimal" step="0.1" min="0" max="200" data-point="${p.id}" data-slot="3">
+        <span class="unit">cm</span>
+      </div>
+      <div class="locked-note" data-locked-note="${p.id}" hidden>Medidas 1 e 2 já bateram — 3ª medida não é necessária.</div>
+      <div class="ponto-result" data-result="${p.id}" hidden></div>
+      <div class="ponto-links" data-links="${p.id}"></div>
+    </div>
+  `).join('');
+
+  list.addEventListener('input', e => {
+    const t = e.target;
+    if(t.tagName !== 'INPUT' || !t.dataset.point) return;
+    const pid = t.dataset.point, slot = t.dataset.slot;
+    const val = t.value === '' ? null : parseFloat(t.value.replace(',', '.'));
+    state.pontos[pid]['m' + slot] = (val == null || isNaN(val)) ? null : val;
+    renderPonto(PONTOS.find(p => p.id === pid));
+    renderProgress();
+    save(false);
+  });
+
+  list.addEventListener('click', e => {
+    const t = e.target.closest('[data-action]');
+    if(!t) return;
+    const pid = t.dataset.for;
+    if(t.dataset.action === 'view-body'){
+      openBodyModal(pid);
+      return;
+    }
+    if(t.dataset.action === 'reset-ponto'){
+      if(!confirm('Limpar as medidas deste ponto?')) return;
+      state.pontos[pid] = {m1:null, m2:null, m3:null};
+      document.querySelectorAll('input[data-point="'+pid+'"]').forEach(inp => inp.value = '');
+      renderPonto(PONTOS.find(p => p.id === pid));
+      renderProgress();
+      save(false);
+    }
+  });
+}
+
+// ── widget: onde medir no corpo ────────────────────────
+function bodyFigureSvg(marker, guide){
+  const guideLine = guide
+    ? `<line x1="${marker.cx-marker.rx}" y1="${marker.cy}" x2="${marker.cx+marker.rx}" y2="${marker.cy}"
+         stroke="var(--gold3)" stroke-width="1" stroke-dasharray="3 3" opacity=".55"/>`
+    : '';
+  return `
+  <svg viewBox="0 0 220 460" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="110" cy="46" r="27" fill="rgba(200,160,96,.05)" stroke="var(--gold2)" stroke-width="2.4"/>
+    <rect x="97" y="70" width="26" height="18" rx="8" fill="rgba(200,160,96,.05)" stroke="var(--gold2)" stroke-width="2.4"/>
+    <path d="M78,92 C64,98 58,130 64,158 C68,178 60,190 57,206 L163,206 C160,190 152,178 156,158 C162,130 156,98 142,92 C126,84 94,84 78,92 Z"
+      fill="rgba(200,160,96,.05)" stroke="var(--gold2)" stroke-width="2.4" stroke-linejoin="round"/>
+    <path d="M78,92 C56,100 46,132 50,164 C51,182 56,198 60,214" fill="none" stroke="var(--gold2)" stroke-width="2.4" stroke-linecap="round"/>
+    <path d="M142,92 C164,100 174,132 170,164 C169,182 164,198 160,214" fill="none" stroke="var(--gold2)" stroke-width="2.4" stroke-linecap="round"/>
+    <circle cx="60" cy="217" r="6.5" fill="rgba(200,160,96,.05)" stroke="var(--gold2)" stroke-width="2.2"/>
+    <circle cx="160" cy="217" r="6.5" fill="rgba(200,160,96,.05)" stroke="var(--gold2)" stroke-width="2.2"/>
+    <path d="M84,206 C80,250 78,300 82,350 C84,380 86,410 88,436" fill="none" stroke="var(--gold2)" stroke-width="2.4" stroke-linecap="round"/>
+    <path d="M136,206 C140,250 142,300 138,350 C136,380 134,410 132,436" fill="none" stroke="var(--gold2)" stroke-width="2.4" stroke-linecap="round"/>
+    <ellipse cx="88" cy="440" rx="12" ry="6" fill="rgba(200,160,96,.05)" stroke="var(--gold2)" stroke-width="2.2"/>
+    <ellipse cx="132" cy="440" rx="12" ry="6" fill="rgba(200,160,96,.05)" stroke="var(--gold2)" stroke-width="2.2"/>
+
+    ${guideLine}
+    <ellipse cx="${marker.cx}" cy="${marker.cy}" rx="${marker.rx}" ry="${marker.ry}"
+      fill="none" stroke="var(--gold)" stroke-width="2.6" stroke-dasharray="4 3"
+      style="animation:markerpulse 1.8s ease-in-out infinite;"/>
+    <ellipse cx="${marker.cx}" cy="${marker.cy}" rx="3" ry="3" fill="var(--gold)"/>
+  </svg>`;
+}
+
+function openBodyModal(pid){
+  const p = PONTOS.find(x => x.id === pid);
+  document.getElementById('body-modal-title').textContent = p.nome;
+  document.getElementById('body-modal-desc').textContent = p.local;
+  document.getElementById('body-modal-svg-wrap').innerHTML = bodyFigureSvg(p.marker, p.guide);
+  document.getElementById('body-modal').classList.add('open');
+}
+function closeBodyModal(){
+  document.getElementById('body-modal').classList.remove('open');
+}
+document.getElementById('body-modal-close').addEventListener('click', closeBodyModal);
+document.getElementById('body-modal').addEventListener('click', e => {
+  if(e.target.id === 'body-modal') closeBodyModal();
+});
+
+// ── metadados ─────────────────────────────────────────
+function bindMeta(){
+  const cond = document.getElementById('meta-condicao');
+  cond.value = state.meta.condicao || 'jejum';
+  cond.addEventListener('change', () => { state.meta.condicao = cond.value; save(false); });
+}
+
+// ── init ──────────────────────────────────────────────
+load();
+buildPontos();
+bindMeta();
+renderAll();
+
+document.getElementById('btn-save').addEventListener('click', () => save(true));
+document.getElementById('btn-restart').addEventListener('click', () => {
+  if(!confirm('Isso apaga todas as medidas preenchidas nesta página. Confirmar?')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  location.reload();
+});
+</script>
+</body>
+</html>

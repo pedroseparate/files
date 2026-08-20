@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Momentum · Alexandre</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600;1,700&family=IBM+Plex+Mono:ital,wght@0,300;0,400;1,300;1,400&family=Bebas+Neue&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+/* ── TOKENS ── */
+:root,[data-theme="dark"]{
+  --bg:#271f13;--bg2:#2e2618;--bg3:#352d1e;--bg4:#3c3425;
+  --ink:rgba(200,160,96,.90);--ink2:rgba(200,160,96,.58);--ink3:rgba(200,160,96,.32);
+  --b:rgba(200,160,96,.10);--b2:rgba(200,160,96,.18);--b3:rgba(200,160,96,.30);
+  --copper:#8a6030;--copper2:#a07840;
+  --gold:#c8a060;--gold2:#ddb870;--gold3:#e8cc90;
+  --moss:#4a6832;--moss2:#5a8040;--moss3:#6aa050;
+  --danger:#c85028;--danger2:#e07040;
+  --page:#f5f0e6;--night:#0e0b08;
+  --zone-base:#5a8040;--zone-mod:#c8a060;--zone-int:#e07040;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--bg);color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:13px;}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.88' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23g)' opacity='.018'/%3E%3C/svg%3E");}
+.app{width:100%;max-width:430px;margin:0 auto;height:100vh;display:flex;flex-direction:column;overflow:hidden;position:relative;}
+
+/* ── TOPBAR ── */
+.topbar{flex-shrink:0;padding:14px 20px 10px;display:flex;align-items:center;gap:10px;
+  background:rgba(39,31,19,.94);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--b);z-index:10;}
+#tb-left{flex:0 0 auto;}
+#tb-center{flex:1;}
+.tb-logo{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;font-size:16px;color:var(--gold);}
+.tb-back{font-size:18px;color:var(--ink2);cursor:pointer;padding:4px 4px 4px 0;width:32px;display:flex;align-items:center;}
+.tb-title{font-size:10px;text-transform:uppercase;letter-spacing:.16em;color:var(--ink2);}
+.tb-name{font-size:9px;color:var(--ink3);text-transform:uppercase;letter-spacing:.12em;}
+
+/* ── SCREENS ── */
+.screen-wrap{flex:1;overflow:hidden;position:relative;}
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;
+  opacity:0;pointer-events:none;transition:opacity .22s ease,transform .22s ease;transform:translateX(20px);}
+.screen.active{opacity:1;pointer-events:all;transform:translateX(0);}
+.screen.out-back{transform:translateX(-20px);}
+.sbody{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.sbody::-webkit-scrollbar{display:none;}
+
+/* ── SHARED ── */
+.sec{padding:0 20px;margin-bottom:20px;}
+.sec-head{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.sec-title{font-size:9px;text-transform:uppercase;letter-spacing:.22em;color:var(--copper2);}
+.sec-line{flex:1;height:1px;background:var(--b);}
+.card{background:var(--bg2);border:1px solid var(--b);border-radius:3px;}
+
+/* ── HOME ── */
+.home-header{padding:22px 20px 16px;}
+.home-date{font-size:9px;color:var(--ink3);text-transform:uppercase;letter-spacing:.14em;margin-bottom:5px;}
+.home-name{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;
+  font-size:40px;line-height:.9;color:var(--gold);margin-bottom:6px;}
+.home-meso{font-size:9px;color:var(--ink3);text-transform:uppercase;letter-spacing:.10em;}
+
+.hero-cards{padding:0 20px;display:flex;flex-direction:column;gap:12px;}
+.hnc{background:var(--bg2);border:1px solid var(--b2);border-radius:6px;overflow:hidden;
+  cursor:pointer;transition:border-color .15s,background .15s;}
+.hnc:hover{border-color:var(--b3);background:var(--bg3);}
+.hnc-top{padding:18px 18px 14px;display:flex;align-items:flex-start;gap:14px;}
+.hnc-ico{font-size:26px;color:var(--copper2);flex-shrink:0;margin-top:1px;}
+.hnc-label{font-size:8px;text-transform:uppercase;letter-spacing:.2em;color:var(--copper2);margin-bottom:6px;}
+.hnc-title{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;
+  font-size:22px;color:var(--gold);line-height:1.15;margin-bottom:4px;}
+.hnc-sub{font-size:8px;color:var(--ink2);line-height:1.65;}
+.hnc-bottom{padding:10px 18px;background:var(--bg3);border-top:1px solid var(--b);
+  display:flex;align-items:center;justify-content:space-between;}
+.hnc-stat{font-size:9px;color:var(--ink3);}
+.hnc-stat strong{color:var(--ink2);}
+.prog-row{padding:4px 18px 12px;display:flex;align-items:center;gap:10px;}
+.prog-bar{flex:1;height:2px;background:var(--b);border-radius:1px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--copper),var(--gold));}
+.prog-txt{font-size:8px;color:var(--ink3);white-space:nowrap;}
+
+/* ── ZONE LEGEND ── */
+.zone-legend{display:flex;gap:12px;padding:11px 20px;border-bottom:1px solid var(--b);
+  background:var(--bg2);flex-shrink:0;}
+.zi{display:flex;align-items:center;gap:5px;font-size:8px;color:var(--ink2);}
+.zd{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.zd.base{background:var(--zone-base);}
+.zd.mod{background:var(--zone-mod);}
+.zd.int{background:var(--zone-int);}
+
+/* ── SESSION LIST ── */
+.wk-group{margin-bottom:4px;}
+.wk-label{font-size:8px;text-transform:uppercase;letter-spacing:.16em;color:var(--copper2);
+  padding:14px 20px 10px;border-bottom:1px solid var(--b);}
+.sess-row{display:flex;align-items:center;gap:12px;padding:13px 20px;
+  border-bottom:1px solid var(--b);cursor:pointer;transition:background .12s;}
+.sess-row:hover{background:var(--bg2);}
+.sess-row.done{opacity:.62;}
+.sess-row.done:hover{opacity:.78;}
+.sess-row.today{background:rgba(138,96,48,.06);border-left:2px solid var(--copper);
+  padding-left:18px;opacity:1;}
+.sess-ico{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:12px;flex-shrink:0;}
+.si-done{background:rgba(74,104,50,.15);color:var(--moss2);}
+.si-today{background:rgba(138,96,48,.15);color:var(--copper2);}
+.si-future{background:var(--b);color:var(--ink3);}
+.sess-info{flex:1;min-width:0;}
+.sess-name{font-size:10px;color:var(--ink);margin-bottom:3px;}
+.sess-desc{font-size:8px;color:var(--ink3);line-height:1.5;}
+.sess-right{text-align:right;flex-shrink:0;}
+.sess-date{font-size:8px;color:var(--ink3);margin-bottom:4px;}
+.sess-date.today{color:var(--copper2);}
+.zbadge{font-size:7px;padding:2px 7px;border-radius:1px;text-transform:uppercase;letter-spacing:.08em;}
+.zb-base{background:rgba(90,128,64,.10);color:var(--zone-base);border:1px solid rgba(90,128,64,.2);}
+.zb-mod{background:rgba(200,160,96,.07);color:var(--zone-mod);border:1px solid rgba(200,160,96,.18);}
+.zb-int{background:rgba(224,112,64,.10);color:var(--zone-int);border:1px solid rgba(224,112,64,.22);}
+.zb-misto{background:rgba(138,96,48,.10);color:var(--copper2);border:1px solid rgba(138,96,48,.2);}
+
+/* ── ONBOARDING ── */
+.ob-screen{display:flex;flex-direction:column;height:100%;}
+.ob-skip{position:absolute;top:16px;right:20px;font-size:8px;text-transform:uppercase;
+  letter-spacing:.14em;color:var(--ink3);cursor:pointer;z-index:2;}
+.ob-track{flex:1;position:relative;}
+.ob-slide{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;
+  justify-content:center;text-align:center;padding:0 30px;}
+.ob-slide.active{display:flex;}
+.ob-ico{font-size:32px;color:var(--copper2);margin-bottom:20px;}
+.ob-title{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;
+  font-size:26px;color:var(--gold);margin-bottom:14px;line-height:1.2;}
+.ob-text{font-size:10px;color:var(--ink2);line-height:1.85;max-width:280px;}
+.ob-bottom{padding:0 20px 26px;flex-shrink:0;}
+.ob-dots{display:flex;justify-content:center;gap:6px;margin-bottom:18px;}
+.ob-dot{width:5px;height:5px;border-radius:50%;background:var(--b3);transition:background .2s,width .2s;}
+.ob-dot.active{background:var(--gold);width:14px;border-radius:3px;}
+.ob-next{width:100%;padding:15px;background:linear-gradient(135deg,var(--copper),var(--copper2));
+  border:none;border-radius:3px;font-family:'IBM Plex Mono',monospace;font-size:9px;
+  text-transform:uppercase;letter-spacing:.2em;color:var(--page);cursor:pointer;}
+.ob-link{text-align:center;margin-top:22px;font-size:8px;color:var(--ink3);text-transform:uppercase;
+  letter-spacing:.14em;cursor:pointer;}
+
+/* ── DETALHE DE TREINO (qualquer sessão) ── */
+.dt-hdr{padding:20px 20px 14px;}
+.dt-status{font-size:8px;text-transform:uppercase;letter-spacing:.16em;color:var(--copper2);margin-bottom:8px;}
+.dt-title{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;
+  font-size:26px;color:var(--gold);margin-bottom:6px;line-height:1.15;}
+.dt-meta{font-size:9px;color:var(--ink3);}
+.dt-target-row{display:flex;gap:8px;padding:0 20px 16px;}
+.dt-target{flex:1;background:var(--bg2);border:1px solid var(--b);border-radius:3px;padding:10px 8px;text-align:center;}
+.dt-target-lbl{font-size:7px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink3);margin-bottom:5px;}
+.dt-target-val{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;font-size:14px;color:var(--ink2);line-height:1.2;}
+.dt-note{margin:0 20px 16px;padding:10px 12px;background:var(--bg2);border:1px solid var(--b);border-radius:3px;
+  font-size:8px;color:var(--ink3);line-height:1.6;}
+.dt-cta{margin:0 20px 12px;width:calc(100% - 40px);padding:15px;
+  background:linear-gradient(135deg,var(--copper),var(--copper2));border:none;border-radius:3px;
+  font-family:'IBM Plex Mono',monospace;font-size:9px;text-transform:uppercase;
+  letter-spacing:.2em;color:var(--page);cursor:pointer;}
+.dt-cta.secondary{background:transparent;border:1px solid var(--b2);color:var(--ink2);}
+
+/* ── EXECUÇÃO ── */
+.exec-topbar-prog{height:2px;background:var(--b);overflow:hidden;flex-shrink:0;}
+.exec-tpfill{height:100%;background:linear-gradient(90deg,var(--copper),var(--gold));transition:width .5s;}
+.exec-block-info{padding:18px 20px 14px;border-bottom:1px solid var(--b);flex-shrink:0;}
+.exec-blk-tag{font-size:8px;text-transform:uppercase;letter-spacing:.2em;color:var(--zone-int);margin-bottom:5px;}
+.exec-blk-name{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;
+  font-size:26px;color:var(--gold);margin-bottom:3px;line-height:1.1;}
+.exec-blk-meta{font-size:9px;color:var(--ink3);}
+.timer-wrap{padding:22px 20px 16px;text-align:center;border-bottom:1px solid var(--b);flex-shrink:0;}
+.timer-num{font-family:'Bebas Neue',sans-serif;font-size:88px;line-height:1;
+  color:var(--gold);letter-spacing:.04em;transition:color .3s;}
+.timer-num.warn{color:var(--danger2);}
+.timer-lbl{font-size:8px;text-transform:uppercase;letter-spacing:.2em;color:var(--ink3);}
+.exec-stats{display:flex;border-bottom:1px solid var(--b);flex-shrink:0;}
+.es{flex:1;padding:12px 8px;text-align:center;}
+.es:not(:last-child){border-right:1px solid var(--b);}
+.es-lbl{font-size:7px;text-transform:uppercase;letter-spacing:.12em;color:var(--ink3);margin-bottom:4px;}
+.es-val{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;
+  font-size:20px;color:var(--ink2);line-height:1;}
+.es-unit{font-size:7px;color:var(--ink3);margin-top:2px;}
+.tl-section{padding:14px 20px;border-bottom:1px solid var(--b);flex-shrink:0;}
+.tl-lbl{font-size:7px;text-transform:uppercase;letter-spacing:.16em;color:var(--ink3);margin-bottom:8px;}
+.tl-track{display:flex;gap:3px;height:22px;}
+.tls{border-radius:2px;display:flex;align-items:center;justify-content:center;
+  font-size:6px;overflow:hidden;}
+.tls.aq{background:rgba(90,128,64,.2);border:1px solid rgba(90,128,64,.15);color:rgba(90,128,64,.6);}
+.tls.ti{background:rgba(224,112,64,.18);border:1px solid rgba(224,112,64,.18);color:rgba(224,112,64,.6);}
+.tls.de{background:rgba(200,160,96,.04);border:1px solid var(--b);color:var(--ink3);}
+.tls.vt{background:rgba(90,128,64,.15);border:1px solid rgba(90,128,64,.1);color:rgba(90,128,64,.5);}
+.tls.done-s{opacity:.38;}
+.tls.act{animation:tlPulse 1.8s ease-in-out infinite;}
+.tls.act.ti{border-color:var(--zone-int);box-shadow:0 0 8px rgba(224,112,64,.3);}
+.tls.act.de{border-color:var(--ink3);}
+.tls.act.aq{border-color:var(--zone-base);box-shadow:0 0 8px rgba(90,128,64,.3);}
+.tls.act.vt{border-color:var(--zone-base);box-shadow:0 0 8px rgba(90,128,64,.3);}
+@keyframes tlPulse{0%,100%{box-shadow:0 0 5px rgba(224,112,64,.2)}50%{box-shadow:0 0 14px rgba(224,112,64,.5)}}
+.tl-mini-legend{display:flex;gap:10px;margin-top:7px;}
+.tml-item{display:flex;align-items:center;gap:4px;font-size:7px;color:var(--ink3);}
+.tml-swatch{width:8px;height:8px;border-radius:1px;}
+.next-blk{padding:11px 20px;background:var(--bg2);border-bottom:1px solid var(--b);
+  display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.next-lbl{font-size:7px;text-transform:uppercase;letter-spacing:.14em;color:var(--ink3);white-space:nowrap;}
+.next-info{font-size:9px;color:var(--ink2);}
+.next-info strong{color:var(--ink);}
+.exc-btns{padding:14px 20px;display:flex;gap:10px;flex-shrink:0;}
+.exc-btn{flex:1;padding:12px 8px;background:var(--bg2);border:1px solid var(--b2);border-radius:3px;
+  font-family:'IBM Plex Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:.1em;
+  color:var(--ink2);cursor:pointer;transition:all .15s;line-height:1.45;text-align:center;}
+.exc-btn i{font-size:15px;display:block;margin-bottom:5px;color:var(--copper2);}
+.exc-btn:hover{border-color:var(--copper);color:var(--copper2);}
+.exc-btn.on{border-color:var(--copper);background:rgba(138,96,48,.12);color:var(--copper2);}
+.enc-btn{margin:0 20px 20px;width:calc(100% - 40px);padding:13px;background:transparent;
+  border:1px solid var(--b2);border-radius:3px;font-family:'IBM Plex Mono',monospace;
+  font-size:8px;text-transform:uppercase;letter-spacing:.16em;color:var(--ink3);cursor:pointer;
+  transition:border-color .15s;}
+.enc-btn:hover{border-color:var(--b3);color:var(--ink2);}
+
+/* ── PÓS-SESSÃO ── */
+.post-hdr{padding:20px 20px 14px;}
+.post-check{font-size:26px;margin-bottom:8px;color:var(--moss2);}
+.post-title{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;
+  font-size:28px;color:var(--gold);margin-bottom:4px;}
+.post-meta{font-size:9px;color:var(--ink3);}
+.cmp-card{margin:0 20px 14px;border:1px solid var(--b);border-radius:3px;overflow:hidden;}
+.cmp-hdr{padding:9px 14px;background:var(--bg3);border-bottom:1px solid var(--b);
+  font-size:8px;text-transform:uppercase;letter-spacing:.16em;color:var(--copper2);}
+.cmp-row{display:flex;padding:10px 14px;border-bottom:1px solid var(--b);align-items:center;}
+.cmp-row:last-child{border-bottom:none;}
+.cmp-label{flex:1;font-size:9px;color:var(--ink2);}
+.cmp-plan{font-size:8px;color:var(--ink3);margin-right:12px;}
+.cmp-exec{font-size:9px;color:var(--gold);}
+.cmp-ok{color:var(--moss2);margin-left:7px;font-size:11px;}
+.cmp-warn{color:var(--copper2);margin-left:7px;font-size:11px;}
+.ptl-item{display:flex;gap:11px;margin-bottom:10px;align-items:flex-start;}
+.ptl-dot{width:20px;height:20px;border-radius:50%;flex-shrink:0;display:flex;
+  align-items:center;justify-content:center;font-size:8px;margin-top:1px;}
+.ptl-ok{background:rgba(74,104,50,.18);color:var(--moss2);}
+.ptl-exc{background:rgba(200,160,96,.08);color:var(--gold);border:1px solid rgba(200,160,96,.2);}
+.ptl-rest{background:var(--bg3);color:var(--ink3);border:1px solid var(--b);font-size:7px;}
+.ptl-info{flex:1;}
+.ptl-name{font-size:9px;color:var(--ink);margin-bottom:2px;}
+.ptl-detail{font-size:8px;color:var(--ink3);line-height:1.55;}
+.ptl-tag{font-size:7px;padding:1px 6px;background:rgba(200,160,96,.07);
+  border:1px solid rgba(200,160,96,.18);color:var(--gold2);border-radius:1px;
+  display:inline-block;margin-top:3px;}
+.sig-card{margin:0 20px 14px;padding:12px 14px;background:var(--bg2);
+  border:1px solid var(--b);border-radius:3px;display:flex;align-items:flex-start;gap:10px;}
+.sig-ico{font-size:16px;color:var(--copper2);flex-shrink:0;margin-top:1px;}
+.sig-name{font-size:9px;color:var(--ink);margin-bottom:2px;}
+.sig-sub{font-size:8px;color:var(--ink3);}
+.pse-chart-card{margin:0 20px 14px;background:var(--bg2);border:1px solid var(--b);border-radius:3px;padding:14px;}
+.pse-chart-lbl{font-size:8px;text-transform:uppercase;letter-spacing:.14em;color:var(--copper2);margin-bottom:12px;}
+.pse-bars{display:flex;align-items:flex-end;gap:8px;height:68px;}
+.pse-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;}
+.pse-colbar-wrap{flex:1;display:flex;align-items:flex-end;width:100%;height:50px;}
+.pse-colbar{width:100%;border-radius:2px 2px 0 0;min-height:4px;}
+.pse-lbl{font-size:7px;color:var(--ink3);text-align:center;}
+.pse-val{font-size:8px;color:var(--ink2);text-align:center;}
+.narr-card{margin:0 20px 20px;background:var(--bg2);border:1px solid var(--b);border-radius:3px;
+  padding:16px;position:relative;overflow:hidden;}
+.narr-card::before{content:'';position:absolute;top:0;left:0;width:2px;height:100%;
+  background:linear-gradient(180deg,var(--copper),var(--gold));}
+.narr-lbl{font-size:7px;text-transform:uppercase;letter-spacing:.2em;color:var(--copper2);
+  margin-bottom:9px;display:flex;align-items:center;gap:6px;}
+.narr-dot{width:4px;height:4px;border-radius:50%;background:var(--copper2);}
+.narr-text{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:14px;
+  color:var(--ink2);line-height:1.85;}
+.back-home-btn{margin:0 20px 28px;width:calc(100% - 40px);padding:15px;
+  background:linear-gradient(135deg,var(--copper),var(--copper2));border:none;border-radius:3px;
+  font-family:'IBM Plex Mono',monospace;font-size:9px;text-transform:uppercase;
+  letter-spacing:.2em;color:var(--page);cursor:pointer;}
+
+/* ── PROGRESSO ── */
+.stat-cards{display:flex;gap:8px;padding:16px 20px 0;}
+.sc{flex:1;background:var(--bg2);border:1px solid var(--b);border-radius:3px;padding:12px 8px;text-align:center;}
+.sc-lbl{font-size:7px;text-transform:uppercase;letter-spacing:.11em;color:var(--ink3);margin-bottom:5px;}
+.sc-val{font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--gold);line-height:1;margin-bottom:2px;}
+.sc-val span{font-size:18px;}
+.sc-unit{font-size:7px;color:var(--copper2);text-transform:uppercase;letter-spacing:.1em;}
+.chart-sec{margin:16px 20px 0;background:var(--bg2);border:1px solid var(--b);border-radius:3px;padding:14px;}
+.chart-sec-lbl{font-size:8px;text-transform:uppercase;letter-spacing:.16em;color:var(--copper2);margin-bottom:12px;}
+.pace-chart{position:relative;height:110px;margin-bottom:6px;}
+.pace-chart svg{position:absolute;inset:0;width:100%;height:100%;}
+.x-labels{display:flex;padding:0 18px;}
+.x-lbl{flex:1;font-size:7px;color:var(--ink3);text-align:center;}
+.dist-bars{display:flex;align-items:flex-end;gap:8px;height:80px;margin-bottom:8px;}
+.db-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;}
+.db-km{font-size:8px;color:var(--ink2);text-align:center;}
+.db-bar-wrap{flex:1;display:flex;flex-direction:column;justify-content:flex-end;width:100%;}
+.db-bar{width:100%;border-radius:2px 2px 0 0;min-height:3px;}
+.db-lbl{font-size:7px;color:var(--ink3);text-align:center;}
+.meta-row{display:flex;align-items:center;gap:10px;padding-top:10px;border-top:1px solid var(--b);}
+.meta-lbl{font-size:8px;color:var(--ink3);white-space:nowrap;min-width:72px;}
+.meta-bar{flex:1;height:4px;background:var(--b);border-radius:2px;overflow:hidden;}
+.meta-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--copper),var(--gold));}
+.meta-val{font-size:8px;color:var(--ink2);white-space:nowrap;}
+.pse-prog-bars{display:flex;align-items:flex-end;gap:8px;height:70px;margin-bottom:8px;}
+.ppb-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;}
+.ppb-v{font-size:8px;color:var(--ink2);}
+.ppb-wrap{flex:1;display:flex;align-items:flex-end;width:100%;height:55px;}
+.ppb-bar{width:100%;border-radius:2px 2px 0 0;min-height:4px;}
+.ppb-lbl{font-size:7px;color:var(--ink3);}
+.prog-note{font-size:8px;color:var(--ink3);line-height:1.65;padding-top:8px;border-top:1px solid var(--b);}
+.prog-note em{color:var(--ink2);font-style:normal;}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div id="tb-left"><span class="tb-logo">Momentum</span></div>
+  <div id="tb-center"><span class="tb-name">Alexandre Lopes</span></div>
+</div>
+
+<div class="screen-wrap">
+
+<!-- ══════════════════════════════════════════
+     TELA 0 · ONBOARDING
+     Mostrada só na primeira visita (localStorage).
+     Reacessível pelo link "sobre o momentum" na Home.
+══════════════════════════════════════════ -->
+<div class="screen active" id="s-onboarding">
+  <div class="ob-screen">
+    <div class="ob-skip" onclick="obFinish()">pular</div>
+    <div class="ob-track">
+      <div class="ob-slide active" id="ob-slide-0">
+        <i class="ob-ico ti ti-sparkles"></i>
+        <div class="ob-title">Bem-vindo ao<br>Momentum</div>
+        <div class="ob-text">Cada sessão que você correr vira dado. E cada dado vira uma leitura clara do que está acontecendo com seu treino — nunca um número solto sem explicação.</div>
+      </div>
+      <div class="ob-slide" id="ob-slide-1">
+        <i class="ob-ico ti ti-run"></i>
+        <div class="ob-title">Feito pra corrida</div>
+        <div class="ob-text">Pace, distância e zona de esforço — base, moderado ou intenso. Cada sessão é uma sequência de blocos: aquecimento, tiros, descanso, contínuo.</div>
+      </div>
+      <div class="ob-slide" id="ob-slide-2">
+        <i class="ob-ico ti ti-target-arrow"></i>
+        <div class="ob-title">Como os dados<br>entram</div>
+        <div class="ob-text">Durante a corrida, pace e esforço seguem o plano automaticamente — sem precisar parar pra digitar nada. Se algo sair diferente do esperado, um toque único registra a exceção.</div>
+      </div>
+    </div>
+    <div class="ob-bottom">
+      <div class="ob-dots">
+        <div class="ob-dot active" id="ob-dot-0"></div>
+        <div class="ob-dot" id="ob-dot-1"></div>
+        <div class="ob-dot" id="ob-dot-2"></div>
+      </div>
+      <button class="ob-next" id="ob-next-btn" onclick="obNext()">avançar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TELA 1 · HOME
+══════════════════════════════════════════ -->
+<div class="screen" id="s-home">
+  <div class="sbody">
+    <div class="home-header">
+      <div class="home-date" id="home-date"></div>
+      <div class="home-name">Alexandre<br>Lopes</div>
+      <div class="home-meso">Corrida · Rumo aos 5km · bloco ainda não iniciado</div>
+    </div>
+
+    <div class="hero-cards">
+      <!-- Card: Treinos -->
+      <div class="hnc" onclick="nav('s-treinos')">
+        <div class="hnc-top">
+          <i class="hnc-ico ti ti-run"></i>
+          <div>
+            <div class="hnc-label">Treinos</div>
+            <div class="hnc-title">Treino A · Moderado<br>35min contínuo</div>
+            <div class="hnc-sub">Primeira sessão do bloco · 8,5–9km/h</div>
+          </div>
+        </div>
+        <div class="prog-row">
+          <div class="prog-bar"><div class="prog-fill" style="width:0%"></div></div>
+          <div class="prog-txt">0 de 9 sessões</div>
+        </div>
+        <div class="hnc-bottom">
+          <div class="hnc-stat">Semana 1 · <strong>a começar</strong></div>
+          <i class="ti ti-chevron-right" style="font-size:14px;color:var(--ink3);"></i>
+        </div>
+      </div>
+
+      <!-- Card: Progresso -->
+      <div class="hnc" onclick="nav('s-progresso')">
+        <div class="hnc-top">
+          <i class="hnc-ico ti ti-trending-up"></i>
+          <div>
+            <div class="hnc-label">Progresso</div>
+            <div class="hnc-title">Ainda sem sessões</div>
+            <div class="hnc-sub">Assim que você concluir a primeira, a evolução aparece aqui</div>
+          </div>
+        </div>
+        <div class="hnc-bottom">
+          <div class="hnc-stat">aguardando primeira sessão</div>
+          <i class="ti ti-chevron-right" style="font-size:14px;color:var(--ink3);"></i>
+        </div>
+      </div>
+    </div>
+    <div class="ob-link" onclick="abrirOnboarding()">sobre o momentum</div>
+    <div style="height:32px;"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TELA 2 · TREINOS
+══════════════════════════════════════════ -->
+<div class="screen" id="s-treinos">
+  <div class="zone-legend">
+    <div class="zi"><div class="zd base"></div>Base 7–8km/h</div>
+    <div class="zi"><div class="zd mod"></div>Moderado 8,5–9km/h</div>
+    <div class="zi"><div class="zd int"></div>Intenso 9,5–10km/h</div>
+  </div>
+  <div class="sbody">
+    <!-- Semana 1 -->
+    <div class="wk-group">
+      <div class="wk-label">Semana 1 — moderado / contínuo</div>
+      <div class="sess-row" onclick="abrirTreino('s1a')">
+        <div class="sess-ico si-future"><i class="ti ti-player-play"></i></div>
+        <div class="sess-info">
+          <div class="sess-name">Treino A · 35min contínuo</div>
+          <div class="sess-desc">8,5–9km/h · ~4,9km</div>
+        </div>
+        <div class="sess-right">
+          <div class="zbadge zb-mod">Moderado</div>
+        </div>
+      </div>
+      <div class="sess-row" onclick="abrirTreino('s1b')">
+        <div class="sess-ico si-future"><i class="ti ti-player-play"></i></div>
+        <div class="sess-info">
+          <div class="sess-name">Treino B · 40min contínuo</div>
+          <div class="sess-desc">9km/h · ~6km</div>
+        </div>
+        <div class="sess-right">
+          <div class="zbadge zb-mod">Moderado</div>
+        </div>
+      </div>
+      <div class="sess-row" onclick="abrirTreino('s1c')">
+        <div class="sess-ico si-future"><i class="ti ti-player-play"></i></div>
+        <div class="sess-info">
+          <div class="sess-name">Treino C · 7km contínuo</div>
+          <div class="sess-desc">7–7,5km/h · zona base</div>
+        </div>
+        <div class="sess-right">
+          <div class="zbadge zb-base">Base</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Semana 2 -->
+    <div class="wk-group">
+      <div class="wk-label">Semana 2 — intenso / intervalado</div>
+      <div class="sess-row" onclick="abrirTreino('s2a')">
+        <div class="sess-ico si-future"><i class="ti ti-player-play"></i></div>
+        <div class="sess-info">
+          <div class="sess-name">Treino A · 5 tiros de 3min</div>
+          <div class="sess-desc">9,5–10km/h · descanso passivo 1–2min</div>
+        </div>
+        <div class="sess-right">
+          <div class="zbadge zb-int">Intenso</div>
+        </div>
+      </div>
+      <div class="sess-row" onclick="abrirTreino('s2b')">
+        <div class="sess-ico si-future"><i class="ti ti-player-play"></i></div>
+        <div class="sess-info">
+          <div class="sess-name">Treino B · 4 tiros de 1km</div>
+          <div class="sess-desc">10km/h · descanso passivo entre tiros</div>
+        </div>
+        <div class="sess-right">
+          <div class="zbadge zb-int">Intenso</div>
+        </div>
+      </div>
+      <div class="sess-row" onclick="abrirTreino('s2c')">
+        <div class="sess-ico si-future"><i class="ti ti-player-play"></i></div>
+        <div class="sess-info">
+          <div class="sess-name">Treino C · 7–8km contínuo</div>
+          <div class="sess-desc">7,5–8km/h · zona base</div>
+        </div>
+        <div class="sess-right">
+          <div class="zbadge zb-base">Base</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Semana 3 -->
+    <div class="wk-group">
+      <div class="wk-label">Semana 3 — misto</div>
+      <div class="sess-row" onclick="abrirTreino('s3a')">
+        <div class="sess-ico si-future"><i class="ti ti-player-play"></i></div>
+        <div class="sess-info">
+          <div class="sess-name">Treino A · 30min misto</div>
+          <div class="sess-desc">8,5–9km/h + tiros curtos @9,5km/h</div>
+        </div>
+        <div class="sess-right">
+          <div class="zbadge zb-misto">Misto</div>
+        </div>
+      </div>
+      <div class="sess-row" onclick="abrirTreino('s3b')">
+        <div class="sess-ico si-future"><i class="ti ti-player-play"></i></div>
+        <div class="sess-info">
+          <div class="sess-name">Treino B · 4 tiros de 3min</div>
+          <div class="sess-desc">9,5–10km/h · descanso ativo 2min @7km/h</div>
+        </div>
+        <div class="sess-right">
+          <div class="zbadge zb-int">Intenso</div>
+        </div>
+      </div>
+      <div class="sess-row" onclick="abrirTreino('s3c')">
+        <div class="sess-ico si-future"><i class="ti ti-player-play"></i></div>
+        <div class="sess-info">
+          <div class="sess-name">Treino C · 8km contínuo</div>
+          <div class="sess-desc">8km/h · zona base/moderado</div>
+        </div>
+        <div class="sess-right">
+          <div class="zbadge zb-base">Base</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Meta de referência -->
+    <div class="sec" style="margin-top:16px;">
+      <div class="sec-head"><div class="sec-title">Meta de referência</div><div class="sec-line"></div></div>
+      <div class="card" style="padding:14px 16px;">
+        <div style="font-size:8px;color:var(--ink3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.12em;">Alvo pós-bloco</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;font-size:22px;color:var(--gold);margin-bottom:4px;">5km em 27min</div>
+        <div style="font-size:8px;color:var(--ink3);line-height:1.6;">Ritmo ~5:24/km · ~11,1km/h — contexto de prova, não zona de treino ativa neste bloco</div>
+      </div>
+    </div>
+    <div style="height:24px;"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TELA 2.5 · DETALHE / RESUMO DO TREINO
+     Populada dinamicamente via abrirTreino(id) — qualquer
+     sessão da lista de Treinos abre aqui, concluída ou não.
+══════════════════════════════════════════ -->
+<div class="screen" id="s-treino-detalhe">
+  <div class="sbody">
+    <div class="dt-hdr">
+      <div class="dt-status" id="dt-status">Semana 2 · hoje</div>
+      <div class="dt-title" id="dt-title">Treino B · 4 tiros de 1km</div>
+      <div class="dt-meta" id="dt-meta">Intenso · 10km/h · descanso passivo entre tiros</div>
+    </div>
+
+    <div class="dt-target-row">
+      <div class="dt-target"><div class="dt-target-lbl">Pace-alvo</div><div class="dt-target-val" id="dt-pace">10km/h</div></div>
+      <div class="dt-target"><div class="dt-target-lbl">Distância</div><div class="dt-target-val" id="dt-dist">~5,4km</div></div>
+      <div class="dt-target"><div class="dt-target-lbl">Zona</div><div class="dt-target-val" id="dt-zona">Intenso</div></div>
+    </div>
+
+    <div class="sec">
+      <div class="sec-head"><div class="sec-title">Estrutura planejada</div><div class="sec-line"></div></div>
+      <div style="padding:0 4px;" id="dt-blocks"><!-- injetado via JS --></div>
+    </div>
+
+    <div class="dt-note" id="dt-note" style="display:none;"></div>
+
+    <button class="dt-cta" id="dt-cta-primary" onclick="">iniciar sessão</button>
+    <button class="dt-cta secondary" onclick="nav('s-treinos', true)">voltar para treinos</button>
+    <div style="height:20px;"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TELA 3 · EXECUÇÃO ATIVA
+     Estado: Tiro 2 de 4, 3:24 restantes
+══════════════════════════════════════════ -->
+<div class="screen" id="s-exec">
+  <div class="exec-topbar-prog"><div class="exec-tpfill" id="exec-prog" style="width:42%"></div></div>
+
+  <div class="exec-block-info">
+    <div class="exec-blk-tag" id="blk-tag">Tiro 2 de 4 · Intenso</div>
+    <div class="exec-blk-name" id="blk-name">1km @ 10km/h</div>
+    <div class="exec-blk-meta" id="blk-meta">pace-alvo · 6:00/km</div>
+  </div>
+
+  <div class="timer-wrap">
+    <div class="timer-num" id="timer">3:24</div>
+    <div class="timer-lbl">tempo restante no bloco</div>
+  </div>
+
+  <div class="exec-stats">
+    <div class="es">
+      <div class="es-lbl">Distância</div>
+      <div class="es-val" id="es-dist">1,0</div>
+      <div class="es-unit">km · alvo</div>
+    </div>
+    <div class="es">
+      <div class="es-lbl">Pace alvo</div>
+      <div class="es-val" id="es-pace">10,0</div>
+      <div class="es-unit">km/h</div>
+    </div>
+    <div class="es">
+      <div class="es-lbl">Duração</div>
+      <div class="es-val" id="es-dur">6:00</div>
+      <div class="es-unit">bloco</div>
+    </div>
+  </div>
+
+  <!-- Timeline segmentada da sessão -->
+  <!-- Blocos: aq(5) T1(6) D(1.5) T2*(6) D(1.5) T3(6) D(1.5) T4(6) vt(5) = 38.5min -->
+  <div class="tl-section">
+    <div class="tl-lbl">Progressão da sessão</div>
+    <div class="tl-track" id="tl-track">
+      <div class="tls aq act" style="flex:5" id="tl-aq">aq</div>
+      <div class="tls ti" style="flex:6" id="tl-t1">T1</div>
+      <div class="tls de" style="flex:1.5" id="tl-d1"></div>
+      <div class="tls ti" style="flex:6" id="tl-t2">T2</div>
+      <div class="tls de" style="flex:1.5" id="tl-d2"></div>
+      <div class="tls ti" style="flex:6" id="tl-t3">T3</div>
+      <div class="tls de" style="flex:1.5" id="tl-d3"></div>
+      <div class="tls ti" style="flex:6" id="tl-t4">T4</div>
+      <div class="tls vt" style="flex:5" id="tl-vt">vt</div>
+    </div>
+    <div class="tl-mini-legend">
+      <div class="tml-item"><div class="tml-swatch" style="background:rgba(224,112,64,.3);"></div>Tiro</div>
+      <div class="tml-item"><div class="tml-swatch" style="background:rgba(200,160,96,.06);border:1px solid var(--b);"></div>Descanso</div>
+      <div class="tml-item"><div class="tml-swatch" style="background:rgba(90,128,64,.2);"></div>Base</div>
+    </div>
+  </div>
+
+  <div class="next-blk">
+    <i class="ti ti-arrow-right" style="font-size:11px;color:var(--ink3);flex-shrink:0;"></i>
+    <span class="next-lbl">a seguir</span>
+    <span class="next-info" id="next-info"><strong>Descanso passivo</strong> · 1:30</span>
+  </div>
+
+  <!-- Botões de exceção — sempre visíveis, toque único -->
+  <div class="exc-btns">
+    <button class="exc-btn" id="btn-ritmo" onclick="toggleExc(this,'ritmo')">
+      <i class="ti ti-trending-down"></i>reduzi o ritmo
+    </button>
+    <button class="exc-btn" id="btn-pesado" onclick="toggleExc(this,'pesado')">
+      <i class="ti ti-flame"></i>mais pesado que esperado
+    </button>
+  </div>
+
+  <button class="enc-btn" onclick="nav('s-pos-sessao')">encerrar sessão</button>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TELA 4 · RESUMO PÓS-SESSÃO
+     Treino A · Semana 2 · ontem
+     5 tiros de 3min @ 9,5–10km/h
+══════════════════════════════════════════ -->
+<div class="screen" id="s-pos-sessao">
+  <div class="sbody">
+    <div class="post-hdr">
+      <div class="post-check"><i class="ti ti-circle-check-filled"></i></div>
+      <div class="post-title">Treino A concluído</div>
+      <div class="post-meta">15/ago · Semana 2 · Intenso · 37min total</div>
+    </div>
+
+    <!-- Comparativo -->
+    <div class="cmp-card">
+      <div class="cmp-hdr">Planejado vs. executado</div>
+      <div class="cmp-row">
+        <div class="cmp-label">Distância total (tiros)</div>
+        <div class="cmp-plan">~2,5km</div>
+        <div class="cmp-exec">2,4km</div>
+        <div class="cmp-ok">✓</div>
+      </div>
+      <div class="cmp-row">
+        <div class="cmp-label">Pace médio nos tiros</div>
+        <div class="cmp-plan">9,5–10km/h</div>
+        <div class="cmp-exec">9,6km/h</div>
+        <div class="cmp-ok">✓</div>
+      </div>
+      <div class="cmp-row">
+        <div class="cmp-label">Zona predominante</div>
+        <div class="cmp-plan">Intenso</div>
+        <div class="cmp-exec" style="color:var(--zone-int);">Intenso</div>
+        <div class="cmp-ok">✓</div>
+      </div>
+      <div class="cmp-row">
+        <div class="cmp-label">Tiros no pace-alvo</div>
+        <div class="cmp-plan">5 de 5</div>
+        <div class="cmp-exec" style="color:var(--gold2);">4 de 5</div>
+        <div class="cmp-warn">!</div>
+      </div>
+    </div>
+
+    <!-- Checklist de blocos -->
+    <div class="sec">
+      <div class="sec-head"><div class="sec-title">Blocos da sessão</div><div class="sec-line"></div></div>
+      <div style="padding:0 4px;">
+        <div class="ptl-item">
+          <div class="ptl-dot ptl-ok"><i class="ti ti-check" style="font-size:8px;"></i></div>
+          <div class="ptl-info"><div class="ptl-name">Aquecimento</div><div class="ptl-detail">5min · 7km/h · base</div></div>
+        </div>
+        <div class="ptl-item">
+          <div class="ptl-dot ptl-ok"><i class="ti ti-check" style="font-size:8px;"></i></div>
+          <div class="ptl-info"><div class="ptl-name">Tiro 1 · 3min @ 9,7km/h</div><div class="ptl-detail">conforme plano · PSE 6</div></div>
+        </div>
+        <div class="ptl-item">
+          <div class="ptl-dot ptl-rest">D</div>
+          <div class="ptl-info"><div class="ptl-name">Descanso passivo 1:30</div><div class="ptl-detail">conforme plano</div></div>
+        </div>
+        <div class="ptl-item">
+          <div class="ptl-dot ptl-ok"><i class="ti ti-check" style="font-size:8px;"></i></div>
+          <div class="ptl-info"><div class="ptl-name">Tiro 2 · 3min @ 9,8km/h</div><div class="ptl-detail">conforme plano · PSE 7</div></div>
+        </div>
+        <div class="ptl-item">
+          <div class="ptl-dot ptl-rest">D</div>
+          <div class="ptl-info"><div class="ptl-name">Descanso passivo 1:30</div><div class="ptl-detail">conforme plano</div></div>
+        </div>
+        <div class="ptl-item">
+          <div class="ptl-dot ptl-ok"><i class="ti ti-check" style="font-size:8px;"></i></div>
+          <div class="ptl-info"><div class="ptl-name">Tiro 3 · 3min @ 9,5km/h</div><div class="ptl-detail">conforme plano · PSE 7</div></div>
+        </div>
+        <div class="ptl-item">
+          <div class="ptl-dot ptl-rest">D</div>
+          <div class="ptl-info"><div class="ptl-name">Descanso passivo 1:30</div><div class="ptl-detail">conforme plano</div></div>
+        </div>
+        <div class="ptl-item">
+          <div class="ptl-dot ptl-ok"><i class="ti ti-check" style="font-size:8px;"></i></div>
+          <div class="ptl-info"><div class="ptl-name">Tiro 4 · 3min @ 9,6km/h</div><div class="ptl-detail">conforme plano · PSE 8</div></div>
+        </div>
+        <div class="ptl-item">
+          <div class="ptl-dot ptl-rest">D</div>
+          <div class="ptl-info"><div class="ptl-name">Descanso passivo 2:00</div><div class="ptl-detail">conforme plano</div></div>
+        </div>
+        <div class="ptl-item">
+          <div class="ptl-dot ptl-exc"><i class="ti ti-alert-triangle" style="font-size:8px;"></i></div>
+          <div class="ptl-info">
+            <div class="ptl-name">Tiro 5 · 3min @ 8,8km/h</div>
+            <div class="ptl-detail">meta: 9,5–10km/h · PSE 9</div>
+            <span class="ptl-tag">reduzi o ritmo</span>
+          </div>
+        </div>
+        <div class="ptl-item">
+          <div class="ptl-dot ptl-ok"><i class="ti ti-check" style="font-size:8px;"></i></div>
+          <div class="ptl-info"><div class="ptl-name">Volta</div><div class="ptl-detail">5min · 7km/h</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sinalizações -->
+    <div class="sig-card">
+      <i class="sig-ico ti ti-trending-down"></i>
+      <div>
+        <div class="sig-name">Tiro 5 — reduziu o ritmo</div>
+        <div class="sig-sub">pace exec 8,8km/h · abaixo do alvo 9,5–10km/h</div>
+      </div>
+    </div>
+
+    <!-- PSE por bloco -->
+    <div class="pse-chart-card">
+      <div class="pse-chart-lbl">PSE por bloco (tiros)</div>
+      <div class="pse-bars">
+        <!-- PSE 6,7,7,8,9 → bar height = pse/10 * 50px -->
+        <div class="pse-col">
+          <div class="pse-val">6</div>
+          <div class="pse-colbar-wrap"><div class="pse-colbar" style="height:60%;background:#4a6832;"></div></div>
+          <div class="pse-lbl">T1</div>
+        </div>
+        <div class="pse-col">
+          <div class="pse-val">7</div>
+          <div class="pse-colbar-wrap"><div class="pse-colbar" style="height:70%;background:#6a8840;"></div></div>
+          <div class="pse-lbl">T2</div>
+        </div>
+        <div class="pse-col">
+          <div class="pse-val">7</div>
+          <div class="pse-colbar-wrap"><div class="pse-colbar" style="height:70%;background:#6a8840;"></div></div>
+          <div class="pse-lbl">T3</div>
+        </div>
+        <div class="pse-col">
+          <div class="pse-val">8</div>
+          <div class="pse-colbar-wrap"><div class="pse-colbar" style="height:80%;background:#a07848;"></div></div>
+          <div class="pse-lbl">T4</div>
+        </div>
+        <div class="pse-col">
+          <div class="pse-val">9</div>
+          <div class="pse-colbar-wrap"><div class="pse-colbar" style="height:90%;background:#e07040;"></div></div>
+          <div class="pse-lbl">T5</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Narrativa Layer A -->
+    <div class="narr-card">
+      <div class="narr-lbl"><div class="narr-dot"></div>Leitura da sessão</div>
+      <div class="narr-text">Manteve o pace alvo em 4 dos 5 tiros. Sinalizou redução no último — possível início de fadiga ao fim do volume. PSE crescente dentro do esperado para sessão de tiros longos.</div>
+    </div>
+
+    <button class="back-home-btn" onclick="nav('s-home', true)">voltar ao início</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TELA 5 · PROGRESSO
+     Estado vazio — nenhuma sessão registrada ainda.
+     Os gráficos de evolução (pace, distância, PSE) só
+     fazem sentido a partir da 2ª sessão concluída.
+══════════════════════════════════════════ -->
+<div class="screen" id="s-progresso">
+  <div class="sbody">
+    <div style="padding:60px 30px;text-align:center;">
+      <i class="ti ti-chart-line" style="font-size:34px;color:var(--b3);display:block;margin-bottom:16px;"></i>
+      <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;
+        font-size:20px;color:var(--gold);margin-bottom:8px;">Ainda sem dados de progresso</div>
+      <div style="font-size:9px;color:var(--ink3);line-height:1.7;max-width:260px;margin:0 auto;">
+        Assim que as primeiras sessões forem concluídas, a evolução de pace, distância e PSE aparece aqui — construída a partir do que você registrar em cada treino, nunca estimada.
+      </div>
+    </div>
+    <div style="height:16px;"></div>
+  </div>
+</div>
+
+</div><!-- /screen-wrap -->
+</div><!-- /app -->
+
+<script>
+// ── ONBOARDING ────────────────────────────────
+const OB_SLIDES = 3;
+let obIdx = 0;
+
+function obGoto(i) {
+  document.getElementById(`ob-slide-${obIdx}`).classList.remove('active');
+  document.getElementById(`ob-dot-${obIdx}`).classList.remove('active');
+  obIdx = i;
+  document.getElementById(`ob-slide-${obIdx}`).classList.add('active');
+  document.getElementById(`ob-dot-${obIdx}`).classList.add('active');
+  document.getElementById('ob-next-btn').textContent = obIdx === OB_SLIDES - 1 ? 'começar' : 'avançar';
+}
+
+function obNext() {
+  if (obIdx < OB_SLIDES - 1) obGoto(obIdx + 1);
+  else obFinish();
+}
+
+function obFinish() {
+  localStorage.setItem('momentum_onboarded', '1');
+  document.getElementById('s-onboarding').classList.remove('active');
+  document.getElementById('s-home').classList.add('active');
+}
+
+function abrirOnboarding() {
+  obGoto(0);
+  document.querySelectorAll('.screen.active').forEach(el => el.classList.remove('active'));
+  document.getElementById('s-onboarding').classList.add('active');
+}
+
+function initApp() {
+  if (localStorage.getItem('momentum_onboarded')) {
+    document.getElementById('s-onboarding').classList.remove('active');
+    document.getElementById('s-home').classList.add('active');
+  }
+  const dateEl = document.getElementById('home-date');
+  if (dateEl) {
+    const hoje = new Date();
+    dateEl.textContent = hoje.toLocaleDateString('pt-BR', {day:'2-digit', month:'short', year:'numeric'}).replace(/\.$/, '');
+  }
+}
+initApp();
+
+// ── NAVIGATION ──────────────────────────────
+const stack = [];
+
+function nav(id, isBack = false) {
+  const cur = document.querySelector('.screen.active');
+  const tgt = document.getElementById(id);
+  if (!tgt || tgt === cur) return;
+
+  cur.classList.remove('active');
+  if (!isBack) {
+    cur.classList.add('out-back');
+    stack.push(cur.id);
+  }
+  setTimeout(() => cur.classList.remove('out-back'), 230);
+
+  tgt.style.transform = isBack ? 'translateX(-20px)' : 'translateX(20px)';
+  tgt.style.opacity = '0';
+  tgt.style.pointerEvents = 'none';
+  tgt.classList.add('active');
+  requestAnimationFrame(() => {
+    tgt.style.transform = '';
+    tgt.style.opacity = '';
+    tgt.style.pointerEvents = '';
+  });
+
+  updateTopbar(id);
+  if (id === 's-exec') startTimer(); else stopTimer();
+}
+
+function goBack() {
+  if (!stack.length) return;
+  nav(stack.pop(), true);
+}
+
+function updateTopbar(id) {
+  const titles = {'s-treinos':'Treinos','s-treino-detalhe':'Treino','s-exec':'Em execução','s-pos-sessao':'Resumo','s-progresso':'Progresso'};
+  document.getElementById('tb-left').innerHTML =
+    id === 's-home'
+      ? '<span class="tb-logo">Momentum</span>'
+      : '<span class="tb-back" onclick="goBack()"><i class="ti ti-arrow-left"></i></span>';
+  document.getElementById('tb-center').innerHTML =
+    id === 's-home'
+      ? '<span class="tb-name">Alexandre Lopes</span>'
+      : `<span class="tb-title">${titles[id]||''}</span>`;
+}
+
+// ── DETALHE DE TREINO (qualquer sessão) ──────
+const ZONE_META = {
+  base:{label:'Base',cls:'zb-base',color:'var(--zone-base)'},
+  mod:{label:'Moderado',cls:'zb-mod',color:'var(--zone-mod)'},
+  int:{label:'Intenso',cls:'zb-int',color:'var(--zone-int)'},
+  misto:{label:'Misto',cls:'zb-misto',color:'var(--copper2)'},
+};
+
+// Fonte de dados provisória — sem Firestore ainda.
+// Editar à mão conforme sessões forem acontecendo:
+//   status: 'futuro' | 'hoje' | 'feito'
+//   data: null enquanto não aconteceu, ou string tipo 'ontem' / '14/ago' quando concluída
+//   resumoCompleto: true só quando o resumo pós-sessão (dados executados por bloco,
+//     PSE, sinalizações) tiver sido preenchido na tela s-pos-sessao — sem isso,
+//     a sessão concluída aparece como "registrada, sem resumo detalhado ainda".
+const SESSOES = {
+  s1a:{semana:'Semana 1',status:'futuro',data:null,nome:'Treino A · 35min contínuo',zona:'mod',pace:'8,5–9km/h',dist:'~4,9km',
+    blocos:['Aquecimento · 4min, subindo até 7,5km/h','Contínuo · 35min @ 8,5–9km/h']},
+  s1b:{semana:'Semana 1',status:'futuro',data:null,nome:'Treino B · 40min contínuo',zona:'mod',pace:'9km/h',dist:'~6km',
+    blocos:['Aquecimento · 4min','Contínuo · 40min @ 9km/h']},
+  s1c:{semana:'Semana 1',status:'futuro',data:null,nome:'Treino C · 7km contínuo',zona:'base',pace:'7–7,5km/h',dist:'7km',
+    blocos:['Aquecimento · 4min','Contínuo · 7km @ 7–7,5km/h']},
+  s2a:{semana:'Semana 2',status:'futuro',data:null,nome:'Treino A · 5 tiros de 3min',zona:'int',pace:'9,5–10km/h',dist:'~2,5km (tiros)',
+    blocos:['Aquecimento · 5min','5 tiros de 3min @ 9,5–10km/h','Descanso passivo 1–2min entre tiros']},
+  s2b:{semana:'Semana 2',status:'futuro',data:null,nome:'Treino B · 4 tiros de 1km',zona:'int',pace:'10km/h',dist:'~5,4km',
+    blocos:['Aquecimento · 5min','4 tiros de 1km @ 10km/h','Descanso passivo entre tiros','Volta · 5min @ 7km/h']},
+  s2c:{semana:'Semana 2',status:'futuro',data:null,nome:'Treino C · 7-8km contínuo',zona:'base',pace:'7,5–8km/h',dist:'7-8km',
+    blocos:['Aquecimento · 4min','Contínuo · 7-8km @ 7,5–8km/h']},
+  s3a:{semana:'Semana 3',status:'futuro',data:null,nome:'Treino A · 30min misto',zona:'misto',pace:'8,5–9,5km/h',dist:'~4,5km',
+    blocos:['Aquecimento · 4min','Contínuo · 20min @ 8,5–9km/h','Tiros curtos intercalados @ 9,5km/h']},
+  s3b:{semana:'Semana 3',status:'futuro',data:null,nome:'Treino B · 4 tiros de 3min',zona:'int',pace:'9,5–10km/h',dist:'~3,2km',
+    blocos:['Aquecimento · 5min','4 tiros de 3min @ 9,5–10km/h','Descanso ativo 2min @ 7km/h entre tiros']},
+  s3c:{semana:'Semana 3',status:'futuro',data:null,nome:'Treino C · 8km contínuo',zona:'base',pace:'8km/h',dist:'8km',
+    blocos:['Aquecimento · 4min','Contínuo · 8km @ 8km/h']},
+};
+
+const BLOCO_ICONS = {aquecimento:'ti-flame',contínuo:'ti-circle',tiros:'ti-bolt',descanso:'ti-hourglass',volta:'ti-arrow-down',tiro:'ti-bolt'};
+function iconeBloco(txt){
+  const t = txt.toLowerCase();
+  if (t.includes('aquecimento')) return 'ti-flame';
+  if (t.includes('descanso') || t.includes('volta')) return 'ti-hourglass';
+  if (t.includes('tiro')) return 'ti-bolt';
+  return 'ti-circle';
+}
+
+function abrirTreino(id) {
+  const s = SESSOES[id];
+  if (!s) return;
+  const zm = ZONE_META[s.zona];
+
+  document.getElementById('dt-status').textContent =
+    s.status === 'hoje' ? `${s.semana} · hoje` :
+    s.status === 'feito' ? `${s.semana} · concluído ${s.data}` :
+    `${s.semana} · a fazer`;
+  document.getElementById('dt-title').textContent = s.nome;
+  document.getElementById('dt-meta').innerHTML =
+    `<span style="color:${zm.color}">${zm.label}</span> · ${s.pace}`;
+  document.getElementById('dt-pace').textContent = s.pace;
+  document.getElementById('dt-dist').textContent = s.dist;
+  document.getElementById('dt-zona').textContent = zm.label;
+
+  const blocksEl = document.getElementById('dt-blocks');
+  blocksEl.innerHTML = s.blocos.map(b => `
+    <div class="ptl-item">
+      <div class="ptl-dot ptl-rest"><i class="ti ${iconeBloco(b)}" style="font-size:9px;"></i></div>
+      <div class="ptl-info"><div class="ptl-name">${b}</div></div>
+    </div>`).join('');
+
+  const noteEl = document.getElementById('dt-note');
+  const ctaEl = document.getElementById('dt-cta-primary');
+
+  if (s.status === 'hoje' || s.status === 'futuro') {
+    ctaEl.textContent = 'iniciar sessão';
+    ctaEl.style.display = '';
+    ctaEl.onclick = () => {
+      if (timerInt) { clearInterval(timerInt); timerInt = null; }
+      blockIdx = 0;
+      timerSec = BLOCKS[0].startAt;
+      nav('s-exec');
+    };
+    noteEl.style.display = '';
+    noteEl.textContent = 'A execução usa o timer de demonstração desta v1 (mesma sequência de blocos pra qualquer sessão) — simulação própria por sessão entra quando a lógica de negócio real for implementada.';
+  } else if (s.resumoCompleto) {
+    noteEl.style.display = 'none';
+    ctaEl.textContent = 'ver resumo completo';
+    ctaEl.style.display = '';
+    ctaEl.onclick = () => nav('s-pos-sessao');
+  } else {
+    ctaEl.style.display = 'none';
+    noteEl.style.display = '';
+    noteEl.textContent = 'Sessão registrada. Resumo detalhado com dados executados ainda não foi preenchido pra essa sessão.';
+  }
+
+  nav('s-treino-detalhe');
+}
+
+// ── TIMER ────────────────────────────────────
+// Sequência completa da sessão de demonstração, do início:
+// aquecimento → 4 tiros com descanso passivo entre eles → volta.
+// (timer genérico desta v1 — mesma sequência pra qualquer sessão clicada)
+const BLOCKS = [
+  {tag:'Aquecimento',           name:'5min · até 7km/h',  meta:'zona base · preparação', next:'Tiro 1 · 1km @ 10km/h',   tlId:'tl-aq', dur:300, startAt:300, dist:'~0,5', pace:'7,0',  esDoc:'5:00', pct:8},
+  {tag:'Tiro 1 de 4 · Intenso', name:'1km @ 10km/h',    meta:'pace-alvo · 6:00/km', next:'Descanso passivo · 1:30', tlId:'tl-t1', dur:360, startAt:360, dist:'1,0', pace:'10,0', esDoc:'6:00', pct:27},
+  {tag:'Descanso passivo',       name:'1:30',             meta:'recuperação entre tiros',   next:'Tiro 2 · 1km @ 10km/h',       tlId:'tl-d1', dur:90,  startAt:90,  dist:'—',   pace:'—',    esDoc:'1:30', pct:35},
+  {tag:'Tiro 2 de 4 · Intenso', name:'1km @ 10km/h',    meta:'pace-alvo · 6:00/km', next:'Descanso passivo · 1:30', tlId:'tl-t2', dur:360, startAt:360, dist:'1,0', pace:'10,0', esDoc:'6:00', pct:53},
+  {tag:'Descanso passivo',       name:'1:30',             meta:'recuperação entre tiros',   next:'Tiro 3 · 1km @ 10km/h',       tlId:'tl-d2', dur:90,  startAt:90,  dist:'—',   pace:'—',    esDoc:'1:30', pct:60},
+  {tag:'Tiro 3 de 4 · Intenso', name:'1km @ 10km/h',    meta:'pace-alvo · 6:00/km', next:'Descanso passivo · 1:30', tlId:'tl-t3', dur:360, startAt:360, dist:'1,0', pace:'10,0', esDoc:'6:00', pct:78},
+  {tag:'Descanso passivo',       name:'1:30',             meta:'recuperação entre tiros',   next:'Tiro 4 · 1km @ 10km/h',       tlId:'tl-d3', dur:90,  startAt:90,  dist:'—',   pace:'—',    esDoc:'1:30', pct:85},
+  {tag:'Tiro 4 de 4 · Intenso', name:'1km @ 10km/h',    meta:'pace-alvo · 6:00/km', next:'Volta · 5min @7km/h',     tlId:'tl-t4', dur:360, startAt:360, dist:'1,0', pace:'10,0', esDoc:'6:00', pct:95},
+  {tag:'Volta',                  name:'5min @ 7km/h',    meta:'zona base · desaceleração', next:'Sessão concluída',             tlId:'tl-vt', dur:300, startAt:300, dist:'~0,6', pace:'7,0',  esDoc:'5:00', pct:100},
+];
+
+let timerInt = null;
+let timerSec = 300;
+let blockIdx = 0;
+
+function fmtTime(s) {
+  return Math.floor(s/60) + ':' + String(s%60).padStart(2,'0');
+}
+
+function applyBlock(idx) {
+  const b = BLOCKS[idx];
+  document.getElementById('blk-tag').textContent  = b.tag;
+  document.getElementById('blk-name').textContent = b.name;
+  document.getElementById('blk-meta').textContent = b.meta;
+  document.getElementById('next-info').innerHTML  = b.next.includes('·')
+    ? '<strong>' + b.next.split('·')[0].trim() + '</strong> · ' + b.next.split('·').slice(1).join('·').trim()
+    : b.next;
+  document.getElementById('es-dist').textContent  = b.dist;
+  document.getElementById('es-pace').textContent  = b.pace;
+  document.getElementById('es-dur') && (document.getElementById('es-dur').textContent = b.esDoc);
+  document.getElementById('exec-prog').style.width = b.pct + '%';
+
+  // timeline: mark done up to current
+  BLOCKS.forEach((bl, i) => {
+    const el = document.getElementById(bl.tlId);
+    if (!el) return;
+    el.classList.remove('done-s','act');
+    if (i < idx) el.classList.add('done-s');
+    else if (i === idx) el.classList.add('act');
+  });
+
+  // style tag by type
+  const tagEl = document.getElementById('blk-tag');
+  tagEl.style.color = b.tag.includes('Tiro') ? 'var(--zone-int)'
+    : b.tag.includes('Descanso') ? 'var(--ink3)'
+    : 'var(--zone-base)';
+
+  timerSec = b.startAt;
+  document.getElementById('timer').textContent = fmtTime(timerSec);
+}
+
+function startTimer() {
+  if (timerInt) return;
+  applyBlock(blockIdx);
+  timerInt = setInterval(() => {
+    timerSec--;
+    if (timerSec < 0) {
+      if (blockIdx >= BLOCKS.length - 1) {
+        stopTimer();
+        document.getElementById('timer').textContent = fmtTime(0);
+        document.getElementById('next-info').innerHTML = '<strong>Sessão concluída</strong>';
+        return;
+      }
+      blockIdx++;
+      applyBlock(blockIdx);
+    }
+    const el = document.getElementById('timer');
+    el.textContent = fmtTime(Math.max(0, timerSec));
+    el.className = 'timer-num' + (timerSec <= 10 ? ' warn' : '');
+  }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(timerInt);
+  timerInt = null;
+}
+
+// ── EXCEPTION BUTTONS ────────────────────────
+const excState = {};
+function toggleExc(btn, key) {
+  excState[key] = !excState[key];
+  btn.classList.toggle('on', excState[key]);
+}
+</script>
+</body>
+</html>
