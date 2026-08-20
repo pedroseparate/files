@@ -191,6 +191,8 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;
 .tls.act.de{border-color:var(--ink3);}
 .tls.act.aq{border-color:var(--zone-base);box-shadow:0 0 8px rgba(90,128,64,.3);}
 .tls.act.vt{border-color:var(--zone-base);box-shadow:0 0 8px rgba(90,128,64,.3);}
+.tls.co{background:rgba(200,160,96,.14);border:1px solid rgba(200,160,96,.12);color:rgba(200,160,96,.6);}
+.tls.act.co{border-color:var(--zone-mod);box-shadow:0 0 8px rgba(200,160,96,.3);}
 @keyframes tlPulse{0%,100%{box-shadow:0 0 5px rgba(224,112,64,.2)}50%{box-shadow:0 0 14px rgba(224,112,64,.5)}}
 .tl-mini-legend{display:flex;gap:10px;margin-top:7px;}
 .tml-item{display:flex;align-items:center;gap:4px;font-size:7px;color:var(--ink3);}
@@ -598,21 +600,12 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;
     </div>
   </div>
 
-  <!-- Timeline segmentada da sessão -->
-  <!-- Blocos: aq(5) T1(6) D(1.5) T2*(6) D(1.5) T3(6) D(1.5) T4(6) vt(5) = 38.5min -->
+  <!-- Timeline segmentada da sessão — gerada dinamicamente por renderTimeline(),
+       a partir do execBlocks de cada sessão em SESSOES. Largura de cada
+       segmento é proporcional à duração real do bloco. -->
   <div class="tl-section">
     <div class="tl-lbl">Progressão da sessão</div>
-    <div class="tl-track" id="tl-track">
-      <div class="tls aq act" style="flex:5" id="tl-aq">aq</div>
-      <div class="tls ti" style="flex:6" id="tl-t1">T1</div>
-      <div class="tls de" style="flex:1.5" id="tl-d1"></div>
-      <div class="tls ti" style="flex:6" id="tl-t2">T2</div>
-      <div class="tls de" style="flex:1.5" id="tl-d2"></div>
-      <div class="tls ti" style="flex:6" id="tl-t3">T3</div>
-      <div class="tls de" style="flex:1.5" id="tl-d3"></div>
-      <div class="tls ti" style="flex:6" id="tl-t4">T4</div>
-      <div class="tls vt" style="flex:5" id="tl-vt">vt</div>
-    </div>
+    <div class="tl-track" id="tl-track"></div>
     <div class="tl-mini-legend">
       <div class="tml-item"><div class="tml-swatch" style="background:rgba(224,112,64,.3);"></div>Tiro</div>
       <div class="tml-item"><div class="tml-swatch" style="background:rgba(200,160,96,.06);border:1px solid var(--b);"></div>Descanso</div>
@@ -916,25 +909,95 @@ const ZONE_META = {
 //   resumoCompleto: true só quando o resumo pós-sessão (dados executados por bloco,
 //     PSE, sinalizações) tiver sido preenchido na tela s-pos-sessao — sem isso,
 //     a sessão concluída aparece como "registrada, sem resumo detalhado ainda".
+//   execBlocks: estrutura real de blocos que alimenta o timer e a barra de
+//     progressão na tela de Execução — cada sessão tem a sua, nada é genérico.
+//     Campos: tag (rótulo), name (valor principal), meta (linha secundária),
+//     tipo ('aq'|'co'|'ti'|'de'|'vt' — controla a cor/estilo do segmento),
+//     dur (segundos), dist (string), pace (string, sem unidade).
 const SESSOES = {
   s1a:{semana:'Semana 1',status:'futuro',data:null,nome:'Treino A · 35min contínuo',zona:'mod',pace:'8,5–9km/h',dist:'~4,9km',
-    blocos:['Aquecimento · 4min, subindo até 7,5km/h','Contínuo · 35min @ 8,5–9km/h']},
+    blocos:['Aquecimento · 4min, subindo até 7,5km/h','Contínuo · 35min @ 8,5–9km/h'],
+    execBlocks:[
+      {tag:'Aquecimento', name:'4min · até 7,5km/h', meta:'zona base · preparação', tipo:'aq', dur:240, dist:'~0,4', pace:'7,0'},
+      {tag:'Contínuo · Moderado', name:'~4,9km @ 8,5–9km/h', meta:'pace-alvo constante', tipo:'co', dur:2100, dist:'~4,9', pace:'8,5–9,0'},
+    ]},
   s1b:{semana:'Semana 1',status:'futuro',data:null,nome:'Treino B · 40min contínuo',zona:'mod',pace:'9km/h',dist:'~6km',
-    blocos:['Aquecimento · 4min','Contínuo · 40min @ 9km/h']},
+    blocos:['Aquecimento · 4min','Contínuo · 40min @ 9km/h'],
+    execBlocks:[
+      {tag:'Aquecimento', name:'4min · até 7,5km/h', meta:'zona base · preparação', tipo:'aq', dur:240, dist:'~0,4', pace:'7,0'},
+      {tag:'Contínuo · Moderado', name:'~6,0km @ 9km/h', meta:'pace-alvo constante', tipo:'co', dur:2400, dist:'~6,0', pace:'9,0'},
+    ]},
   s1c:{semana:'Semana 1',status:'futuro',data:null,nome:'Treino C · 7km contínuo',zona:'base',pace:'7–7,5km/h',dist:'7km',
-    blocos:['Aquecimento · 4min','Contínuo · 7km @ 7–7,5km/h']},
+    blocos:['Aquecimento · 4min','Contínuo · 7km @ 7–7,5km/h'],
+    execBlocks:[
+      {tag:'Aquecimento', name:'4min · até 7km/h', meta:'zona base · preparação', tipo:'aq', dur:240, dist:'~0,4', pace:'7,0'},
+      {tag:'Contínuo · Base', name:'7km @ 7–7,5km/h', meta:'pace-alvo constante', tipo:'co', dur:3480, dist:'7,0', pace:'7,0–7,5'},
+    ]},
   s2a:{semana:'Semana 2',status:'futuro',data:null,nome:'Treino A · 5 tiros de 3min',zona:'int',pace:'9,5–10km/h',dist:'~2,5km (tiros)',
-    blocos:['Aquecimento · 5min','5 tiros de 3min @ 9,5–10km/h','Descanso passivo 1–2min entre tiros']},
+    blocos:['Aquecimento · 5min','5 tiros de 3min @ 9,5–10km/h','Descanso passivo 1–2min entre tiros'],
+    execBlocks:[
+      {tag:'Aquecimento', name:'5min · até 7km/h', meta:'zona base · preparação', tipo:'aq', dur:300, dist:'~0,5', pace:'7,0'},
+      {tag:'Tiro 1 de 5 · Intenso', name:'~0,5km @ 9,5–10km/h', meta:'pace-alvo · 3:00', tipo:'ti', dur:180, dist:'~0,5', pace:'9,5–10,0'},
+      {tag:'Descanso passivo', name:'1:30', meta:'recuperação entre tiros', tipo:'de', dur:90, dist:'—', pace:'—'},
+      {tag:'Tiro 2 de 5 · Intenso', name:'~0,5km @ 9,5–10km/h', meta:'pace-alvo · 3:00', tipo:'ti', dur:180, dist:'~0,5', pace:'9,5–10,0'},
+      {tag:'Descanso passivo', name:'1:30', meta:'recuperação entre tiros', tipo:'de', dur:90, dist:'—', pace:'—'},
+      {tag:'Tiro 3 de 5 · Intenso', name:'~0,5km @ 9,5–10km/h', meta:'pace-alvo · 3:00', tipo:'ti', dur:180, dist:'~0,5', pace:'9,5–10,0'},
+      {tag:'Descanso passivo', name:'1:30', meta:'recuperação entre tiros', tipo:'de', dur:90, dist:'—', pace:'—'},
+      {tag:'Tiro 4 de 5 · Intenso', name:'~0,5km @ 9,5–10km/h', meta:'pace-alvo · 3:00', tipo:'ti', dur:180, dist:'~0,5', pace:'9,5–10,0'},
+      {tag:'Descanso passivo', name:'1:30', meta:'recuperação entre tiros', tipo:'de', dur:90, dist:'—', pace:'—'},
+      {tag:'Tiro 5 de 5 · Intenso', name:'~0,5km @ 9,5–10km/h', meta:'pace-alvo · 3:00', tipo:'ti', dur:180, dist:'~0,5', pace:'9,5–10,0'},
+      {tag:'Volta', name:'5min @ 7km/h', meta:'zona base · desaceleração', tipo:'vt', dur:300, dist:'~0,6', pace:'7,0'},
+    ]},
   s2b:{semana:'Semana 2',status:'futuro',data:null,nome:'Treino B · 4 tiros de 1km',zona:'int',pace:'10km/h',dist:'~5,4km',
-    blocos:['Aquecimento · 5min','4 tiros de 1km @ 10km/h','Descanso passivo entre tiros','Volta · 5min @ 7km/h']},
+    blocos:['Aquecimento · 5min','4 tiros de 1km @ 10km/h','Descanso passivo entre tiros','Volta · 5min @ 7km/h'],
+    execBlocks:[
+      {tag:'Aquecimento', name:'5min · até 7km/h', meta:'zona base · preparação', tipo:'aq', dur:300, dist:'~0,5', pace:'7,0'},
+      {tag:'Tiro 1 de 4 · Intenso', name:'1km @ 10km/h', meta:'pace-alvo · 6:00', tipo:'ti', dur:360, dist:'1,0', pace:'10,0'},
+      {tag:'Descanso passivo', name:'1:30', meta:'recuperação entre tiros', tipo:'de', dur:90, dist:'—', pace:'—'},
+      {tag:'Tiro 2 de 4 · Intenso', name:'1km @ 10km/h', meta:'pace-alvo · 6:00', tipo:'ti', dur:360, dist:'1,0', pace:'10,0'},
+      {tag:'Descanso passivo', name:'1:30', meta:'recuperação entre tiros', tipo:'de', dur:90, dist:'—', pace:'—'},
+      {tag:'Tiro 3 de 4 · Intenso', name:'1km @ 10km/h', meta:'pace-alvo · 6:00', tipo:'ti', dur:360, dist:'1,0', pace:'10,0'},
+      {tag:'Descanso passivo', name:'1:30', meta:'recuperação entre tiros', tipo:'de', dur:90, dist:'—', pace:'—'},
+      {tag:'Tiro 4 de 4 · Intenso', name:'1km @ 10km/h', meta:'pace-alvo · 6:00', tipo:'ti', dur:360, dist:'1,0', pace:'10,0'},
+      {tag:'Volta', name:'5min @ 7km/h', meta:'zona base · desaceleração', tipo:'vt', dur:300, dist:'~0,6', pace:'7,0'},
+    ]},
   s2c:{semana:'Semana 2',status:'futuro',data:null,nome:'Treino C · 7-8km contínuo',zona:'base',pace:'7,5–8km/h',dist:'7-8km',
-    blocos:['Aquecimento · 4min','Contínuo · 7-8km @ 7,5–8km/h']},
+    blocos:['Aquecimento · 4min','Contínuo · 7-8km @ 7,5–8km/h'],
+    execBlocks:[
+      {tag:'Aquecimento', name:'4min · até 7km/h', meta:'zona base · preparação', tipo:'aq', dur:240, dist:'~0,4', pace:'7,0'},
+      {tag:'Contínuo · Base', name:'~7,5km @ 7,5–8km/h', meta:'pace-alvo constante', tipo:'co', dur:3480, dist:'~7,5', pace:'7,5–8,0'},
+    ]},
   s3a:{semana:'Semana 3',status:'futuro',data:null,nome:'Treino A · 30min misto',zona:'misto',pace:'8,5–9,5km/h',dist:'~4,5km',
-    blocos:['Aquecimento · 4min','Contínuo · 20min @ 8,5–9km/h','Tiros curtos intercalados @ 9,5km/h']},
+    blocos:['Aquecimento · 4min','Contínuo · 20min @ 8,5–9km/h','Tiros curtos intercalados @ 9,5km/h'],
+    execBlocks:[
+      {tag:'Aquecimento', name:'4min · até 7km/h', meta:'zona base · preparação', tipo:'aq', dur:240, dist:'~0,4', pace:'7,0'},
+      {tag:'Contínuo · Moderado', name:'~2,9km @ 8,5–9km/h', meta:'pace-alvo constante', tipo:'co', dur:1200, dist:'~2,9', pace:'8,5–9,0'},
+      {tag:'Tiro curto 1 de 3 · Intenso', name:'~0,16km @ 9,5km/h', meta:'pace-alvo · 1:00', tipo:'ti', dur:60, dist:'~0,16', pace:'9,5'},
+      {tag:'Descanso ativo', name:'1:00 @ 7km/h', meta:'recuperação entre tiros', tipo:'de', dur:60, dist:'~0,12', pace:'7,0'},
+      {tag:'Tiro curto 2 de 3 · Intenso', name:'~0,16km @ 9,5km/h', meta:'pace-alvo · 1:00', tipo:'ti', dur:60, dist:'~0,16', pace:'9,5'},
+      {tag:'Descanso ativo', name:'1:00 @ 7km/h', meta:'recuperação entre tiros', tipo:'de', dur:60, dist:'~0,12', pace:'7,0'},
+      {tag:'Tiro curto 3 de 3 · Intenso', name:'~0,16km @ 9,5km/h', meta:'pace-alvo · 1:00', tipo:'ti', dur:60, dist:'~0,16', pace:'9,5'},
+      {tag:'Volta', name:'3min @ 7km/h', meta:'zona base · desaceleração', tipo:'vt', dur:180, dist:'~0,35', pace:'7,0'},
+    ]},
   s3b:{semana:'Semana 3',status:'futuro',data:null,nome:'Treino B · 4 tiros de 3min',zona:'int',pace:'9,5–10km/h',dist:'~3,2km',
-    blocos:['Aquecimento · 5min','4 tiros de 3min @ 9,5–10km/h','Descanso ativo 2min @ 7km/h entre tiros']},
+    blocos:['Aquecimento · 5min','4 tiros de 3min @ 9,5–10km/h','Descanso ativo 2min @ 7km/h entre tiros'],
+    execBlocks:[
+      {tag:'Aquecimento', name:'5min · até 7km/h', meta:'zona base · preparação', tipo:'aq', dur:300, dist:'~0,5', pace:'7,0'},
+      {tag:'Tiro 1 de 4 · Intenso', name:'~0,5km @ 9,5–10km/h', meta:'pace-alvo · 3:00', tipo:'ti', dur:180, dist:'~0,5', pace:'9,5–10,0'},
+      {tag:'Descanso ativo', name:'2:00 @ 7km/h', meta:'recuperação entre tiros', tipo:'de', dur:120, dist:'~0,23', pace:'7,0'},
+      {tag:'Tiro 2 de 4 · Intenso', name:'~0,5km @ 9,5–10km/h', meta:'pace-alvo · 3:00', tipo:'ti', dur:180, dist:'~0,5', pace:'9,5–10,0'},
+      {tag:'Descanso ativo', name:'2:00 @ 7km/h', meta:'recuperação entre tiros', tipo:'de', dur:120, dist:'~0,23', pace:'7,0'},
+      {tag:'Tiro 3 de 4 · Intenso', name:'~0,5km @ 9,5–10km/h', meta:'pace-alvo · 3:00', tipo:'ti', dur:180, dist:'~0,5', pace:'9,5–10,0'},
+      {tag:'Descanso ativo', name:'2:00 @ 7km/h', meta:'recuperação entre tiros', tipo:'de', dur:120, dist:'~0,23', pace:'7,0'},
+      {tag:'Tiro 4 de 4 · Intenso', name:'~0,5km @ 9,5–10km/h', meta:'pace-alvo · 3:00', tipo:'ti', dur:180, dist:'~0,5', pace:'9,5–10,0'},
+      {tag:'Volta', name:'5min @ 7km/h', meta:'zona base · desaceleração', tipo:'vt', dur:300, dist:'~0,6', pace:'7,0'},
+    ]},
   s3c:{semana:'Semana 3',status:'futuro',data:null,nome:'Treino C · 8km contínuo',zona:'base',pace:'8km/h',dist:'8km',
-    blocos:['Aquecimento · 4min','Contínuo · 8km @ 8km/h']},
+    blocos:['Aquecimento · 4min','Contínuo · 8km @ 8km/h'],
+    execBlocks:[
+      {tag:'Aquecimento', name:'4min · até 7km/h', meta:'zona base · preparação', tipo:'aq', dur:240, dist:'~0,4', pace:'7,0'},
+      {tag:'Contínuo · Base', name:'8km @ 8km/h', meta:'pace-alvo constante', tipo:'co', dur:3600, dist:'8,0', pace:'8,0'},
+    ]},
 };
 
 function iconeBloco(txt){
@@ -976,14 +1039,14 @@ function abrirTreino(id) {
     ctaEl.style.display = '';
     ctaEl.onclick = () => {
       if (timerInt) { clearInterval(timerInt); timerInt = null; }
+      BLOCKS = s.execBlocks;
       blockIdx = 0;
-      timerSec = BLOCKS[0].startAt;
+      timerSec = BLOCKS[0].dur;
       Object.keys(excState).forEach(k => excState[k] = false);
       document.querySelectorAll('.exc-btn').forEach(b => b.classList.remove('on'));
       nav('s-exec');
     };
-    noteEl.style.display = '';
-    noteEl.textContent = 'A execução usa o timer de demonstração desta v1 (mesma sequência de blocos pra qualquer sessão) — simulação própria por sessão entra quando a lógica de negócio real for implementada.';
+    noteEl.style.display = 'none';
   } else if (s.resumoCompleto) {
     noteEl.style.display = 'none';
     ctaEl.textContent = 'ver resumo completo';
@@ -999,63 +1062,69 @@ function abrirTreino(id) {
 }
 
 // ── TIMER ────────────────────────────────────
-// Sequência completa da sessão de demonstração, do início:
-// aquecimento → 4 tiros com descanso passivo entre eles → volta.
-// (timer genérico desta v1 — mesma sequência pra qualquer sessão clicada)
-const BLOCKS = [
-  {tag:'Aquecimento',           name:'5min · até 7km/h',  meta:'zona base · preparação', next:'Tiro 1 · 1km @ 10km/h',   tlId:'tl-aq', dur:300, startAt:300, dist:'~0,5', pace:'7,0',  esDoc:'5:00', pct:8},
-  {tag:'Tiro 1 de 4 · Intenso', name:'1km @ 10km/h',    meta:'pace-alvo · 6:00/km', next:'Descanso passivo · 1:30', tlId:'tl-t1', dur:360, startAt:360, dist:'1,0', pace:'10,0', esDoc:'6:00', pct:27},
-  {tag:'Descanso passivo',       name:'1:30',             meta:'recuperação entre tiros',   next:'Tiro 2 · 1km @ 10km/h',       tlId:'tl-d1', dur:90,  startAt:90,  dist:'—',   pace:'—',    esDoc:'1:30', pct:35},
-  {tag:'Tiro 2 de 4 · Intenso', name:'1km @ 10km/h',    meta:'pace-alvo · 6:00/km', next:'Descanso passivo · 1:30', tlId:'tl-t2', dur:360, startAt:360, dist:'1,0', pace:'10,0', esDoc:'6:00', pct:53},
-  {tag:'Descanso passivo',       name:'1:30',             meta:'recuperação entre tiros',   next:'Tiro 3 · 1km @ 10km/h',       tlId:'tl-d2', dur:90,  startAt:90,  dist:'—',   pace:'—',    esDoc:'1:30', pct:60},
-  {tag:'Tiro 3 de 4 · Intenso', name:'1km @ 10km/h',    meta:'pace-alvo · 6:00/km', next:'Descanso passivo · 1:30', tlId:'tl-t3', dur:360, startAt:360, dist:'1,0', pace:'10,0', esDoc:'6:00', pct:78},
-  {tag:'Descanso passivo',       name:'1:30',             meta:'recuperação entre tiros',   next:'Tiro 4 · 1km @ 10km/h',       tlId:'tl-d3', dur:90,  startAt:90,  dist:'—',   pace:'—',    esDoc:'1:30', pct:85},
-  {tag:'Tiro 4 de 4 · Intenso', name:'1km @ 10km/h',    meta:'pace-alvo · 6:00/km', next:'Volta · 5min @7km/h',     tlId:'tl-t4', dur:360, startAt:360, dist:'1,0', pace:'10,0', esDoc:'6:00', pct:95},
-  {tag:'Volta',                  name:'5min @ 7km/h',    meta:'zona base · desaceleração', next:'Sessão concluída',             tlId:'tl-vt', dur:300, startAt:300, dist:'~0,6', pace:'7,0',  esDoc:'5:00', pct:100},
-];
+// BLOCKS é reatribuído em abrirTreino() com o execBlocks da sessão clicada —
+// cada treino tem sua própria sequência real, nada genérico. Este array serve
+// só como valor inicial antes de qualquer sessão ser aberta.
+let BLOCKS = SESSOES.s2b.execBlocks;
 
 let timerInt = null;
-let timerSec = 300;
+let timerSec = BLOCKS[0].dur;
 let blockIdx = 0;
 
 function fmtTime(s) {
   return Math.floor(s/60) + ':' + String(s%60).padStart(2,'0');
 }
 
+function renderTimeline(blocks) {
+  const track = document.getElementById('tl-track');
+  track.innerHTML = blocks.map((b, i) => {
+    const num = (b.tag.match(/(\d+)/) || [])[1];
+    const label = b.tipo === 'ti' ? 'T' + (num || '')
+      : b.tipo === 'aq' ? 'aq' : b.tipo === 'vt' ? 'vt' : b.tipo === 'co' ? 'contínuo' : '';
+    return `<div class="tls ${b.tipo}" style="flex:${Math.max(b.dur / 60, 0.6)}" data-idx="${i}">${label}</div>`;
+  }).join('');
+}
+
 function applyBlock(idx) {
   const b = BLOCKS[idx];
+  const next = BLOCKS[idx + 1];
+
   document.getElementById('blk-tag').textContent  = b.tag;
   document.getElementById('blk-name').textContent = b.name;
   document.getElementById('blk-meta').textContent = b.meta;
-  document.getElementById('next-info').innerHTML  = b.next.includes('·')
-    ? '<strong>' + b.next.split('·')[0].trim() + '</strong> · ' + b.next.split('·').slice(1).join('·').trim()
-    : b.next;
+  document.getElementById('next-info').innerHTML  = next
+    ? `<strong>${next.tag.split('·')[0].trim()}</strong> · ${next.name}`
+    : '<strong>Sessão concluída</strong>';
   document.getElementById('es-dist').textContent  = b.dist;
   document.getElementById('es-pace').textContent  = b.pace;
-  document.getElementById('es-dur') && (document.getElementById('es-dur').textContent = b.esDoc);
-  document.getElementById('exec-prog').style.width = b.pct + '%';
+  document.getElementById('es-dur') && (document.getElementById('es-dur').textContent = fmtTime(b.dur));
+
+  const totalSec = BLOCKS.reduce((s, bl) => s + bl.dur, 0);
+  const elapsedSec = BLOCKS.slice(0, idx).reduce((s, bl) => s + bl.dur, 0);
+  document.getElementById('exec-prog').style.width = Math.round((elapsedSec / totalSec) * 100) + '%';
 
   // timeline: mark done up to current
-  BLOCKS.forEach((bl, i) => {
-    const el = document.getElementById(bl.tlId);
-    if (!el) return;
-    el.classList.remove('done-s','act');
+  document.querySelectorAll('#tl-track > div').forEach(el => {
+    const i = Number(el.dataset.idx);
+    el.classList.remove('done-s', 'act');
     if (i < idx) el.classList.add('done-s');
     else if (i === idx) el.classList.add('act');
   });
 
   // style tag by type
   const tagEl = document.getElementById('blk-tag');
-  tagEl.style.color = b.tag.includes('Tiro') ? 'var(--zone-int)'
-    : b.tag.includes('Descanso') ? 'var(--ink3)'
+  tagEl.style.color = b.tipo === 'ti' ? 'var(--zone-int)'
+    : b.tipo === 'de' ? 'var(--ink3)'
+    : b.tipo === 'co' ? 'var(--zone-mod)'
     : 'var(--zone-base)';
 
-  timerSec = b.startAt;
+  timerSec = b.dur;
   document.getElementById('timer').textContent = fmtTime(timerSec);
 }
 
 function startTimer() {
   if (timerInt) return;
+  renderTimeline(BLOCKS);
   applyBlock(blockIdx);
   timerInt = setInterval(() => {
     timerSec--;
@@ -1064,6 +1133,7 @@ function startTimer() {
         stopTimer();
         document.getElementById('timer').textContent = fmtTime(0);
         document.getElementById('next-info').innerHTML = '<strong>Sessão concluída</strong>';
+        document.getElementById('exec-prog').style.width = '100%';
         return;
       }
       blockIdx++;
