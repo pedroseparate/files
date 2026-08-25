@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Momentum — Treino Rafaella</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600;1,700&family=IBM+Plex+Mono:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:   #271f13; --bg2:  #2e2618; --bg3:  #352d1e; --bg4:  #3c3425;
+  --ink:  rgba(200,160,96,.90); --ink2: rgba(200,160,96,.78); --ink3: rgba(200,160,96,.52);
+  --b:    rgba(200,160,96,.10); --b2:   rgba(200,160,96,.18); --b3:   rgba(200,160,96,.30);
+  --copper:#8a6030;--copper2:#a07840;
+  --gold:  #c8a060;--gold2:#ddb870;--gold3:#e8cc90;
+  --moss:  #4a6832;--moss2:#5a8040;--moss3:#6aa050;
+  --danger:#8a3020;--danger2:#b84030;
+  --page:  #f5f0e6;
+  --card-bg:var(--bg2);--card-border:var(--b);
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{min-height:100%;overscroll-behavior:none;}
+body{background:var(--bg);color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:13px;position:relative;}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.88' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23g)' opacity='.018'/%3E%3C/svg%3E");}
+
+.app{width:100%;max-width:430px;margin:0 auto;position:relative;z-index:1;min-height:100vh;}
+
+.topbar{padding:20px 20px 14px;display:flex;align-items:baseline;justify-content:space-between;
+  border-bottom:1px solid var(--b);position:sticky;top:0;background:rgba(39,31,19,.94);
+  backdrop-filter:blur(14px);z-index:10;}
+.tb-logo{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;font-size:20px;color:var(--gold);}
+.tb-title{font-size:9px;text-transform:uppercase;letter-spacing:.2em;color:var(--ink3);}
+
+.screen{display:none;padding-bottom:40px;}
+.screen.active{display:block;}
+
+.card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:3px;}
+
+/* ── RECEPÇÃO ─────────────────────────── */
+.hero{padding:26px 20px 4px;}
+.hero-eyebrow{font-size:9px;text-transform:uppercase;letter-spacing:.2em;color:var(--ink3);margin-bottom:6px;}
+.hero-title{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;
+  font-size:32px;line-height:1.05;color:var(--gold);margin-bottom:6px;}
+.hero-aluna{font-size:12px;color:var(--ink2);margin-bottom:16px;}
+.hero-p{font-size:11px;line-height:1.7;color:var(--ink2);margin-bottom:18px;}
+
+.obj-list{display:flex;flex-direction:column;gap:8px;margin:0 20px 24px;}
+.obj-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:3px;
+  background:var(--bg2);border:1px solid var(--b);}
+.obj-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);flex-shrink:0;}
+.obj-text{font-size:10.5px;color:var(--ink2);line-height:1.5;}
+
+.start-wrap{display:flex;flex-direction:column;align-items:center;padding:10px 20px 30px;}
+.start-btn{width:168px;height:168px;border-radius:50%;border:none;cursor:pointer;
+  background:radial-gradient(circle at 35% 30%, var(--gold3), var(--copper2) 60%, var(--copper) 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  box-shadow:0 0 0 1px var(--b3), 0 12px 30px rgba(0,0,0,.35);transition:transform .15s;}
+.start-btn:active{transform:scale(.96);}
+.start-btn-label{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.03em;color:var(--night, #221a10);}
+.start-btn-sub{font-size:8.5px;text-transform:uppercase;letter-spacing:.14em;color:rgba(40,28,12,.72);}
+.hero-meta{margin-top:18px;font-size:9.5px;color:var(--ink3);text-align:center;line-height:1.6;}
+
+/* ── RESUMO ────────────────────────────── */
+.subbar{padding:14px 20px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--b);}
+.back-btn{width:30px;height:30px;border-radius:50%;border:1px solid var(--b2);background:transparent;
+  color:var(--ink2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;flex-shrink:0;}
+.subbar-title{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;font-size:18px;color:var(--gold2);}
+
+.bloco-sec{margin-top:20px;padding:0 20px;}
+.bloco-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:4px;}
+.bloco-nome{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;font-size:17px;color:var(--gold2);}
+.bloco-series{font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--copper2);}
+.bloco-nota{font-size:9.5px;color:var(--ink3);font-style:italic;margin-bottom:10px;}
+
+.ex-card{margin-top:10px;padding:13px 14px;}
+.ex-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:5px;}
+.ex-nome{font-size:12px;color:var(--ink);font-weight:600;}
+.ex-scheme{font-family:'Bebas Neue',sans-serif;font-size:15px;color:var(--gold);letter-spacing:.02em;flex-shrink:0;white-space:nowrap;}
+.ex-obj{font-size:9.5px;color:var(--ink3);line-height:1.5;margin-bottom:8px;}
+.ex-nota{font-size:9.5px;color:var(--gold3);background:rgba(184,64,48,.10);padding:6px 8px;border-radius:3px;margin-bottom:8px;line-height:1.5;}
+.ex-links{display:flex;gap:16px;}
+.ex-link{font-size:9px;color:var(--copper2);text-decoration:underline;text-underline-offset:2px;cursor:pointer;}
+
+.resumo-cta-wrap{position:sticky;bottom:0;padding:16px 20px 20px;margin-top:26px;
+  background:linear-gradient(to top, var(--bg) 60%, transparent);}
+.btn{width:100%;padding:15px;border-radius:3px;border:none;cursor:pointer;
+  font-family:'IBM Plex Mono',monospace;font-size:10.5px;text-transform:uppercase;letter-spacing:.2em;
+  transition:opacity .15s;text-align:center;}
+.btn:active{opacity:.8;}
+.btn-primary{background:linear-gradient(135deg,var(--copper),var(--copper2));color:var(--page);}
+.btn-ghost{background:transparent;border:1px solid var(--b2);color:var(--ink2);}
+
+/* ── EXECUÇÃO ─────────────────────────── */
+.exec-progress{padding:14px 20px 0;font-size:9px;text-transform:uppercase;letter-spacing:.14em;color:var(--ink3);}
+.exec-progress-bar{height:2px;background:var(--b2);margin-top:8px;border-radius:2px;overflow:hidden;}
+.exec-progress-fill{height:100%;background:var(--gold);transition:width .3s ease;}
+
+.exec-head{padding:20px 20px 0;text-align:center;}
+.exec-kind{font-size:9px;text-transform:uppercase;letter-spacing:.2em;margin-bottom:6px;}
+.exec-kind.trabalho{color:var(--moss3);}
+.exec-kind.descanso{color:var(--slate2, var(--ink3));}
+.exec-kind.transicao{color:var(--copper2);}
+.exec-nome{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;
+  font-size:26px;color:var(--gold2);line-height:1.15;}
+.exec-lado{font-size:10.5px;color:var(--ink2);margin-top:4px;text-transform:uppercase;letter-spacing:.1em;}
+
+.timer-wrap{display:flex;flex-direction:column;align-items:center;padding:22px 20px 10px;}
+.timer-ring{position:relative;width:220px;height:220px;}
+.timer-ring svg{width:220px;height:220px;transform:rotate(-90deg);}
+.timer-val{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.timer-num{font-family:'Bebas Neue',sans-serif;font-size:54px;color:var(--gold);letter-spacing:.02em;line-height:1;}
+.timer-label{font-size:8.5px;text-transform:uppercase;letter-spacing:.16em;color:var(--ink3);margin-top:4px;}
+
+.exec-controls{display:flex;align-items:center;justify-content:center;gap:14px;padding:14px 20px 6px;}
+.ctrl-btn{width:52px;height:52px;border-radius:50%;border:1px solid var(--b2);background:var(--bg2);
+  color:var(--ink2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;}
+.ctrl-btn.primary{width:64px;height:64px;background:linear-gradient(135deg,var(--copper),var(--copper2));
+  color:var(--page);border:none;font-size:20px;}
+.ctrl-btn.small{width:38px;height:38px;font-size:12px;}
+.ctrl-mute.muted{color:var(--danger2);border-color:var(--danger2);}
+
+.exec-nota{margin:14px 20px 0;padding:10px 12px;background:rgba(184,64,48,.10);border-radius:3px;
+  font-size:10px;color:var(--gold3);line-height:1.6;}
+
+.exec-next{margin:14px 20px 0;text-align:center;}
+.exec-next-lbl{font-size:8px;text-transform:uppercase;letter-spacing:.18em;color:var(--ink3);margin-bottom:3px;}
+.exec-next-nome{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;font-size:16px;color:var(--gold2);}
+
+.exec-desc{margin:14px 20px 0;padding:10px 12px;background:var(--bg2);border:1px solid var(--b);border-radius:3px;
+  font-size:10.5px;color:var(--ink2);line-height:1.7;}
+
+.muscle-sec{margin:22px 20px 0;}
+.muscle-title{font-size:9px;text-transform:uppercase;letter-spacing:.18em;color:var(--copper2);margin-bottom:10px;text-align:center;}
+.muscle-figs{display:flex;gap:10px;justify-content:center;}
+.muscle-fig{width:50%;max-width:150px;}
+.muscle-fig svg{width:100%;height:auto;display:block;}
+@keyframes musclepulse{0%{opacity:1;}50%{opacity:.55;}100%{opacity:1;}}
+.muscle-active{animation:musclepulse 1.8s ease-in-out infinite;}
+
+.exec-imglink{display:flex;justify-content:center;margin:16px 20px 0;}
+.ex-view-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:var(--bg3);
+  border:1px solid var(--b2);border-radius:20px;font-size:9.5px;text-transform:uppercase;
+  letter-spacing:.1em;color:var(--gold2);text-decoration:none;cursor:pointer;}
+
+.exec-skip{display:flex;justify-content:center;margin-top:10px;}
+.skip-link{font-size:9px;color:var(--ink3);text-decoration:underline;text-underline-offset:2px;cursor:pointer;}
+
+.wakelock-note{text-align:center;font-size:8.5px;color:var(--ink3);margin-top:18px;font-style:italic;padding:0 30px;}
+
+/* ── FIM ───────────────────────────────── */
+.fim-wrap{padding:60px 24px;text-align:center;}
+.fim-title{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;font-size:30px;color:var(--gold);margin-bottom:10px;}
+.fim-p{font-size:11px;color:var(--ink2);line-height:1.7;margin-bottom:30px;}
+
+.footer{margin:34px 20px 0;padding-top:16px;border-top:1px solid var(--b);text-align:center;}
+.footer-name{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:12px;color:var(--ink2);}
+.footer-cref{font-size:8.5px;color:var(--ink3);letter-spacing:.08em;margin-top:2px;}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="topbar">
+    <span class="tb-logo">Momentum</span>
+    <span class="tb-title" id="tb-title">Treino</span>
+  </div>
+
+  <!-- ═══ RECEPÇÃO ═══ -->
+  <section class="screen active" id="screen-recepcao">
+    <div class="hero">
+      <div class="hero-eyebrow">Treino de manutenção</div>
+      <div class="hero-title">Rafaella<br>Renaux</div>
+      <p class="hero-p">Sessão de manutenção focada em mobilidade de quadril e ombro, ativação de glúteo médio e estabilizadores escapulares, controle de core e força de abdutores de quadril.</p>
+    </div>
+    <div class="obj-list">
+      <div class="obj-item"><span class="obj-dot"></span><span class="obj-text">Mobilidade de quadril (adutores) e ombro</span></div>
+      <div class="obj-item"><span class="obj-dot"></span><span class="obj-text">Ativação de glúteo médio e estabilizadores escapulares</span></div>
+      <div class="obj-item"><span class="obj-dot"></span><span class="obj-text">Controle de core em anti-extensão (deadbug)</span></div>
+      <div class="obj-item"><span class="obj-dot"></span><span class="obj-text">Fortalecimento de abdutores de quadril (monster walk)</span></div>
+    </div>
+    <div class="start-wrap">
+      <button class="start-btn" id="btn-hero-start">
+        <span class="start-btn-label">Iniciar</span>
+        <span class="start-btn-sub">Treino</span>
+      </button>
+      <div class="hero-meta" id="hero-meta">4 blocos · 7 exercícios · ~22 min</div>
+    </div>
+  </section>
+
+  <!-- ═══ RESUMO ═══ -->
+  <section class="screen" id="screen-resumo">
+    <div class="subbar">
+      <button class="back-btn" id="btn-back-recepcao">←</button>
+      <span class="subbar-title">Resumo do treino</span>
+    </div>
+    <div id="blocos-resumo"></div>
+    <div class="resumo-cta-wrap">
+      <button class="btn btn-primary" id="btn-comecar">Começar treino</button>
+    </div>
+  </section>
+
+  <!-- ═══ EXECUÇÃO ═══ -->
+  <section class="screen" id="screen-execucao">
+    <div class="exec-progress">
+      <span id="exec-progress-text">Bloco 1 de 4 · Passo 1 de 56</span>
+      <div class="exec-progress-bar"><div class="exec-progress-fill" id="exec-progress-fill" style="width:0%"></div></div>
+    </div>
+
+    <div class="exec-head">
+      <div class="exec-kind trabalho" id="exec-kind">Trabalho</div>
+      <div class="exec-nome" id="exec-nome">Frog Stretch</div>
+      <div class="exec-lado" id="exec-lado" hidden></div>
+    </div>
+
+    <div class="timer-wrap">
+      <div class="timer-ring">
+        <svg viewBox="0 0 220 220">
+          <circle cx="110" cy="110" r="98" fill="none" stroke="var(--b2)" stroke-width="6"/>
+          <circle id="timer-ring-fill" cx="110" cy="110" r="98" fill="none" stroke="var(--gold)" stroke-width="6"
+            stroke-linecap="round" stroke-dasharray="615.75" stroke-dashoffset="0"
+            style="transition:stroke-dashoffset .25s linear;"/>
+        </svg>
+        <div class="timer-val">
+          <div class="timer-num" id="timer-num">0:45</div>
+          <div class="timer-label" id="timer-total">de 0:45</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="exec-controls">
+      <button class="ctrl-btn small" id="btn-skip-back">‹</button>
+      <button class="ctrl-btn ctrl-mute" id="btn-mute">♪</button>
+      <button class="ctrl-btn primary" id="btn-play-pause">❚❚</button>
+      <button class="ctrl-btn" id="btn-skip">›</button>
+    </div>
+    <div class="exec-skip"><span class="skip-link" id="btn-voltar-resumo">voltar ao resumo</span></div>
+
+    <div class="exec-nota" id="exec-nota" hidden></div>
+
+    <div class="exec-next" id="exec-next" hidden>
+      <div class="exec-next-lbl">Próximo</div>
+      <div class="exec-next-nome" id="exec-next-nome"></div>
+    </div>
+
+    <div class="muscle-sec">
+      <div class="muscle-title">Músculos trabalhados</div>
+      <div class="muscle-figs">
+        <div class="muscle-fig" id="muscle-fig-front"></div>
+        <div class="muscle-fig" id="muscle-fig-back"></div>
+      </div>
+    </div>
+
+    <div class="exec-imglink" id="exec-imglink-wrap">
+      <div class="ex-view-btn" id="exec-img-link">ver imagem do exercício</div>
+    </div>
+    <div class="exec-desc" id="exec-desc" hidden></div>
+
+    <div class="wakelock-note" id="wakelock-note"></div>
+  </section>
+
+  <!-- ═══ FIM ═══ -->
+  <section class="screen" id="screen-fim">
+    <div class="fim-wrap">
+      <div class="fim-title">Treino concluído</div>
+      <p class="fim-p">Boa, Rafaella! Sessão de manutenção finalizada — mobilidade, ativação, core e abdutores de quadril, tudo feito.</p>
+      <button class="btn btn-primary" id="btn-refazer">Refazer treino</button>
+    </div>
+    <div class="footer">
+      <div class="footer-name">João Pedro Almeida</div>
+      <div class="footer-cref">Profissional de Educação Física — CREF 207171-G/SP</div>
+    </div>
+  </section>
+
+</div>
+
+<!-- modal: mapa muscular (usado no resumo) -->
+<div class="body-modal-overlay" id="muscle-modal" style="position:fixed;inset:0;background:rgba(14,11,8,.82);
+  z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s ease;">
+  <div class="body-modal" style="width:100%;max-width:340px;background:var(--bg2);border:1px solid var(--b2);
+    border-radius:6px;padding:20px 20px 22px;position:relative;">
+    <button id="muscle-modal-close" style="position:absolute;top:12px;right:12px;width:28px;height:28px;
+      border-radius:50%;border:1px solid var(--b2);background:transparent;color:var(--ink2);
+      font-size:15px;cursor:pointer;">×</button>
+    <div style="font-size:8.5px;text-transform:uppercase;letter-spacing:.18em;color:var(--copper2);margin-bottom:4px;">Músculos</div>
+    <div id="muscle-modal-title" style="font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;
+      font-size:20px;color:var(--gold2);margin-bottom:14px;padding-right:30px;"></div>
+    <div class="muscle-figs" id="muscle-modal-figs"></div>
+  </div>
+</div>
+
+<!-- modal: imagem do exercício -->
+<div id="image-modal" style="position:fixed;inset:0;background:rgba(14,11,8,.88);
+  z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s ease;">
+  <div style="width:100%;max-width:360px;background:var(--bg2);border:1px solid var(--b2);
+    border-radius:6px;padding:20px 20px 22px;position:relative;">
+    <button id="image-modal-close" style="position:absolute;top:12px;right:12px;width:28px;height:28px;
+      border-radius:50%;border:1px solid var(--b2);background:transparent;color:var(--ink2);
+      font-size:15px;cursor:pointer;z-index:2;">×</button>
+    <div style="font-size:8.5px;text-transform:uppercase;letter-spacing:.18em;color:var(--copper2);margin-bottom:4px;">Execução</div>
+    <div id="image-modal-title" style="font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;
+      font-size:20px;color:var(--gold2);margin-bottom:14px;padding-right:30px;"></div>
+    <img id="image-modal-img" src="" alt="" style="width:100%;border-radius:4px;display:block;border:1px solid var(--b2);">
+    <div id="image-modal-fallback" hidden style="font-size:10.5px;line-height:1.7;color:var(--ink2);
+      background:var(--bg);border:1px solid var(--b);border-radius:4px;padding:12px;"></div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════ DADOS ══════════════════════════ */
+
+const EXERCICIOS = {
+  frog: {nome:'Frog Stretch', objetivo:'Alongamento de adutores e mobilidade de quadril.',
+    instrucao:'Apoie joelhos e cotovelos no chão, afaste os joelhos e deixe o quadril afundar suavemente.',
+    musculos:['adutores','flexores_quadril'],
+    imagemUrl:'https://www.theyogacollective.com/wp-content/uploads/2019/11/frog-pose-2-e1574272645782.jpg',
+    scheme:'45s'},
+  pigeon: {nome:'Pigeon Stretch', objetivo:'Alongamento de rotadores profundos e glúteo.',
+    instrucao:'Perna da frente dobrada à sua frente, perna de trás estendida — mantenha o quadril o mais neutro possível.',
+    musculos:['gluteo_profundo','gluteo_medio'],
+    imagemUrl:'https://media-cldnry.s-nbcnews.com/image/upload/t_fit-760w,f_auto,q_auto:best/newscms/2021_14/1699306/modified_pigeon_1.jpg',
+    scheme:'45s cada lado'},
+  abducao_ombro: {nome:'Abdução de Ombro Supina', objetivo:'Mobilidade e controle de ombro, deitada.',
+    instrucao:'Deitada de barriga para cima, deslize os braços pelo chão (como se deslizasse para cima e para baixo em pé, encostada na parede).',
+    musculos:['deltoide','manguito_rotador'], imagemUrl:null,
+    nota:'Recuperação de fratura — controle a amplitude e pare se sentir dor.',
+    scheme:'45s'},
+  escapular: {nome:'Ativação Escapular (4 apoios)', objetivo:'Controle e estabilização de escápula.',
+    instrucao:'Em quatro apoios, afaste e aproxime as escápulas sem mexer nos cotovelos.',
+    musculos:['trapezio','serratil'],
+    imagemUrl:'https://static1.squarespace.com/static/5ea57caad08f387b2e9827bd/61c7ae9bf497521cde72e756/6436b8be9b5bbc065a0da2eb/1695380423923/Scapular+Push+Ups.png?format=1500w',
+    scheme:'30s x2'},
+  ostra: {nome:'Ostra com Miniband', objetivo:'Ativação de glúteo médio.',
+    instrucao:'Deitada de lado, joelhos dobrados e pés juntos — abra o joelho de cima como uma concha, sem girar o quadril. Deixe o cotovelo na posição mais confortável para você.',
+    musculos:['gluteo_medio'],
+    imagemUrl:'https://b1494239.smushcdn.com/1494239/wp-content/uploads/2013/08/clams.png?lossy=0&strip=1&webp=1',
+    nota:'Use a miniband mais pesada.',
+    scheme:'2x30s on/10s off cada lado'},
+  deadbug: {nome:'Deadbug', objetivo:'Controle de core em anti-extensão.',
+    instrucao:'Deitada, joelhos mais estendidos que o normal — desça as pernas alternadamente, sem tirar a lombar do chão. Mantenha o braço parado durante todo o movimento.',
+    musculos:['core_abdominal'],
+    imagemUrl:'https://i.ytimg.com/vi/dC2AlqiDXM8/maxresdefault.jpg',
+    scheme:'5x30s on/30s off'},
+  monster_walk: {nome:'Passada Lateral', objetivo:'Força de abdutores de quadril.',
+    instrucao:'Band pesada no joelho e intermediária na canela, próxima ao tornozelo — passos laterais mantendo tensão nas duas bands.',
+    musculos:['gluteo_medio','gluteo_profundo'],
+    imagemUrl:'https://gymvisual.com/img/p/9/3/9/0/9390.gif',
+    nota:'Miniband pesada no joelho, intermediária na canela.',
+    scheme:'8x20s cada lado'}
+};
+
+const BLOCOS_RESUMO = [
+  {titulo:'Bloco 1 — Mobilidade', series:'2 séries', exercicios:['frog','pigeon','abducao_ombro']},
+  {titulo:'Bloco 2 — Ativação', series:'2 séries', nota:'Coloque a miniband mais pesada.', exercicios:['escapular','ostra']},
+  {titulo:'Bloco 3 — Core', series:'5 séries', exercicios:['deadbug']},
+  {titulo:'Bloco 4 — Força', series:'8 séries', nota:'Band pesada no joelho, intermediária na canela.', exercicios:['monster_walk']}
+];
+
+/* ── geração dos passos do timer (validada) ────────────────── */
+const STEPS = [];
+function push(kind, ex, lado, dur, label, blocoIdx){ STEPS.push({kind, ex, lado, dur, label: label||null, blocoIdx}); }
+
+for(let round=1; round<=2; round++){
+  push('trabalho','frog',null,45,null,0);
+  push('transicao',null,null,15,'Prepare o pigeon stretch',0);
+  push('trabalho','pigeon','direito',45,null,0);
+  push('transicao',null,null,8,'Troque de lado',0);
+  push('trabalho','pigeon','esquerdo',45,null,0);
+  push('transicao',null,null,15,'Prepare a abdução de ombro',0);
+  push('trabalho','abducao_ombro',null,45,null,0);
+  if(round===1) push('transicao',null,null,15,'Próxima série — Bloco 1',0);
+}
+push('transicao',null,null,25,'Troque para a miniband mais pesada — Bloco 2',1);
+
+for(let round=1; round<=2; round++){
+  push('trabalho','escapular',null,30,null,1);
+  push('transicao',null,null,10,'Prepare a ostra',1);
+  push('trabalho','ostra','direito',30,null,1);
+  push('descanso','ostra','direito',10,'Descanso — Ostra',1);
+  push('trabalho','ostra','esquerdo',30,null,1);
+  push('descanso','ostra','esquerdo',10,'Descanso — Ostra',1);
+  if(round===1) push('transicao',null,null,10,'Próxima série — Bloco 2',1);
+}
+push('transicao',null,null,25,'Prepare o chão — Bloco 3: Deadbug',2);
+
+for(let r=1;r<=5;r++){
+  push('trabalho','deadbug',null,30,null,2);
+  if(r<5) push('descanso','deadbug',null,30,'Descanso — Deadbug',2);
+}
+push('transicao',null,null,25,'Coloque as minibands — Bloco 4 (joelho pesada, canela intermediária)',3);
+
+for(let r=1;r<=8;r++){
+  const lado = r%2===1 ? 'direito':'esquerdo';
+  push('trabalho','monster_walk',lado,20,null,3);
+  if(r<8) push('descanso','monster_walk',null,20,'Troca de lado',3);
+}
+
+const TOTAL_TRABALHO_STEPS = STEPS.filter(s=>s.kind==='trabalho' || s.kind==='descanso').length;
+
+/* ── figura base (silhueta) reutilizada nas duas vistas ────── */
+const BASE_FIGURE = `
+  <circle cx="110" cy="46" r="27" fill="rgba(200,160,96,.05)" stroke="var(--gold2)" stroke-width="2.2"/>
+  <rect x="97" y="70" width="26" height="18" rx="8" fill="rgba(200,160,96,.05)" stroke="var(--gold2)" stroke-width="2.2"/>
+  <path d="M78,92 C64,98 58,130 64,158 C68,178 60,190 57,206 L163,206 C160,190 152,178 156,158 C162,130 156,98 142,92 C126,84 94,84 78,92 Z"
+    fill="rgba(200,160,96,.04)" stroke="var(--gold2)" stroke-width="2.2" stroke-linejoin="round"/>
+  <path d="M78,92 C56,100 46,132 50,164 C51,182 56,198 60,214" fill="none" stroke="var(--gold2)" stroke-width="2.2" stroke-linecap="round"/>
+  <path d="M142,92 C164,100 174,132 170,164 C169,182 164,198 160,214" fill="none" stroke="var(--gold2)" stroke-width="2.2" stroke-linecap="round"/>
+  <circle cx="60" cy="217" r="6" fill="rgba(200,160,96,.04)" stroke="var(--gold2)" stroke-width="2"/>
+  <circle cx="160" cy="217" r="6" fill="rgba(200,160,96,.04)" stroke="var(--gold2)" stroke-width="2"/>
+  <path d="M84,206 C80,250 78,300 82,350 C84,380 86,410 88,436" fill="none" stroke="var(--gold2)" stroke-width="2.2" stroke-linecap="round"/>
+  <path d="M136,206 C140,250 142,300 138,350 C136,380 134,410 132,436" fill="none" stroke="var(--gold2)" stroke-width="2.2" stroke-linecap="round"/>
+  <ellipse cx="88" cy="440" rx="12" ry="6" fill="rgba(200,160,96,.04)" stroke="var(--gold2)" stroke-width="2"/>
+  <ellipse cx="132" cy="440" rx="12" ry="6" fill="rgba(200,160,96,.04)" stroke="var(--gold2)" stroke-width="2"/>
+`;
+
+const MUSCLE_REGIONS_FRONT = [
+  {id:'deltoide', cx:64, cy:98, rx:13, ry:13},
+  {id:'deltoide', cx:156, cy:98, rx:13, ry:13},
+  {id:'serratil', cx:70, cy:140, rx:9, ry:22},
+  {id:'serratil', cx:150, cy:140, rx:9, ry:22},
+  {id:'core_abdominal', cx:110, cy:175, rx:32, ry:38},
+  {id:'flexores_quadril', cx:82, cy:212, rx:13, ry:11},
+  {id:'flexores_quadril', cx:138, cy:212, rx:13, ry:11},
+  {id:'adutores', cx:96, cy:250, rx:13, ry:32},
+  {id:'adutores', cx:124, cy:250, rx:13, ry:32}
+];
+const MUSCLE_REGIONS_BACK = [
+  {id:'trapezio', cx:110, cy:115, rx:48, ry:32},
+  {id:'manguito_rotador', cx:70, cy:108, rx:11, ry:11},
+  {id:'manguito_rotador', cx:150, cy:108, rx:11, ry:11},
+  {id:'gluteo_medio', cx:76, cy:206, rx:17, ry:15},
+  {id:'gluteo_medio', cx:144, cy:206, rx:17, ry:15},
+  {id:'gluteo_profundo', cx:96, cy:210, rx:9, ry:10},
+  {id:'gluteo_profundo', cx:124, cy:210, rx:9, ry:10}
+];
+
+function muscleFigureSvg(regions, activeIds, label, gradId){
+  const regionEls = regions.map(r => {
+    const active = activeIds.includes(r.id);
+    const fill = active ? `url(#${gradId})` : 'rgba(200,160,96,.05)';
+    const stroke = active ? 'var(--gold)' : 'var(--b2)';
+    const cls = active ? 'muscle-active' : '';
+    return `<ellipse class="${cls}" cx="${r.cx}" cy="${r.cy}" rx="${r.rx}" ry="${r.ry}" fill="${fill}" stroke="${stroke}" stroke-width="${active?2:1}"/>`;
+  }).join('');
+  return `<svg viewBox="0 0 220 460" xmlns="http://www.w3.org/2000/svg">
+    <defs><radialGradient id="${gradId}" cx="45%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="var(--gold3)"/><stop offset="55%" stop-color="var(--gold)"/><stop offset="100%" stop-color="var(--copper)"/>
+    </radialGradient></defs>
+    ${BASE_FIGURE}
+    ${regionEls}
+    <text x="110" y="454" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12" fill="var(--ink3)" letter-spacing="1">${label}</text>
+  </svg>`;
+}
+
+function renderMuscleFigs(front, back, activeIds, suffix){
+  front.innerHTML = muscleFigureSvg(MUSCLE_REGIONS_FRONT, activeIds, 'frente', 'grad-front-'+suffix);
+  back.innerHTML = muscleFigureSvg(MUSCLE_REGIONS_BACK, activeIds, 'costas', 'grad-back-'+suffix);
+}
+
+/* ══════════════════════════ MODAL DE IMAGEM ═════════════════ */
+function openImageModal(exId){
+  const ex = EXERCICIOS[exId];
+  document.getElementById('image-modal-title').textContent = ex.nome;
+  const img = document.getElementById('image-modal-img');
+  const fallback = document.getElementById('image-modal-fallback');
+  if(ex.imagemUrl){
+    img.src = ex.imagemUrl;
+    img.alt = ex.nome;
+    img.hidden = false;
+    fallback.hidden = true;
+    img.onerror = () => { img.hidden = true; fallback.hidden = false; fallback.textContent = ex.instrucao; };
+  } else {
+    img.hidden = true;
+    fallback.hidden = false;
+    fallback.textContent = ex.instrucao;
+  }
+  document.getElementById('image-modal').style.opacity = '1';
+  document.getElementById('image-modal').style.pointerEvents = 'all';
+}
+function closeImageModal(){
+  document.getElementById('image-modal').style.opacity = '0';
+  document.getElementById('image-modal').style.pointerEvents = 'none';
+}
+document.getElementById('image-modal-close').addEventListener('click', closeImageModal);
+document.getElementById('image-modal').addEventListener('click', e => {
+  if(e.target.id === 'image-modal') closeImageModal();
+});
+
+/* ══════════════════════════ RESUMO ══════════════════════════ */
+function buildResumo(){
+  const wrap = document.getElementById('blocos-resumo');
+  wrap.innerHTML = BLOCOS_RESUMO.map(bloco => `
+    <div class="bloco-sec">
+      <div class="bloco-head">
+        <span class="bloco-nome">${bloco.titulo}</span>
+        <span class="bloco-series">${bloco.series}</span>
+      </div>
+      ${bloco.nota ? `<div class="bloco-nota">${bloco.nota}</div>` : ''}
+      ${bloco.exercicios.map(exId => {
+        const ex = EXERCICIOS[exId];
+        return `
+        <div class="card ex-card">
+          <div class="ex-head">
+            <span class="ex-nome">${ex.nome}</span>
+            <span class="ex-scheme">${ex.scheme}</span>
+          </div>
+          <div class="ex-obj">${ex.objetivo}</div>
+          ${ex.nota ? `<div class="ex-nota">${ex.nota}</div>` : ''}
+          ${!ex.imagemUrl ? `<div class="ex-desc-inline" style="font-size:9.5px;color:var(--ink3);line-height:1.6;margin-bottom:8px;">${ex.instrucao}</div>` : ''}
+          <div class="ex-links">
+            <span class="ex-link" data-action="ver-musculos" data-ex="${exId}">ver músculos</span>
+            ${ex.imagemUrl ? `<span class="ex-link" data-action="ver-imagem" data-ex="${exId}">ver imagem</span>` : ''}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+  `).join('');
+
+  wrap.addEventListener('click', e => {
+    const tm = e.target.closest('[data-action="ver-musculos"]');
+    if(tm){ openMuscleModal(tm.dataset.ex); return; }
+    const ti = e.target.closest('[data-action="ver-imagem"]');
+    if(ti){ openImageModal(ti.dataset.ex); return; }
+  });
+}
+
+function openMuscleModal(exId){
+  const ex = EXERCICIOS[exId];
+  document.getElementById('muscle-modal-title').textContent = ex.nome;
+  const figsWrap = document.getElementById('muscle-modal-figs');
+  figsWrap.innerHTML = '<div class="muscle-fig" id="mm-front"></div><div class="muscle-fig" id="mm-back"></div>';
+  renderMuscleFigs(document.getElementById('mm-front'), document.getElementById('mm-back'), ex.musculos, 'modal');
+  document.getElementById('muscle-modal').style.opacity = '1';
+  document.getElementById('muscle-modal').style.pointerEvents = 'all';
+}
+document.getElementById('muscle-modal-close').addEventListener('click', closeMuscleModal);
+document.getElementById('muscle-modal').addEventListener('click', e => {
+  if(e.target.id === 'muscle-modal') closeMuscleModal();
+});
+function closeMuscleModal(){
+  document.getElementById('muscle-modal').style.opacity = '0';
+  document.getElementById('muscle-modal').style.pointerEvents = 'none';
+}
+
+/* ══════════════════════════ NAVEGAÇÃO DE TELAS ══════════════ */
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const titles = {'screen-recepcao':'Treino','screen-resumo':'Resumo','screen-execucao':'Em andamento','screen-fim':'Concluído'};
+  document.getElementById('tb-title').textContent = titles[id] || 'Treino';
+}
+
+document.getElementById('btn-hero-start').addEventListener('click', () => showScreen('screen-resumo'));
+document.getElementById('btn-back-recepcao').addEventListener('click', () => showScreen('screen-recepcao'));
+document.getElementById('btn-voltar-resumo').addEventListener('click', () => { pauseTimer(); showScreen('screen-resumo'); });
+document.getElementById('btn-refazer').addEventListener('click', () => { resetTimer(); showScreen('screen-recepcao'); });
+
+/* ══════════════════════════ ÁUDIO ═══════════════════════════ */
+let audioCtx = null;
+let muted = false;
+function ensureAudio(){
+  if(!audioCtx){
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if(Ctx) audioCtx = new Ctx();
+  }
+  if(audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+}
+function beep(freq, durMs, type, vol){
+  if(muted || !audioCtx) return;
+  const t0 = audioCtx.currentTime;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = type || 'sine';
+  osc.frequency.value = freq;
+  gain.gain.setValueAtTime(vol || 0.18, t0);
+  gain.gain.exponentialRampToValueAtTime(0.001, t0 + durMs/1000);
+  osc.connect(gain); gain.connect(audioCtx.destination);
+  osc.start(t0); osc.stop(t0 + durMs/1000 + 0.03);
+}
+function beepStartTrabalho(){ beep(660,120); setTimeout(()=>beep(880,150),130); }
+function beepStartOutro(){ beep(330,220); }
+function beepTick(){ beep(1000,70,'square',0.14); }
+function beepFim(){ beep(880,150); setTimeout(()=>beep(1046,200),160); setTimeout(()=>beep(1318,260),340); }
+
+document.getElementById('btn-mute').addEventListener('click', () => {
+  muted = !muted;
+  document.getElementById('btn-mute').classList.toggle('muted', muted);
+  document.getElementById('btn-mute').textContent = muted ? '✕' : '♪';
+});
+
+/* ══════════════════════════ WAKE LOCK ═══════════════════════ */
+let wakeLockObj = null;
+async function requestWakeLock(){
+  try{
+    if('wakeLock' in navigator){
+      wakeLockObj = await navigator.wakeLock.request('screen');
+      document.getElementById('wakelock-note').textContent = '';
+    } else {
+      document.getElementById('wakelock-note').textContent = 'Seu navegador não trava a tela automaticamente — ajuste o desligamento automático se precisar.';
+    }
+  }catch(e){
+    document.getElementById('wakelock-note').textContent = 'Não foi possível travar a tela automaticamente neste dispositivo.';
+  }
+}
+function releaseWakeLock(){
+  if(wakeLockObj){ wakeLockObj.release().catch(()=>{}); wakeLockObj = null; }
+}
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState === 'visible' && timer.running) requestWakeLock();
+});
+
+/* ══════════════════════════ TIMER ═══════════════════════════ */
+const timer = {
+  idx: 0, running: false, startTs: 0, pausedElapsed: 0, raf: null, lastBeepSec: null
+};
+
+function stepDurationMs(step){ return step.dur * 1000; }
+
+function circumference(r){ return 2 * Math.PI * r; }
+const RING_R = 98;
+const RING_C = circumference(RING_R);
+
+function findNextExId(fromIdx){
+  for(let i=fromIdx+1;i<STEPS.length;i++){
+    if(STEPS[i].kind === 'trabalho') return STEPS[i].ex;
+  }
+  return null;
+}
+
+function renderStepUI(){
+  const step = STEPS[timer.idx];
+  const kindLabels = {trabalho:'Trabalho', descanso:'Descanso', transicao:'Transição'};
+  const kindEl = document.getElementById('exec-kind');
+  kindEl.textContent = kindLabels[step.kind];
+  kindEl.className = 'exec-kind ' + step.kind;
+
+  const nomeEl = document.getElementById('exec-nome');
+  const ladoEl = document.getElementById('exec-lado');
+  const notaEl = document.getElementById('exec-nota');
+  const nextWrap = document.getElementById('exec-next');
+  const nextNomeEl = document.getElementById('exec-next-nome');
+  const imgLinkWrap = document.getElementById('exec-imglink-wrap');
+  const imgLink = document.getElementById('exec-img-link');
+  const descEl = document.getElementById('exec-desc');
+  const figFront = document.getElementById('muscle-fig-front');
+  const figBack = document.getElementById('muscle-fig-back');
+
+  let focusExId = step.ex;
+
+  if(step.kind === 'transicao' && !step.ex){
+    nomeEl.textContent = step.label || 'Transição';
+    ladoEl.hidden = true;
+    notaEl.hidden = true;
+
+    focusExId = findNextExId(timer.idx);
+    if(focusExId){
+      nextWrap.hidden = false;
+      nextNomeEl.textContent = EXERCICIOS[focusExId].nome;
+    } else {
+      nextWrap.hidden = true;
+    }
+  } else {
+    const ex = EXERCICIOS[step.ex];
+    nomeEl.textContent = ex.nome;
+    nextWrap.hidden = true;
+    if(step.lado){
+      ladoEl.hidden = false;
+      ladoEl.textContent = 'Lado ' + step.lado;
+    } else {
+      ladoEl.hidden = true;
+    }
+    if(step.kind === 'trabalho' && ex.nota){
+      notaEl.hidden = false;
+      notaEl.textContent = ex.nota;
+    } else if(step.label){
+      notaEl.hidden = false;
+      notaEl.textContent = step.label;
+    } else {
+      notaEl.hidden = true;
+    }
+  }
+
+  if(focusExId){
+    const ex = EXERCICIOS[focusExId];
+    renderMuscleFigs(figFront, figBack, ex.musculos, 'exec');
+    if(ex.imagemUrl){
+      imgLinkWrap.hidden = false;
+      imgLink.dataset.ex = focusExId;
+      descEl.hidden = true;
+    } else {
+      imgLinkWrap.hidden = true;
+      descEl.hidden = false;
+      descEl.textContent = ex.instrucao;
+    }
+  } else {
+    renderMuscleFigs(figFront, figBack, [], 'exec');
+    imgLinkWrap.hidden = true;
+    descEl.hidden = true;
+  }
+
+  const doneOrRest = STEPS.slice(0, timer.idx).filter(s=>s.kind==='trabalho'||s.kind==='descanso').length;
+  document.getElementById('exec-progress-text').textContent =
+    'Bloco ' + (step.blocoIdx+1) + ' de 4 · Passo ' + (timer.idx+1) + ' de ' + STEPS.length;
+  document.getElementById('exec-progress-fill').style.width = (100*(timer.idx)/(STEPS.length-1)) + '%';
+}
+
+function updateTimerDisplay(remainingSec, totalSec){
+  const mm = Math.floor(remainingSec/60), ss = remainingSec%60;
+  document.getElementById('timer-num').textContent = mm + ':' + String(ss).padStart(2,'0');
+  const tmm = Math.floor(totalSec/60), tss = totalSec%60;
+  document.getElementById('timer-total').textContent = 'de ' + tmm + ':' + String(tss).padStart(2,'0');
+  const frac = totalSec > 0 ? remainingSec/totalSec : 0;
+  document.getElementById('timer-ring-fill').setAttribute('stroke-dasharray', RING_C);
+  document.getElementById('timer-ring-fill').setAttribute('stroke-dashoffset', RING_C*(1-frac));
+}
+
+function startStep(playSound){
+  const step = STEPS[timer.idx];
+  timer.pausedElapsed = 0;
+  timer.startTs = Date.now();
+  timer.lastBeepSec = null;
+  renderStepUI();
+  updateTimerDisplay(step.dur, step.dur);
+  if(playSound){
+    if(step.kind === 'trabalho') beepStartTrabalho();
+    else beepStartOutro();
+  }
+}
+
+function tick(){
+  if(!timer.running) return;
+  const step = STEPS[timer.idx];
+  const elapsed = timer.pausedElapsed + (Date.now() - timer.startTs);
+  const totalMs = stepDurationMs(step);
+  const remainingMs = Math.max(0, totalMs - elapsed);
+  const remainingSec = Math.ceil(remainingMs/1000);
+  updateTimerDisplay(remainingSec, step.dur);
+
+  if(remainingSec <= 3 && remainingSec >= 1 && remainingSec !== timer.lastBeepSec){
+    beepTick();
+    timer.lastBeepSec = remainingSec;
+  }
+
+  if(remainingMs <= 0){
+    advanceStep();
+    return;
+  }
+  timer.raf = requestAnimationFrame(tick);
+}
+
+function advanceStep(){
+  timer.idx++;
+  if(timer.idx >= STEPS.length){
+    finishWorkout();
+    return;
+  }
+  startStep(true);
+  timer.raf = requestAnimationFrame(tick);
+}
+
+function playTimer(){
+  ensureAudio();
+  timer.running = true;
+  timer.startTs = Date.now();
+  requestWakeLock();
+  document.getElementById('btn-play-pause').textContent = '❚❚';
+  timer.raf = requestAnimationFrame(tick);
+}
+
+function pauseTimer(){
+  if(!timer.running) return;
+  timer.running = false;
+  timer.pausedElapsed += Date.now() - timer.startTs;
+  if(timer.raf) cancelAnimationFrame(timer.raf);
+  document.getElementById('btn-play-pause').textContent = '▶';
+}
+
+function resetTimer(){
+  pauseTimer();
+  timer.idx = 0;
+  timer.pausedElapsed = 0;
+  releaseWakeLock();
+}
+
+function finishWorkout(){
+  timer.running = false;
+  if(timer.raf) cancelAnimationFrame(timer.raf);
+  releaseWakeLock();
+  beepFim();
+  showScreen('screen-fim');
+}
+
+document.getElementById('btn-play-pause').addEventListener('click', () => {
+  if(timer.running) pauseTimer(); else playTimer();
+});
+document.getElementById('btn-skip').addEventListener('click', () => {
+  if(timer.raf) cancelAnimationFrame(timer.raf);
+  advanceStep();
+  if(!timer.running) playTimer(); else timer.raf = requestAnimationFrame(tick);
+});
+document.getElementById('btn-skip-back').addEventListener('click', () => {
+  if(timer.raf) cancelAnimationFrame(timer.raf);
+  timer.idx = Math.max(0, timer.idx - 1);
+  startStep(false);
+  if(timer.running) timer.raf = requestAnimationFrame(tick);
+});
+
+document.getElementById('btn-comecar').addEventListener('click', () => {
+  ensureAudio();
+  timer.idx = 0;
+  showScreen('screen-execucao');
+  startStep(true);
+  playTimer();
+});
+
+document.getElementById('exec-img-link').addEventListener('click', function(){
+  if(this.dataset.ex) openImageModal(this.dataset.ex);
+});
+
+/* ══════════════════════════ INIT ════════════════════════════ */
+buildResumo();
+document.getElementById('hero-meta').textContent =
+  '4 blocos · 7 exercícios · ~' + Math.round(STEPS.reduce((a,s)=>a+s.dur,0)/60) + ' min';
+</script>
+</body>
+</html>
