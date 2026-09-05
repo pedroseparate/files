@@ -129,14 +129,6 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
 .exec-desc{margin:14px 20px 0;padding:10px 12px;background:var(--bg2);border:1px solid var(--b);border-radius:3px;
   font-size:10.5px;color:var(--ink2);line-height:1.7;}
 
-.muscle-sec{margin:22px 20px 0;}
-.muscle-title{font-size:9px;text-transform:uppercase;letter-spacing:.18em;color:var(--copper2);margin-bottom:10px;text-align:center;}
-.muscle-figs{display:flex;gap:10px;justify-content:center;}
-.muscle-fig{width:50%;max-width:150px;}
-.muscle-fig svg{width:100%;height:auto;display:block;}
-@keyframes musclepulse{0%{opacity:1;}50%{opacity:.55;}100%{opacity:1;}}
-.muscle-active{animation:musclepulse 1.8s ease-in-out infinite;}
-
 .exec-imglink{display:flex;justify-content:center;margin:16px 20px 0;}
 .ex-view-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:var(--bg3);
   border:1px solid var(--b2);border-radius:20px;font-size:9.5px;text-transform:uppercase;
@@ -170,20 +162,21 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
     <div class="hero">
       <div class="hero-eyebrow">Treino de manutenção</div>
       <div class="hero-title">Rafaella<br>Renaux</div>
-      <p class="hero-p">Sessão de manutenção focada em mobilidade de quadril e ombro, ativação de glúteo médio e estabilizadores escapulares, controle de core e força de abdutores de quadril.</p>
+      <p class="hero-p">Sessão de manutenção focada em mobilidade de quadril e ombro, estabilização escapular e de core, controle anti-extensão, força de abdutores de quadril e finalização com condicionamento e mobilidade de ombro.</p>
     </div>
     <div class="obj-list">
       <div class="obj-item"><span class="obj-dot"></span><span class="obj-text">Mobilidade de quadril (adutores) e ombro</span></div>
-      <div class="obj-item"><span class="obj-dot"></span><span class="obj-text">Ativação de glúteo médio e estabilizadores escapulares</span></div>
+      <div class="obj-item"><span class="obj-dot"></span><span class="obj-text">Estabilização escapular e de core (bird dog)</span></div>
       <div class="obj-item"><span class="obj-dot"></span><span class="obj-text">Controle de core em anti-extensão (deadbug)</span></div>
       <div class="obj-item"><span class="obj-dot"></span><span class="obj-text">Fortalecimento de abdutores de quadril (monster walk)</span></div>
+      <div class="obj-item"><span class="obj-dot"></span><span class="obj-text">Condicionamento e mobilidade de ombro (finalização)</span></div>
     </div>
     <div class="start-wrap">
       <button class="start-btn" id="btn-hero-start">
         <span class="start-btn-label">Iniciar</span>
         <span class="start-btn-sub">Treino</span>
       </button>
-      <div class="hero-meta" id="hero-meta">4 blocos · 7 exercícios · ~22 min</div>
+      <div class="hero-meta" id="hero-meta">5 blocos · 9 exercícios · ~39 min</div>
     </div>
   </section>
 
@@ -242,14 +235,6 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
       <div class="exec-next-nome" id="exec-next-nome"></div>
     </div>
 
-    <div class="muscle-sec">
-      <div class="muscle-title">Músculos trabalhados</div>
-      <div class="muscle-figs">
-        <div class="muscle-fig" id="muscle-fig-front"></div>
-        <div class="muscle-fig" id="muscle-fig-back"></div>
-      </div>
-    </div>
-
     <div class="exec-imglink" id="exec-imglink-wrap">
       <div class="ex-view-btn" id="exec-img-link">ver imagem do exercício</div>
     </div>
@@ -262,7 +247,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   <section class="screen" id="screen-fim">
     <div class="fim-wrap">
       <div class="fim-title">Treino concluído</div>
-      <p class="fim-p">Boa, Rafaella! Sessão de manutenção finalizada — mobilidade, ativação, core e abdutores de quadril, tudo feito.</p>
+      <p class="fim-p">Boa, Rafaella! Sessão de manutenção finalizada — mobilidade, ativação, core, abdutores de quadril e finalização, tudo feito.</p>
       <button class="btn btn-primary" id="btn-refazer">Refazer treino</button>
     </div>
     <div class="footer">
@@ -271,21 +256,6 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
     </div>
   </section>
 
-</div>
-
-<!-- modal: mapa muscular (usado no resumo) -->
-<div class="body-modal-overlay" id="muscle-modal" style="position:fixed;inset:0;background:rgba(14,11,8,.82);
-  z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s ease;">
-  <div class="body-modal" style="width:100%;max-width:340px;background:var(--bg2);border:1px solid var(--b2);
-    border-radius:6px;padding:20px 20px 22px;position:relative;">
-    <button id="muscle-modal-close" style="position:absolute;top:12px;right:12px;width:28px;height:28px;
-      border-radius:50%;border:1px solid var(--b2);background:transparent;color:var(--ink2);
-      font-size:15px;cursor:pointer;">×</button>
-    <div style="font-size:8.5px;text-transform:uppercase;letter-spacing:.18em;color:var(--copper2);margin-bottom:4px;">Músculos</div>
-    <div id="muscle-modal-title" style="font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;
-      font-size:20px;color:var(--gold2);margin-bottom:14px;padding-right:30px;"></div>
-    <div class="muscle-figs" id="muscle-modal-figs"></div>
-  </div>
 </div>
 
 <!-- modal: imagem do exercício -->
@@ -329,12 +299,11 @@ const EXERCICIOS = {
     musculos:['trapezio','serratil'],
     imagemUrl:'https://static1.squarespace.com/static/5ea57caad08f387b2e9827bd/61c7ae9bf497521cde72e756/6436b8be9b5bbc065a0da2eb/1695380423923/Scapular+Push+Ups.png?format=1500w',
     scheme:'30s x2'},
-  ostra: {nome:'Ostra com Miniband', objetivo:'Ativação de glúteo médio.',
-    instrucao:'Deitada de lado, joelhos dobrados e pés juntos — abra o joelho de cima como uma concha, sem girar o quadril. Deixe o cotovelo na posição mais confortável para você.',
-    musculos:['gluteo_medio'],
-    imagemUrl:'https://b1494239.smushcdn.com/1494239/wp-content/uploads/2013/08/clams.png?lossy=0&strip=1&webp=1',
-    nota:'Use a miniband mais pesada.',
-    scheme:'2x30s on/10s off cada lado'},
+  bird_dog: {nome:'Bird Dog Alternado', objetivo:'Estabilização de core e cadeia posterior.',
+    instrucao:'Em quatro apoios, estenda braço e perna opostos ao mesmo tempo, sem deixar o quadril girar. Alterne os lados continuamente.',
+    musculos:['core_abdominal','gluteo_medio','lombar'],
+    imagemUrl:'https://i.pinimg.com/originals/fc/e5/5f/fce55f97eea83e45b22c5925ecbcf414.gif',
+    scheme:'1 minuto'},
   deadbug: {nome:'Deadbug', objetivo:'Controle de core em anti-extensão.',
     instrucao:'Deitada, joelhos mais estendidos que o normal — desça as pernas alternadamente, sem tirar a lombar do chão. Mantenha o braço parado durante todo o movimento.',
     musculos:['core_abdominal'],
@@ -345,19 +314,30 @@ const EXERCICIOS = {
     musculos:['gluteo_medio','gluteo_profundo'],
     imagemUrl:'https://gymvisual.com/img/p/9/3/9/0/9390.gif',
     nota:'Miniband pesada no joelho, intermediária na canela.',
-    scheme:'8x20s cada lado'}
+    scheme:'8x20s cada lado'},
+  bike: {nome:'Bicicleta Ergométrica', objetivo:'Condicionamento geral de membros inferiores.',
+    instrucao:'Intensidade 10, altura do banco 18 — pedale em ritmo constante.',
+    musculos:['quadriceps','gluteo_medio'], imagemUrl:null,
+    scheme:'5 min'},
+  mobilidade_bastao: {nome:'Mobilidade de Ombro com Bastão', objetivo:'Mobilidade de ombro e controle escapular.',
+    instrucao:'Segure o bastão com as duas mãos, mais largo que os ombros, e leve por cima da cabeça até atrás, com controle.',
+    musculos:['deltoide','manguito_rotador'], imagemUrl:null,
+    scheme:'10 repetições', tipo:'reps'}
 };
 
 const BLOCOS_RESUMO = [
   {titulo:'Bloco 1 — Mobilidade', series:'2 séries', exercicios:['frog','pigeon','abducao_ombro']},
-  {titulo:'Bloco 2 — Ativação', series:'2 séries', nota:'Coloque a miniband mais pesada.', exercicios:['escapular','ostra']},
+  {titulo:'Bloco 2 — Ativação', series:'2 séries', nota:'Coloque a miniband mais pesada.', exercicios:['escapular','bird_dog']},
   {titulo:'Bloco 3 — Core', series:'5 séries', exercicios:['deadbug']},
-  {titulo:'Bloco 4 — Força', series:'8 séries', nota:'Band pesada no joelho, intermediária na canela.', exercicios:['monster_walk']}
+  {titulo:'Bloco 4 — Força', series:'8 séries', nota:'Band pesada no joelho, intermediária na canela.', exercicios:['monster_walk']},
+  {titulo:'Bloco 5 — Finalização', series:'3 séries', exercicios:['bike','mobilidade_bastao']}
 ];
 
 /* ── geração dos passos do timer (validada) ────────────────── */
 const STEPS = [];
-function push(kind, ex, lado, dur, label, blocoIdx){ STEPS.push({kind, ex, lado, dur, label: label||null, blocoIdx}); }
+function push(kind, ex, lado, dur, label, blocoIdx, tipo){
+  STEPS.push({kind, ex, lado, dur: dur||0, label: label||null, blocoIdx, tipo: tipo||'tempo'});
+}
 
 for(let round=1; round<=2; round++){
   push('trabalho','frog',null,45,null,0);
@@ -373,11 +353,8 @@ push('transicao',null,null,25,'Troque para a miniband mais pesada — Bloco 2',1
 
 for(let round=1; round<=2; round++){
   push('trabalho','escapular',null,30,null,1);
-  push('transicao',null,null,10,'Prepare a ostra',1);
-  push('trabalho','ostra','direito',30,null,1);
-  push('descanso','ostra','direito',10,'Descanso — Ostra',1);
-  push('trabalho','ostra','esquerdo',30,null,1);
-  push('descanso','ostra','esquerdo',10,'Descanso — Ostra',1);
+  push('transicao',null,null,10,'Prepare o bird dog',1);
+  push('trabalho','bird_dog',null,60,null,1);
   if(round===1) push('transicao',null,null,10,'Próxima série — Bloco 2',1);
 }
 push('transicao',null,null,25,'Prepare o chão — Bloco 3: Deadbug',2);
@@ -393,68 +370,16 @@ for(let r=1;r<=8;r++){
   push('trabalho','monster_walk',lado,20,null,3);
   if(r<8) push('descanso','monster_walk',null,20,'Troca de lado',3);
 }
+push('transicao',null,null,30,'Bloco 5 — bike e mobilidade de ombro',4);
+
+for(let round=1; round<=3; round++){
+  push('trabalho','bike',null,300,null,4);
+  push('transicao',null,null,15,'Prepare a mobilidade de ombro',4);
+  push('trabalho','mobilidade_bastao',null,0,null,4,'reps');
+  if(round<3) push('transicao',null,null,20,'Próxima série — Bloco 5',4);
+}
 
 const TOTAL_TRABALHO_STEPS = STEPS.filter(s=>s.kind==='trabalho' || s.kind==='descanso').length;
-
-/* ── figura base (silhueta) reutilizada nas duas vistas ────── */
-const BASE_FIGURE = `
-  <circle cx="110" cy="46" r="27" fill="rgba(200,160,96,.05)" stroke="var(--gold2)" stroke-width="2.2"/>
-  <rect x="97" y="70" width="26" height="18" rx="8" fill="rgba(200,160,96,.05)" stroke="var(--gold2)" stroke-width="2.2"/>
-  <path d="M78,92 C64,98 58,130 64,158 C68,178 60,190 57,206 L163,206 C160,190 152,178 156,158 C162,130 156,98 142,92 C126,84 94,84 78,92 Z"
-    fill="rgba(200,160,96,.04)" stroke="var(--gold2)" stroke-width="2.2" stroke-linejoin="round"/>
-  <path d="M78,92 C56,100 46,132 50,164 C51,182 56,198 60,214" fill="none" stroke="var(--gold2)" stroke-width="2.2" stroke-linecap="round"/>
-  <path d="M142,92 C164,100 174,132 170,164 C169,182 164,198 160,214" fill="none" stroke="var(--gold2)" stroke-width="2.2" stroke-linecap="round"/>
-  <circle cx="60" cy="217" r="6" fill="rgba(200,160,96,.04)" stroke="var(--gold2)" stroke-width="2"/>
-  <circle cx="160" cy="217" r="6" fill="rgba(200,160,96,.04)" stroke="var(--gold2)" stroke-width="2"/>
-  <path d="M84,206 C80,250 78,300 82,350 C84,380 86,410 88,436" fill="none" stroke="var(--gold2)" stroke-width="2.2" stroke-linecap="round"/>
-  <path d="M136,206 C140,250 142,300 138,350 C136,380 134,410 132,436" fill="none" stroke="var(--gold2)" stroke-width="2.2" stroke-linecap="round"/>
-  <ellipse cx="88" cy="440" rx="12" ry="6" fill="rgba(200,160,96,.04)" stroke="var(--gold2)" stroke-width="2"/>
-  <ellipse cx="132" cy="440" rx="12" ry="6" fill="rgba(200,160,96,.04)" stroke="var(--gold2)" stroke-width="2"/>
-`;
-
-const MUSCLE_REGIONS_FRONT = [
-  {id:'deltoide', cx:64, cy:98, rx:13, ry:13},
-  {id:'deltoide', cx:156, cy:98, rx:13, ry:13},
-  {id:'serratil', cx:70, cy:140, rx:9, ry:22},
-  {id:'serratil', cx:150, cy:140, rx:9, ry:22},
-  {id:'core_abdominal', cx:110, cy:175, rx:32, ry:38},
-  {id:'flexores_quadril', cx:82, cy:212, rx:13, ry:11},
-  {id:'flexores_quadril', cx:138, cy:212, rx:13, ry:11},
-  {id:'adutores', cx:96, cy:250, rx:13, ry:32},
-  {id:'adutores', cx:124, cy:250, rx:13, ry:32}
-];
-const MUSCLE_REGIONS_BACK = [
-  {id:'trapezio', cx:110, cy:115, rx:48, ry:32},
-  {id:'manguito_rotador', cx:70, cy:108, rx:11, ry:11},
-  {id:'manguito_rotador', cx:150, cy:108, rx:11, ry:11},
-  {id:'gluteo_medio', cx:76, cy:206, rx:17, ry:15},
-  {id:'gluteo_medio', cx:144, cy:206, rx:17, ry:15},
-  {id:'gluteo_profundo', cx:96, cy:210, rx:9, ry:10},
-  {id:'gluteo_profundo', cx:124, cy:210, rx:9, ry:10}
-];
-
-function muscleFigureSvg(regions, activeIds, label, gradId){
-  const regionEls = regions.map(r => {
-    const active = activeIds.includes(r.id);
-    const fill = active ? `url(#${gradId})` : 'rgba(200,160,96,.05)';
-    const stroke = active ? 'var(--gold)' : 'var(--b2)';
-    const cls = active ? 'muscle-active' : '';
-    return `<ellipse class="${cls}" cx="${r.cx}" cy="${r.cy}" rx="${r.rx}" ry="${r.ry}" fill="${fill}" stroke="${stroke}" stroke-width="${active?2:1}"/>`;
-  }).join('');
-  return `<svg viewBox="0 0 220 460" xmlns="http://www.w3.org/2000/svg">
-    <defs><radialGradient id="${gradId}" cx="45%" cy="35%" r="65%">
-      <stop offset="0%" stop-color="var(--gold3)"/><stop offset="55%" stop-color="var(--gold)"/><stop offset="100%" stop-color="var(--copper)"/>
-    </radialGradient></defs>
-    ${BASE_FIGURE}
-    ${regionEls}
-    <text x="110" y="454" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12" fill="var(--ink3)" letter-spacing="1">${label}</text>
-  </svg>`;
-}
-
-function renderMuscleFigs(front, back, activeIds, suffix){
-  front.innerHTML = muscleFigureSvg(MUSCLE_REGIONS_FRONT, activeIds, 'frente', 'grad-front-'+suffix);
-  back.innerHTML = muscleFigureSvg(MUSCLE_REGIONS_BACK, activeIds, 'costas', 'grad-back-'+suffix);
-}
 
 /* ══════════════════════════ MODAL DE IMAGEM ═════════════════ */
 function openImageModal(exId){
@@ -507,7 +432,6 @@ function buildResumo(){
           ${ex.nota ? `<div class="ex-nota">${ex.nota}</div>` : ''}
           ${!ex.imagemUrl ? `<div class="ex-desc-inline" style="font-size:9.5px;color:var(--ink3);line-height:1.6;margin-bottom:8px;">${ex.instrucao}</div>` : ''}
           <div class="ex-links">
-            <span class="ex-link" data-action="ver-musculos" data-ex="${exId}">ver músculos</span>
             ${ex.imagemUrl ? `<span class="ex-link" data-action="ver-imagem" data-ex="${exId}">ver imagem</span>` : ''}
           </div>
         </div>`;
@@ -516,29 +440,9 @@ function buildResumo(){
   `).join('');
 
   wrap.addEventListener('click', e => {
-    const tm = e.target.closest('[data-action="ver-musculos"]');
-    if(tm){ openMuscleModal(tm.dataset.ex); return; }
     const ti = e.target.closest('[data-action="ver-imagem"]');
     if(ti){ openImageModal(ti.dataset.ex); return; }
   });
-}
-
-function openMuscleModal(exId){
-  const ex = EXERCICIOS[exId];
-  document.getElementById('muscle-modal-title').textContent = ex.nome;
-  const figsWrap = document.getElementById('muscle-modal-figs');
-  figsWrap.innerHTML = '<div class="muscle-fig" id="mm-front"></div><div class="muscle-fig" id="mm-back"></div>';
-  renderMuscleFigs(document.getElementById('mm-front'), document.getElementById('mm-back'), ex.musculos, 'modal');
-  document.getElementById('muscle-modal').style.opacity = '1';
-  document.getElementById('muscle-modal').style.pointerEvents = 'all';
-}
-document.getElementById('muscle-modal-close').addEventListener('click', closeMuscleModal);
-document.getElementById('muscle-modal').addEventListener('click', e => {
-  if(e.target.id === 'muscle-modal') closeMuscleModal();
-});
-function closeMuscleModal(){
-  document.getElementById('muscle-modal').style.opacity = '0';
-  document.getElementById('muscle-modal').style.pointerEvents = 'none';
 }
 
 /* ══════════════════════════ NAVEGAÇÃO DE TELAS ══════════════ */
@@ -641,8 +545,6 @@ function renderStepUI(){
   const imgLinkWrap = document.getElementById('exec-imglink-wrap');
   const imgLink = document.getElementById('exec-img-link');
   const descEl = document.getElementById('exec-desc');
-  const figFront = document.getElementById('muscle-fig-front');
-  const figBack = document.getElementById('muscle-fig-back');
 
   let focusExId = step.ex;
 
@@ -681,7 +583,6 @@ function renderStepUI(){
 
   if(focusExId){
     const ex = EXERCICIOS[focusExId];
-    renderMuscleFigs(figFront, figBack, ex.musculos, 'exec');
     if(ex.imagemUrl){
       imgLinkWrap.hidden = false;
       imgLink.dataset.ex = focusExId;
@@ -692,16 +593,17 @@ function renderStepUI(){
       descEl.textContent = ex.instrucao;
     }
   } else {
-    renderMuscleFigs(figFront, figBack, [], 'exec');
     imgLinkWrap.hidden = true;
     descEl.hidden = true;
   }
 
   const doneOrRest = STEPS.slice(0, timer.idx).filter(s=>s.kind==='trabalho'||s.kind==='descanso').length;
   document.getElementById('exec-progress-text').textContent =
-    'Bloco ' + (step.blocoIdx+1) + ' de 4 · Passo ' + (timer.idx+1) + ' de ' + STEPS.length;
+    'Bloco ' + (step.blocoIdx+1) + ' de 5 · Passo ' + (timer.idx+1) + ' de ' + STEPS.length;
   document.getElementById('exec-progress-fill').style.width = (100*(timer.idx)/(STEPS.length-1)) + '%';
 }
+
+function isRepsStep(step){ return step.kind === 'trabalho' && step.tipo === 'reps'; }
 
 function updateTimerDisplay(remainingSec, totalSec){
   const mm = Math.floor(remainingSec/60), ss = remainingSec%60;
@@ -713,13 +615,37 @@ function updateTimerDisplay(remainingSec, totalSec){
   document.getElementById('timer-ring-fill').setAttribute('stroke-dashoffset', RING_C*(1-frac));
 }
 
+function updateTimerDisplayReps(elapsedSec, scheme){
+  const mm = Math.floor(elapsedSec/60), ss = elapsedSec%60;
+  document.getElementById('timer-num').textContent = mm + ':' + String(ss).padStart(2,'0');
+  document.getElementById('timer-total').textContent = scheme + ' · seu ritmo';
+  document.getElementById('timer-ring-fill').setAttribute('stroke-dasharray', RING_C);
+  document.getElementById('timer-ring-fill').setAttribute('stroke-dashoffset', 0);
+}
+
+function updatePrimaryButton(step){
+  const btn = document.getElementById('btn-play-pause');
+  if(isRepsStep(step)){
+    btn.textContent = '✓';
+    btn.title = 'Concluir série';
+  } else {
+    btn.textContent = timer.running ? '❚❚' : '▶';
+    btn.title = '';
+  }
+}
+
 function startStep(playSound){
   const step = STEPS[timer.idx];
   timer.pausedElapsed = 0;
   timer.startTs = Date.now();
   timer.lastBeepSec = null;
   renderStepUI();
-  updateTimerDisplay(step.dur, step.dur);
+  if(isRepsStep(step)){
+    updateTimerDisplayReps(0, EXERCICIOS[step.ex].scheme);
+  } else {
+    updateTimerDisplay(step.dur, step.dur);
+  }
+  updatePrimaryButton(step);
   if(playSound){
     if(step.kind === 'trabalho') beepStartTrabalho();
     else beepStartOutro();
@@ -730,6 +656,13 @@ function tick(){
   if(!timer.running) return;
   const step = STEPS[timer.idx];
   const elapsed = timer.pausedElapsed + (Date.now() - timer.startTs);
+
+  if(isRepsStep(step)){
+    updateTimerDisplayReps(Math.floor(elapsed/1000), EXERCICIOS[step.ex].scheme);
+    timer.raf = requestAnimationFrame(tick);
+    return;
+  }
+
   const totalMs = stepDurationMs(step);
   const remainingMs = Math.max(0, totalMs - elapsed);
   const remainingSec = Math.ceil(remainingMs/1000);
@@ -762,7 +695,7 @@ function playTimer(){
   timer.running = true;
   timer.startTs = Date.now();
   requestWakeLock();
-  document.getElementById('btn-play-pause').textContent = '❚❚';
+  updatePrimaryButton(STEPS[timer.idx]);
   timer.raf = requestAnimationFrame(tick);
 }
 
@@ -771,7 +704,7 @@ function pauseTimer(){
   timer.running = false;
   timer.pausedElapsed += Date.now() - timer.startTs;
   if(timer.raf) cancelAnimationFrame(timer.raf);
-  document.getElementById('btn-play-pause').textContent = '▶';
+  updatePrimaryButton(STEPS[timer.idx]);
 }
 
 function resetTimer(){
@@ -790,6 +723,12 @@ function finishWorkout(){
 }
 
 document.getElementById('btn-play-pause').addEventListener('click', () => {
+  const step = STEPS[timer.idx];
+  if(isRepsStep(step)){
+    if(timer.raf) cancelAnimationFrame(timer.raf);
+    advanceStep();
+    return;
+  }
   if(timer.running) pauseTimer(); else playTimer();
 });
 document.getElementById('btn-skip').addEventListener('click', () => {
@@ -819,7 +758,7 @@ document.getElementById('exec-img-link').addEventListener('click', function(){
 /* ══════════════════════════ INIT ════════════════════════════ */
 buildResumo();
 document.getElementById('hero-meta').textContent =
-  '4 blocos · 7 exercícios · ~' + Math.round(STEPS.reduce((a,s)=>a+s.dur,0)/60) + ' min';
+  '5 blocos · 9 exercícios · ~' + Math.round(STEPS.reduce((a,s)=>a+s.dur,0)/60) + ' min';
 </script>
 </body>
 </html>
