@@ -37,7 +37,7 @@ Estas decisões foram tomadas após análise e **não devem ser revertidas sem j
 | Decisão | O que é |
 |---------|---------|
 | **Firebase Firestore** como única fonte de dados | Coleções: `exercises`, `students`, `sessions` |
-| **`nome` como campo autoritativo** | `exercise_id` nos registros legados é não-confiável. Usar `EX_NAME_MAP` com lookup normalizado por nome para resolver exercícios. |
+| **`exercise_id` como campo autoritativo** (D3.2, set/2026) | `nome` é gravado na sessão como snapshot de exibição, nunca como chave. `EX_NAME_MAP` e lookup por nome estão descontinuados no caminho de escrita. |
 | **Single-file HTML** | Toda a UI do dashboard em um único arquivo ~380KB. Mantido assim até refatoração planejada. |
 | **Mobile-first** | Viewport alvo: 375–430px. Bottom-nav pattern. |
 | **`onSnapshot()` listeners** | Real-time updates via Firestore. |
@@ -146,8 +146,7 @@ Com FC fora de CargaNorm, exercícios isolados (Extensora, Flexora, Rosca, Aduto
 - Atletas atuais no sistema: Julia Duzzi, Enrique
 - Firestore project: `momentum-br`
 - Coleções: `exercises`, `students`, `sessions`
-- Campo autoritativo para exercícios: `nome` (não `exercise_id`)
-- Normalização de nome: Unicode + trim + lowercase para lookup via `EX_NAME_MAP`
+- Campo autoritativo para exercícios: `exercise_id` (D3.2, set/2026) — `EX_NAME_MAP` e lookup por nome descontinuados
 
 ---
 

@@ -73,7 +73,7 @@ precisa ser pedido ao Claude Code no momento — este doc é referência estrutu
 | `n` / `m` / `met` | Prováveis proporções realizadas por dimensão na sessão — não confirmado, distinto de `pesos.wN/wM/wMet` |
 | `pesos.wN` / `.wM` / `.wMet` | Pesos por tipo de sessão — defaults não calibrados |
 | `_recalculated` | Flag de reprocessamento pelo PT Dashboard |
-| `exercicios[].nome` / `.exercise_id` | `nome` autoritativo; `exercise_id` legado |
+| `exercicios[].nome` / `.exercise_id` | `exercise_id` autoritativo (D3.2); `nome` é snapshot de exibição gravado junto — nunca usado como chave |
 | `exercicios[].kg` / `.r` / `.s` / `.pse` | Valores executados |
 | `exercicios[].ic` / `.ic_neural` / `.ic_mecanica` / `.ic_metabolica` | IC por exercício |
 | `exercicios[].tipo_serie` | Enum de intenção — só texto exibido em v1 |
@@ -101,7 +101,7 @@ o nome livre da sessão/divisão, definido pelo PT (`"Lower A"`, `"Full B"`, `"T
 | `sessoes.<NomeSessao>.dim_dominante` | Dimensão dominante daquela sessão |
 | `sessoes.<NomeSessao>.notas_pt` | Nota do PT específica daquela sessão prescrita |
 | `sessoes.<NomeSessao>.exercicios[].nome` | Nome do exercício |
-| `sessoes.<NomeSessao>.exercicios[].exercise_id` | Ausente em documentos mais novos (ex: Lower C e Upper C da Jacqueline) — consistente com a direção de `nome` como único campo autoritativo |
+| `sessoes.<NomeSessao>.exercicios[].exercise_id` | Ausente em documentos mais novos (ex: Lower C e Upper C da Jacqueline) — diverge de D3.2; esses docs precisam de backfill de `exercise_id` |
 | `sessoes.<NomeSessao>.exercicios[].tipo_serie` | Enum de intenção |
 | `sessoes.<NomeSessao>.exercicios[].series` | Número de séries prescritas |
 | `sessoes.<NomeSessao>.exercicios[].progressao` | Modelo de progressão daquele exercício |
