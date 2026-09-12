@@ -83,9 +83,6 @@ Bloqueia: reativação do score na home, comunicação do diferencial técnico e
 ### ⚠ IM — recalibração nos exercícios isolados
 Com FC fora de CargaNorm, exercícios isolados (Extensora, Flexora, Rosca, Adutora, Abdutora, etc.) terão Mecânica maior do que o calibrado originalmente. IM foi definido assumindo que FC já comprimia a CargaNorm. Revisão exercício a exercício necessária — **julgamento fisiológico do PT.**
 
-### ⚠ `duração_min` no schema de sessions
-Campo necessário para cálculo da CargaInterna (modelo Foster). Não existe atualmente em momentum-sessions. Precisa ser adicionado antes de ativar CargaInterna.
-
 ### ⚠ Tela de Prescrição do PT
 **Bottleneck identificado para o ciclo completo PT → Atleta → Banco.** Sem essa tela, o fluxo de criação de sessões planejadas pelo PT não fecha. É a próxima tela crítica a construir.
 
@@ -154,17 +151,22 @@ Campo necessário para cálculo da CargaInterna (modelo Foster). Não existe atu
 
 ---
 
-## Nota sobre Check-in Pré-treino (feature proposta, não implementada)
+## Nota sobre Check-in Pré-treino (implementado e em uso)
 
-O sistema atual captura contexto *retrospectivamente* via ΔPSE e chips automáticos. Uma feature de check-in pré-treino adicionaria uma camada *prospectiva*:
+A coleção `checkins` existe no Firestore e está em uso real — confirmado em 8 de 9 alunos
+ativos com pelo menos 1 documento (Jacqueline está em estado zero, sem checkins, por reset
+recente). Captura contexto *prospectivo* antes do treino, complementando o ΔPSE e os chips
+automáticos, que são *retrospectivos*.
 
-**Proposta:**
-- 1 pergunta obrigatória antes do treino: "Como você está hoje?" (🔥 Pronto / 😐 Ok / 🥱 Cansado / 🤕 Pesado)
-- 2 perguntas opcionais: qualidade de sono + alimentação adequada
-- Dado de disponibilidade enriquece interpretação do ΔPSE e cria histórico longitudinal de "quando este aluno chega fadigado"
-- **Não** altera a prescrição do PT na v1 — apenas alimenta o dashboard analítico
+**Campos confirmados:**
+- `estado_prontidao` — resposta da pergunta obrigatória de prontidão (🔥 Pronto / 😐 Ok / 🥱 Cansado / 🤕 Pesado)
+- `sono` — qualidade de sono
+- `alimentacao` — alimentação adequada
+- `disposicao` / `cansaco_nivel` — campos extras além da proposta original, função exata não documentada — confirmar com João Pedro se quiser formalizar
 
-**O que NÃO fazer na v1:** ajuste automático de volume baseado em disponibilidade (requereria schema de prescrição com faixas min/max — decisão arquitetural separada).
+**Decisão original ainda válida:** não fazer ajuste automático de volume baseado em
+disponibilidade na v1 (requereria schema de prescrição com faixas min/max — decisão
+arquitetural separada).
 
 **Chips da RN 26 já são a narrativa** — a diferença é que hoje são PT-facing only. Versão aluno dos chips é uma evolução natural, não uma reescrita.
 
