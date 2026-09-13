@@ -138,6 +138,19 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;
 .start-btn:hover{opacity:.88;}
 .start-btn-ico{font-size:20px;}
 
+/* lista de sessões da prescrição */
+.sess-list{display:flex;flex-direction:column;gap:8px;}
+.sess-btn{display:flex;align-items:center;gap:12px;width:100%;padding:13px 14px;text-align:left;
+  background:var(--bg3);border:1px solid var(--b);border-radius:5px;cursor:pointer;
+  transition:border-color .15s,background .15s;}
+.sess-btn:hover{border-color:var(--gold);background:var(--bg2);}
+.sess-btn-ico{font-size:16px;color:var(--copper2);}
+.sess-btn-body{display:block;flex:1;min-width:0;}
+.sess-btn-label{display:block;font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:17px;color:var(--ink);line-height:1.15;}
+.sess-btn-meta{display:block;font-family:'IBM Plex Mono',monospace;font-size:8px;
+  text-transform:uppercase;letter-spacing:.16em;color:var(--ink3);margin-top:4px;}
+
 /* scores — cards full-width */
 .scores-list{display:flex;flex-direction:column;gap:7px;}
 .sc-card{background:var(--bg3);border:1px solid var(--b);border-radius:6px;
@@ -725,6 +738,9 @@ const STUDENT_ID = new URLSearchParams(window.location.search).get('id') || 'enr
 let S = {
   student: null,
   sessions: [],
+  exercises: {},      // { [exercise_id]: {...} } — catálogo, carregado uma vez no boot
+  prescricao: null,   // doc prescricoes/{STUDENT_ID} — origem única do treino (D3.1)
+  sessaoEscolhida: null, // slug da sessão escolhida pela aluna (D3.4)
   page: 'home',
   checkinHoje: null,
   treino: {
@@ -737,7 +753,8 @@ let S = {
     clockSec: 0, clockTimer: null,
     sessaoId: null,
     registros: [],      // séries confirmadas
-    sessaoNome: null,   // chave da prescrição usada (ex: "Lower A")
+    sessaoNome: null,   // slug da sessão da prescrição usada (ex: "lower-a")
+    sessaoLabel: null,  // label de exibição da sessão (ex: "Lower A")
     prontidao: null,    // score de prontidão do check-in
     checkinId: null,    // id do doc de check-in vinculado
   }
@@ -761,6 +778,30 @@ db.collection('students').doc(STUDENT_ID).onSnapshot(doc => {
   console.error(err);
   document.getElementById('home-content').innerHTML =
     `<div class="empty-state">⚠ Erro ao conectar — verifique FB_CONFIG</div>`;
+});
+
+// Catálogo de exercícios — exercise_id é a chave autoritativa (D3.2).
+// Leitura única: o catálogo não muda durante a sessão da aluna.
+db.collection('exercises').get()
+  .then(snap => {
+    const map = {};
+    snap.docs.forEach(d => { map[d.id] = { id: d.id, ...d.data() }; });
+    S.exercises = map;
+    renderHome();
+  })
+  .catch(err => {
+    console.error('[Momentum] Erro ao carregar exercises:', err);
+    renderHome();
+  });
+
+// Prescrição — origem única do treino (D3.1)
+db.collection('prescricoes').doc(STUDENT_ID).onSnapshot(doc => {
+  S.prescricao = doc.exists ? { id: doc.id, ...doc.data() } : null;
+  renderHome();
+}, err => {
+  console.error('[Momentum] Erro ao carregar prescrição:', err);
+  S.prescricao = null;
+  renderHome();
 });
 
 db.collection('sessions')
@@ -1260,14 +1301,41 @@ function buildHeroCardPhoto(s) {
 // ═══════════════════════════════════════════════════
 // RENDER — HOME
 // ═══════════════════════════════════════════════════
+// Lista de sessões prescritas — a aluna escolhe qual treinar (D3.4)
+function buildSessoesList(){
+  if(!S.prescricao){
+    return `<div class="empty-state">Sem prescrição ativa.<br>Fale com seu PT.</div>`;
+  }
+  const sessoes = sessoesDaPrescricao();
+  if(!sessoes.length){
+    return `<div class="empty-state">Prescrição sem sessões cadastradas.<br>Fale com seu PT.</div>`;
+  }
+  const ultimo = S.sessions[0]?.sessao_nome || null;
+  return `<div class="sess-list">${sessoes.map(x=>{
+    const nEx = (x.sessao.exercicios||[]).length;
+    const dim = x.sessao.dim_dominante ? ` · ${x.sessao.dim_dominante}` : '';
+    const ult = x.slug === ultimo ? ' · última feita' : '';
+    return `
+      <button class="sess-btn" onclick="escolherSessao('${x.slug}')">
+        <span class="sess-btn-ico">▶</span>
+        <span class="sess-btn-body">
+          <span class="sess-btn-label">${x.label}</span>
+          <span class="sess-btn-meta">${nEx} exercícios${dim}${ult}</span>
+        </span>
+      </button>`;
+  }).join('')}</div>`;
+}
+
+function escolherSessao(slug){
+  S.sessaoEscolhida = slug;
+  openCheckin();
+}
+
 function renderHome(){
   const s = S.student;
   if(!s) return;
   const el = document.getElementById('home-content');
   const scores = s.scores||{};
-
-  const divisaoHoje = s.divisao || 'treino de hoje';
-  const btnLabel    = `Iniciar · ${divisaoHoje}`;
 
   el.innerHTML = `
     ${buildHeroCard(s)}
@@ -1287,11 +1355,9 @@ function renderHome(){
       </div>
     </div>
 
-    <div style="padding:0 20px 14px">
-      <button class="start-btn" onclick="openCheckin()">
-        <span class="start-btn-ico">▶</span>
-        <span>${btnLabel}</span>
-      </button>
+    <div class="sec">
+      <div class="sec-head"><div class="sec-title">Treinar hoje</div><div class="sec-line"></div></div>
+      ${buildSessoesList()}
     </div>
 
     <div class="sec">
@@ -2026,58 +2092,6 @@ function openHistSession(i){
 // ═══════════════════════════════════════════════════
 // TREINO — execução real
 // ═══════════════════════════════════════════════════
-function buildTreinoFromProfile(s){
-  // Exercícios genéricos por perfil — substituídos pela prescrição real quando disponível
-  const templates = {
-    hiper:[
-      {nome:'Supino Reto',s:4,r:10,kg:0,descanso:90,
-       insight:'Padrão de push horizontal. Foco na descida controlada — 3s excêntrico.',tipo:'mecanica'},
-      {nome:'Agachamento / Leg Press',s:4,r:10,kg:0,descanso:120,
-       insight:'Padrão de agachamento. O mais custoso da sessão — prioridade máxima.',tipo:'neural'},
-      {nome:'Puxada / Remada',s:4,r:10,kg:0,descanso:90,
-       insight:'Padrão de pull. Escápulas deprimidas antes de iniciar o movimento.',tipo:'mecanica'},
-      {nome:'Desenvolvimento',s:3,r:10,kg:0,descanso:90,
-       insight:'Push vertical. Estabilização do core durante todo o movimento.',tipo:'neural'},
-      {nome:'Isolamento · Bíceps',s:3,r:12,kg:0,descanso:60,
-       insight:'Finalizador. Cotovelo fixo, amplitude completa.',tipo:'isolado'},
-    ],
-    forca:[
-      {nome:'Agachamento Livre',s:5,r:5,kg:0,descanso:180,
-       insight:'Exercício principal. Atenção à posição da barra e profundidade.',tipo:'neural'},
-      {nome:'Supino Reto',s:5,r:5,kg:0,descanso:180,
-       insight:'Base de força de empurrada. Escápulas retraídas e deprimidas.',tipo:'neural'},
-      {nome:'Terra / RDL',s:4,r:5,kg:0,descanso:180,
-       insight:'Cadeia posterior. Quadril para trás — não dobrar os joelhos em excesso.',tipo:'neural'},
-    ],
-    recomp:[
-      {nome:'Agachamento Goblet',s:3,r:15,kg:0,descanso:60,
-       insight:'Padrão de agachamento com centro de massa baixo. Ótimo para técnica.',tipo:'mecanica'},
-      {nome:'Supino c/ Halteres',s:3,r:12,kg:0,descanso:60,
-       insight:'Push horizontal. Halteres permitem amplitude maior que a barra.',tipo:'mecanica'},
-      {nome:'Remada Unilateral',s:3,r:12,kg:0,descanso:60,
-       insight:'Pull horizontal unilateral. Deixe o peso descer com controle.',tipo:'mecanica'},
-      {nome:'Cadeira Extensora',s:3,r:15,kg:0,descanso:45,
-       insight:'Isolamento de quadríceps. Controle a descida.',tipo:'isolado'},
-    ],
-    funcional:[
-      {nome:'Agachamento livre',s:3,r:15,kg:0,descanso:60,insight:'Padrão fundamental.',tipo:'mecanica'},
-      {nome:'Flexão de Braços',s:3,r:12,kg:0,descanso:60,insight:'Push horizontal com peso do corpo.',tipo:'mecanica'},
-      {nome:'Afundo',s:3,r:10,kg:0,descanso:60,insight:'Padrão unilateral. Joelho traseiro desce sem tocar o chão.',tipo:'mecanica'},
-    ],
-    reab:[
-      {nome:'Cadeira Extensora',s:3,r:15,kg:0,descanso:90,insight:'Foco em qualidade, não em carga.',tipo:'isolado'},
-      {nome:'Leg Press',s:3,r:15,kg:0,descanso:90,insight:'Padrão guiado — custo neural baixo.',tipo:'mecanica'},
-      {nome:'Remada Sentado',s:3,r:15,kg:0,descanso:90,insight:'Evitar tensão no manguito.',tipo:'mecanica'},
-    ],
-  };
-  const exs = (templates[s?.profile]||templates.hiper).map((ex,i)=>({
-    ...ex,
-    id: i,
-    series: Array.from({length:ex.s},(_,j)=>({n:j+1,kg:ex.kg,reps:ex.r,pse:null,done:false}))
-  }));
-  return { exs };
-}
-
 // ═══════════════════════════════════════════════════
 // INSIGHT DETERMINÍSTICO (Layer A)
 // ═══════════════════════════════════════════════════
@@ -2103,74 +2117,75 @@ function buildInsight(tipoSerie, alvo) {
 }
 
 // ═══════════════════════════════════════════════════
-// CARREGA SESSÃO DE PRESCRICOES COM ROTAÇÃO
+// PRESCRIÇÃO — ORIGEM ÚNICA DO TREINO (D3.1)
 // ═══════════════════════════════════════════════════
-async function carregarSessaoDePrescricao(studentId) {
-  try {
-    const snap = await db.collection('prescricoes').doc(studentId).get();
-    if (!snap.exists) return null;
 
-    const data = snap.data();
-    const sessoes = data.sessoes;
-    if (!sessoes || typeof sessoes !== 'object') return null;
-
-    // Ordenar chaves pelo campo 'ordem' dentro de cada sessão
-    const chaves = Object.keys(sessoes).sort((a, b) => {
-      return (sessoes[a].ordem || 999) - (sessoes[b].ordem || 999);
-    });
-
-    if (!chaves.length) return null;
-
-    // Descobrir qual foi a última sessão executada
-    const ultimaSessaoNome = S.sessions[0]?.sessao_nome || null;
-
-    let proximaChave;
-    if (!ultimaSessaoNome) {
-      // Estado zero ou sessao_nome não salvo — começa pela ordem 1
-      proximaChave = chaves[0];
-    } else {
-      const idxUltima = chaves.indexOf(ultimaSessaoNome);
-      if (idxUltima === -1) {
-        // Última sessão não encontrada no mapa — fallback para ordem 1
-        proximaChave = chaves[0];
-      } else {
-        // Avança para a próxima com wrap
-        proximaChave = chaves[(idxUltima + 1) % chaves.length];
-      }
-    }
-
-    return { sessaoNome: proximaChave, sessao: sessoes[proximaChave] };
-  } catch (e) {
-    console.warn('[Momentum] Erro ao carregar prescrição:', e);
-    return null;
-  }
+// Sessões disponíveis, ordenadas por 'ordem'. Chave = slug (D3.6), label = exibição.
+function sessoesDaPrescricao() {
+  const sessoes = S.prescricao?.sessoes;
+  if (!sessoes || typeof sessoes !== 'object') return [];
+  return Object.keys(sessoes)
+    .map(slug => ({
+      slug,
+      label: sessoes[slug].label || slug,
+      sessao: sessoes[slug],
+      ordem: sessoes[slug].ordem ?? 999,
+    }))
+    .sort((a, b) => a.ordem - b.ordem);
 }
 
-function mapPrescricaoParaExs(sessao) {
-  const exercicios = sessao.exercicios || [];
-  return exercicios.map((ex, i) => {
+// Monta S.treino.exs a partir de uma sessão prescrita.
+// exercise_id é validado contra o catálogo — exercício sem id resolvível não entra no treino.
+function buildTreinoFromPrescricao(slug) {
+  const sessao = S.prescricao?.sessoes?.[slug];
+  if (!sessao) return null;
+
+  const exs = [];
+  const invalidos = [];
+
+  (sessao.exercicios || []).forEach(ex => {
+    const exId = ex.exercise_id;
+    const cat  = exId ? S.exercises[exId] : null;
+    if (!cat) {
+      invalidos.push(ex.nome || exId || '(sem nome)');
+      return;
+    }
+
+    const alvo     = ex.alvo ? { ...ex.alvo } : {};
     const numSeries = ex.series || 3;
-    const kgAlvo   = ex.alvo?.carga_kg  || 0;
-    const repsAlvo = ex.alvo?.reps      || 10;
-    const descanso = ex.alvo?.descanso_s || 90;
-    return {
-      id:       i,
-      nome:     ex.nome,
-      s:        numSeries,
-      r:        repsAlvo,
-      kg:       kgAlvo,
-      descanso: descanso,
-      tipo:     ex.tipo_serie || '',
-      insight:  buildInsight(ex.tipo_serie, ex.alvo),
-      series:   Array.from({ length: numSeries }, (_, j) => ({
+    const kgAlvo    = alvo.carga_kg   || 0;
+    const repsAlvo  = alvo.reps       || 10;
+    const descanso  = alvo.descanso_s || 90;
+
+    exs.push({
+      id:          exs.length,
+      exercise_id: exId,
+      nome:        cat.name || cat.nome || ex.nome || exId,
+      s:           numSeries,
+      r:           repsAlvo,
+      kg:          kgAlvo,
+      descanso:    descanso,
+      tipo:        ex.tipo_serie || '',
+      tipo_serie:  ex.tipo_serie || null,
+      progressao:  ex.progressao || null,
+      alvo:        alvo,
+      insight:     buildInsight(ex.tipo_serie, alvo),
+      series:      Array.from({ length: numSeries }, (_, j) => ({
         n:    j + 1,
         kg:   kgAlvo,
         reps: repsAlvo,
         pse:  null,
         done: false,
       })),
-    };
+    });
   });
+
+  return {
+    exs,
+    invalidos,
+    slug,
+    label: sessao.label || slug,
+  };
 }
 
 function renderTreino(){
@@ -2456,6 +2471,13 @@ function _mostrarToastPR(nomeEx){
   toast.classList.add('show');
   setTimeout(()=>{ toast.classList.remove('show'); }, 4000);
 }
+function showToast(msg){
+  const toast = document.getElementById('pr-toast-el');
+  if(!toast){ console.warn('[Momentum]', msg); return; }
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(()=>{ toast.classList.remove('show'); }, 4000);
+}
 function startRest(sec){
   const t=S.treino;
   t.phase='rest'; t.restTarget=sec; t.restSec=sec;
@@ -2490,23 +2512,54 @@ async function finishTreino(){
   const durMin=Math.round(S.treino.clockSec/60);
   const pses=S.treino.registros.map(r=>r.pse).filter(Boolean);
   const pseMedia=pses.length?pses.reduce((a,b)=>a+b,0)/pses.length:7;
+
+  // exercicios[] aninhado: exercise_id autoritativo, nome como snapshot de exibição (D3.2),
+  // alvo completo preservado (D3.5).
+  const exercicios = S.treino.exs
+    .filter(ex => ex.series.some(sr => sr.done))
+    .map(ex => ({
+      exercise_id: ex.exercise_id,
+      nome:        ex.nome,
+      tipo_serie:  ex.tipo_serie || null,
+      progressao:  ex.progressao || null,
+      alvo:        ex.alvo || {},
+      series: ex.series.filter(sr => sr.done).map(sr => ({
+        n:       sr.n,
+        kg:      sr.kg,
+        r:       sr.reps,
+        pse:     sr.pse,
+        kg_alvo: ex.kg,
+        r_alvo:  ex.r,
+      })),
+    }));
+
+  const semId = exercicios.filter(ex => !ex.exercise_id);
+  if(!exercicios.length || semId.length){
+    console.error('[Momentum] Sessão não gravada — exercise_id ausente em:', semId.map(e=>e.nome));
+    showToast('Erro ao salvar: exercício sem identificação. Avise seu PT.');
+    goPage('home');
+    return;
+  }
+
+  const sessaoId = S.treino.sessaoId || proximoSessaoId();
   try{
-    const sessaoRef = await db.collection('sessions').add({
+    await db.collection('sessions').doc(sessaoId).set({
       student_id: STUDENT_ID,
-      tipo:       S.treino.sessaoNome || 'treino',
+      tipo:        S.treino.sessaoNome || null,
       sessao_nome: S.treino.sessaoNome || null,
+      sessao_label: S.treino.sessaoLabel || null,
       data: new Date().toLocaleDateString('pt-BR'),
       timestamp: firebase.firestore.FieldValue.serverTimestamp(),
       pse: +pseMedia.toFixed(1),
       duracao_min: durMin,
       estado_prontidao_entrada: S.treino.prontidao || null,
       checkin_id: S.treino.checkinId || null,
-      exercicios: S.treino.registros,
+      exercicios,
     });
     // Vincula checkin à sessão
     if(S.treino.checkinId){
       db.collection('checkins').doc(S.treino.checkinId)
-        .update({ session_id: sessaoRef.id }).catch(()=>{});
+        .update({ session_id: sessaoId }).catch(()=>{});
     }
   } catch(e){ console.warn('Erro ao salvar sessão',e); }
   goPage('home');
@@ -3621,40 +3674,56 @@ function fecharCheckin() {
   document.getElementById('checkin-screen').classList.remove('open');
 }
 
-async function iniciarTreinoComCheckin(checkin) {
-  const p = checkin?.estado_prontidao ?? 5;
+// Entrada única do treino. Sem prescrição válida não há treino — não existe fallback (D3.1).
+function iniciarTreinoComCheckin(checkin) {
+  const slug = S.sessaoEscolhida;
+  const treino = slug ? buildTreinoFromPrescricao(slug) : null;
 
-  // Tenta carregar sessão real de prescricoes
-  const prescricao = await carregarSessaoDePrescricao(STUDENT_ID);
-
-  let exs;
-  let sessaoNome;
-
-  if (prescricao) {
-    exs        = mapPrescricaoParaExs(prescricao.sessao);
-    sessaoNome = prescricao.sessaoNome;
-  } else {
-    // Fallback: template genérico por perfil
-    const profile = buildTreinoFromProfile(S.student);
-    exs        = profile.exs;
-    sessaoNome = null;
+  if (!treino) {
+    showToast('Sessão não encontrada na prescrição.');
+    goPage('home');
+    return;
+  }
+  if (treino.invalidos.length) {
+    console.warn('[Momentum] exercise_id não resolvido:', treino.invalidos);
+  }
+  if (!treino.exs.length) {
+    showToast('Nenhum exercício válido nesta sessão. Fale com seu PT.');
+    goPage('home');
+    return;
   }
 
-  S.treino.exs        = exs;
-  S.treino.ativo      = 0;
-  S.treino.expanded   = {};
-  S.treino.phase      = 'idle';
-  S.treino.registros  = [];
-  S.treino.clockSec   = 0;
-  S.treino.sessaoId   = `treino_${Date.now()}`;
-  S.treino.sessaoNome = sessaoNome;
-  S.treino.prontidao  = p;
-  S.treino.checkinId  = checkin?.id || null;
+  S.treino.exs         = treino.exs;
+  S.treino.ativo       = 0;
+  S.treino.expanded    = {};
+  S.treino.phase       = 'idle';
+  S.treino.registros   = [];
+  S.treino.clockSec    = 0;
+  S.treino.sessaoId    = proximoSessaoId();
+  S.treino.sessaoNome  = treino.slug;
+  S.treino.sessaoLabel = treino.label;
+  S.treino.prontidao   = checkin?.estado_prontidao ?? 5;
+  S.treino.checkinId   = checkin?.id || null;
 
-  document.getElementById('treino-title').textContent = sessaoNome || 'Treino de hoje';
+  document.getElementById('treino-title').textContent = treino.label;
   goPage('treino');
   renderTreino();
   startClock();
+}
+
+// ID determinístico: ${STUDENT_ID}_${YYYY-MM-DD}_${n} (D3.7).
+// n = ordinal da sessão da aluna naquele dia, contado a partir do que já existe em S.sessions.
+function proximoSessaoId() {
+  const d = new Date();
+  const ymd = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const prefixo = `${STUDENT_ID}_${ymd}_`;
+  const usados = S.sessions
+    .map(ss => ss.id)
+    .filter(id => typeof id === 'string' && id.startsWith(prefixo))
+    .map(id => parseInt(id.slice(prefixo.length), 10))
+    .filter(n => Number.isInteger(n));
+  const n = usados.length ? Math.max(...usados) + 1 : 1;
+  return `${prefixo}${n}`;
 }
 
 // ═══════════════════════════════════════════════════
