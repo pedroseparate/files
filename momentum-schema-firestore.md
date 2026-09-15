@@ -141,15 +141,20 @@ cria documentos.
 
 ## `checkins`
 
-**Confirmado: feature em uso real**, não é dado de seed. 8 de 9 alunos ativos (excluindo
-Jacqueline, em estado zero) têm pelo menos 1 checkin. `arquitetura-estado.md` descreve essa
+**Confirmado: feature em uso real**, não é dado de seed. `arquitetura-estado.md` descreve essa
 feature como "proposta, não implementada" — **isso está desatualizado, precisa correção**.
+
+Auditado em set/2026 (50 docs): **a Jacqueline tem 12 check-ins**, apesar de ter 0 sessões. O
+"estado zero" dela vale para `sessions`, não para `checkins` — `arquitetura-estado.md` afirma
+que ela não tem check-ins, e isso está errado. Há 1 duplicata real (Jacqueline em 2026-03-25,
+com `estado_prontidao` 3 e 8 no mesmo dia), resolvida por construção nos docs novos pelo id
+determinístico de D2.3.
 
 | Campo | Nota |
 |---|---|
 | `student_id` | FK |
 | `session_id` | FK — vincula o check-in a uma sessão específica |
-| `data` / `timestamp` | Data/hora |
+| `data` / `timestamp` | Data/hora. **Divergente de `sessions`, que usa `date`.** Auditado em set/2026: dos 50 docs, 42 gravam `data` como `"DD/MM"` **sem ano** e 8 como pt-BR completo — nenhum em ISO. Check-ins novos nascem em ISO com doc id determinístico `{student_id}_{data_iso}` (D2.3); os antigos seguem no formato velho, pendentes de migração |
 | `estado_prontidao` | Resposta da pergunta obrigatória de prontidão — usado extensivamente em `momentum-aluno.html` |
 | `sono` | Qualidade de sono |
 | `alimentacao` | Alimentação adequada |

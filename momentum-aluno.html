@@ -405,9 +405,6 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;
   font-family:'Bebas Neue',sans-serif;font-size:40px;line-height:1;letter-spacing:.02em;color:var(--gold);}
 .checkin-result-label{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:18px;color:var(--gold2);text-align:center;}
 .checkin-result-desc{font-size:9px;color:var(--ink2);text-align:center;line-height:1.8;max-width:260px;}
-.checkin-ajuste{padding:12px 16px;background:rgba(138,96,48,.08);border:1px solid var(--b2);
-  border-radius:3px;font-size:9px;color:var(--ink2);text-align:center;line-height:1.7;margin-top:4px;}
-.checkin-ajuste strong{color:var(--gold);}
 
 /* footer */
 .checkin-footer{padding:20px 28px 32px;display:flex;flex-direction:column;gap:8px;}
@@ -792,6 +789,21 @@ db.collection('exercises').get()
   .catch(err => {
     console.error('[Momentum] Erro ao carregar exercises:', err);
     renderHome();
+  });
+
+// Check-ins — hidratados do banco para que o estado sobreviva a um reload (D2.3)
+db.collection('checkins')
+  .where('student_id', '==', STUDENT_ID)
+  .limit(100)
+  .onSnapshot(snap => {
+    const hoje = hojeISO();
+    const doHoje = snap.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      .filter(c => c.data === hoje)
+      .sort((a, b) => (a.timestamp?.seconds || 0) - (b.timestamp?.seconds || 0));
+    S.checkinHoje = doHoje.length ? doHoje[doHoje.length - 1] : null;
+  }, err => {
+    console.error('[Momentum] Erro ao carregar check-ins:', err);
   });
 
 // Prescrição — origem única do treino (D3.1)
@@ -1791,7 +1803,7 @@ function buildCheckinCorrelacao(s, sess) {
     insights.push(`Seu sono tem correlação forte com seu desempenho (r=${(perf.correlacao_sono_pse*100).toFixed(0)}%) — noites ruins afetam diretamente seu treino.`);
   }
   if (perf.variabilidade === 'alta') {
-    insights.push('Sua disposição varia bastante de dia para dia — os ajustes automáticos do check-in são especialmente úteis para você.');
+    insights.push('Sua disposição varia bastante de dia para dia — o check-in ajuda a enxergar o padrão por trás dessa variação.');
   }
   if (perf.variabilidade === 'baixa' && perf.disponibilidade_media >= 7) {
     insights.push('Sua consistência de disposição é um dos seus pontos mais fortes — você chega pronto na maioria dos treinos.');
@@ -2557,7 +2569,7 @@ async function finishTreino(){
       timestamp: firebase.firestore.FieldValue.serverTimestamp(),
       pse: +pseMedia.toFixed(1),
       duracao_min: durMin,
-      estado_prontidao_entrada: S.treino.prontidao || null,
+      estado_prontidao_entrada: S.treino.prontidao ?? null,
       checkin_id: S.treino.checkinId || null,
       exercicios,
     });
@@ -3633,10 +3645,11 @@ function checkinNext() {
 function checkinSkip() {
   const step = CI.step;
   if (step === 1) {
-    // Pula tudo — estado neutro
+    // Pula tudo — ausência de informação não é informação (D2.2).
+    // Nenhum doc em `checkins` e prontidão null, nunca um 5 que ninguém declarou.
     CI.disposicao = null; CI.cansaco_nivel = null;
     CI.sono = null; CI.alimentacao = null;
-    CI.estado_prontidao = 5;
+    CI.estado_prontidao = null;
     iniciarTreinoComCheckin(null);
     fecharCheckin();
     return;
@@ -3649,8 +3662,10 @@ function checkinSkip() {
 }
 
 async function saveCheckinAndStart() {
-  const p = CI.estado_prontidao || calcEstadoProntidao(CI);
-  const hoje = new Date().toLocaleDateString('pt-BR');
+  const p = CI.estado_prontidao ?? calcEstadoProntidao(CI);
+  const hoje = hojeISO();
+  // ID determinístico (D2.3) — duplicata no mesmo dia é impossível por construção
+  const checkinId = `${STUDENT_ID}_${hoje}`;
   const checkinData = {
     student_id: STUDENT_ID,
     data: hoje,
@@ -3663,13 +3678,12 @@ async function saveCheckinAndStart() {
     session_id: null,
   };
   try {
-    const ref = await db.collection('checkins').add(checkinData);
-    checkinData.id = ref.id;
-    S.checkinHoje = checkinData;
+    await db.collection('checkins').doc(checkinId).set(checkinData);
   } catch(e) {
     console.warn('Erro ao salvar check-in', e);
-    S.checkinHoje = checkinData;
   }
+  checkinData.id = checkinId;
+  S.checkinHoje = checkinData;
   fecharCheckin();
   iniciarTreinoComCheckin(checkinData);
 }
@@ -3707,7 +3721,7 @@ function iniciarTreinoComCheckin(checkin) {
   S.treino.sessaoId    = proximoSessaoId();
   S.treino.sessaoNome  = treino.slug;
   S.treino.sessaoLabel = treino.label;
-  S.treino.prontidao   = checkin?.estado_prontidao ?? 5;
+  S.treino.prontidao   = checkin?.estado_prontidao ?? null;
   S.treino.checkinId   = checkin?.id || null;
 
   document.getElementById('treino-title').textContent = treino.label;
