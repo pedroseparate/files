@@ -76,9 +76,11 @@ Inclui: popular checkins esparsos (1–2 por semana) com valores coerentes para 
 
 ### Decisões v1 client-side (set/2026)
 
-Reconstruída a partir de `momentum-decisoes-v1-bloco1.md`, `bloco2.md` e `bloco3.md` —
-os handoffs originais da revisão. **As 17 decisões são fechadas**; reproposta exige
-justificativa fisiológica ou de produto explícita.
+Reconstruída a partir dos handoffs originais da revisão, versionados como registro histórico
+em `docs/decisoes/momentum-decisoes-v1-bloco1.md`, `-bloco2.md` e `-bloco3.md`. Aqueles
+arquivos guardam o *porquê*; **este é o documento vivo** — status, supersessões e decisões
+novas entram aqui. **As 17 decisões são fechadas**; reproposta exige justificativa fisiológica
+ou de produto explícita.
 
 Coluna **Status**: `implementada` cita o commit; `pendente` não tem código. Onde a
 implementação divergiu do handoff, a divergência está registrada logo abaixo da tabela —
