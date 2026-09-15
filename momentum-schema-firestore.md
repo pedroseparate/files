@@ -19,7 +19,7 @@ precisa ser pedido ao Claude Code no momento — este doc é referência estrutu
 | `pt_id` | PT responsável |
 | `since` | Data de início com o PT |
 | `nivel` | Iniciante/Intermediário/Avançado — atribuído manualmente pelo PT, sem promoção automática |
-| `profile` | Lente do aluno: `hiper` / `recomp` / `forca` — usado por `buildTreinoFromProfile()` pra escolher template genérico quando não há prescrição real |
+| `profile` | **Sem consumidor no cliente** (D3.1, set/2026). Era lido por `buildTreinoFromProfile()` para escolher um template genérico; a função e os cinco templates foram removidos em `5a31bc9`, quando `prescricoes` passou a ser a origem única do treino. O campo continua nos documentos mas nada o lê — descontinuar. O schema documentava 3 valores (`hiper`/`recomp`/`forca`) enquanto o código tinha 5 |
 | `risk` | Não documentado, não referenciado em nenhum arquivo verificado |
 | `status` | Não documentado, não referenciado em nenhum arquivo verificado |
 | `goal` | Label curto de objetivo — usado como label primário (ex: no prompt de narrativa da IA: `Objetivo: ${s.goal}`) |

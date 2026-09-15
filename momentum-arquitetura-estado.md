@@ -74,6 +74,225 @@ Inclui: popular checkins esparsos (1–2 por semana) com valores coerentes para 
 
 ---
 
+### Decisões v1 client-side (set/2026)
+
+Reconstruída a partir de `momentum-decisoes-v1-bloco1.md`, `bloco2.md` e `bloco3.md` —
+os handoffs originais da revisão. **As 17 decisões são fechadas**; reproposta exige
+justificativa fisiológica ou de produto explícita.
+
+Coluna **Status**: `implementada` cita o commit; `pendente` não tem código. Onde a
+implementação divergiu do handoff, a divergência está registrada logo abaixo da tabela —
+o handoff é a fonte da razão, não do estado atual.
+
+#### Bloco 1 · Entrada no app, identidade, âncora temporal
+
+| # | Decisão | Razão | Status |
+|---|---|---|---|
+| **D1.1** | Sem autenticação na v1 — `STUDENT_ID` vem de query param. Comportamento declarado, não acidental. | A v1 roda com uma aluna, em fase de teste. Consequências aceitas: quem tiver a URL e um `id` válido lê o dashboard de qualquer aluno; se as Security Rules estiverem abertas, o banco é legível por quem tiver a config do Firebase — que está no cliente por definição. | decidida — nenhuma ação (decisão de não fazer) |
+| **D1.2** | **`date` é o campo canônico da data da sessão, formato ISO `YYYY-MM-DD`.** Formatação pt-BR é responsabilidade exclusiva da camada de exibição. | Comparação de data é lexicográfica em todo o app. Misturar pt-BR com ISO faz `"01/09/2026" >= "2026-09-01"` retornar `false`, filtrando a sessão para fora da aderência. Ver correção de escopo abaixo. | **implementada** (`f8d4de7`) |
+| **D1.3** | `S.sessions` passa a ser ordenado **crescente** (mais antigo primeiro), para que `slice(-n)` signifique literalmente "últimas n". | O hero usava `slice(-4)` sobre array decrescente: o percentil "recente" lia as 4 **mais antigas** e o sinal da tendência vinha **invertido** — aluna progredindo aparecia como queda. Três convenções coexistiam no mesmo arquivo. | **implementada** (`f8d4de7`) |
+| **D1.4** | Cálculo dimensional (`ic_neural`/`ic_mecanica`/`ic_metabolica`) em Cloud Function `onCreate` de `sessions`. | Mantém os coeficientes CT/IM/DN/SV/FC — propriedade do Momentum — fora do cliente, e a home atualiza sozinha via o `onSnapshot` já existente. Hoje `finishTreino()` não grava os `ic_*`, então a sessão recém-executada é invisível para percentis e tendências: a aluna treina e a home não muda. | **pendente** — ver notas abaixo |
+| **D1.5** | Zero-state dedicado: a camada de intenção do hero renderiza normal; a camada de sinal é **substituída**, não atenuada. Hero didático sobre a periodização prescrita. | Com <4 sessões, `dimEstado(0.5, 0)` devolve `'estavel'` nas três dimensões e o hero exibe um número no meio da escala **sem dado de origem** — violação direta do pilar de auditabilidade. O zero-state antecipa o desenho do ciclo em vez de relatar passado inexistente. Threshold: a camada de sinal não aparece até **4 sessões com dado dimensional válido**. | pendente |
+| **D1.6** | Fim de mesociclo: estado mínimo na home (*"mesociclo encerrado — aguardando novo ciclo"*). RN18 (tela de transição com resumo) vai para v1.1. | Hoje `semanaAtual` é clampado e a home congela em "semana N de N" indefinidamente. A aluna continua podendo treinar; as sessões param de contar para a aderência do ciclo encerrado. RN18 depende de evolução de CargaObjetiva, que depende de D1.4 rodando e estabilizado. | pendente |
+| **D1.7** | Campo `frequencia_semanal` (número) em `prescricoes`, escrito pelo PT. Aderência vira `sessões da semana ÷ frequencia_semanal`, independente de qual dia. | Desacopla do calendário — a aluna não é penalizada por treinar terça em vez de segunda. Elimina o parse frágil de texto livre de `anamnese.disponibilidade` e seu default silencioso `[1,3,5]`. Move o denominador de um campo de **preferência declarada pela aluna** para um de **prescrição do PT** — auditável, com autor. | pendente |
+
+**D1.7 — fora de escopo decidido.** `dias_treino[]` (array explícito de dias) **não** entra
+agora. É pré-requisito de **RN14 (lembrete de treino)**, que depende de o sistema saber que
+hoje é dia dela. Se RN14 entrar no lançamento, esta decisão reabre e `frequencia_semanal`
+vira derivado (`dias_treino.length`).
+
+**Princípio derivado (aplica-se além de D1.2).**
+> Toda duplicidade de campo legado/atual descoberta é **migrada no momento da descoberta**,
+> não acumulada. Vale para os pares já documentados: `indice_carga`/`ic_executado`,
+> `updated_at`/`atualizado_em`, `date`/`data`.
+
+**Nota de método (D1.3).** Este erro não seria detectado por simulação de cenário — projetar
+o hero "com a lógica real" reproduz a inversão junto. Auditoria de código e simulação macro
+são complementares, não substitutas.
+
+##### Correção de escopo em D1.2 — a premissa do handoff foi desmentida pelo banco
+
+O handoff descrevia D1.2 como *"`data` é o campo canônico, migrar sessões legadas de pt-BR
+para ISO"*. O diagnóstico de banco (set/2026) mostrou o contrário:
+
+- As **355 sessões usam o campo `date`, todas já em ISO**.
+- O campo **`data` não existe em nenhum documento** de `sessions` — foi introduzido pelo C1.
+- A migração de sessões legadas converteria **zero documentos** e foi **cancelada por
+  desnecessária**.
+
+A decisão de formato permanece válida: era um bug **prospectivo**, que quebraria na primeira
+sessão gravada pelo app, não nas existentes. O canônico é **`date`**, não `data`.
+
+Dois efeitos colaterais achados na implementação, não previstos no handoff:
+
+- `buildICChart()` rotulava as barras com `.slice(0,5)` da data — formato pt-BR. Com ISO
+  viraria `"2026-"`. Passou a usar formatador pt-BR explícito.
+- `toISOString()` converte para UTC: em UTC-3, treino após as 21h ia para o dia seguinte no
+  campo `date`, divergindo do doc id (que usa componentes locais). Padronizado em
+  `toISODate()` com componentes locais.
+
+##### D1.4 — contexto revisado (set/2026), posterior ao handoff
+
+1. **A infraestrutura de backend já existe.** `firebase.json` com runtime nodejs22,
+   `functions/functions_index.js`, `firebase-functions ^4.9`, `DEPLOY-TUTORIAL.md`. **O
+   handoff afirma que esta seria a "primeira dependência de backend do projeto" — está
+   incorreto.** É uma função nova num projeto que já deploya.
+2. **A resolução de exercício é por `exercise_id`, não por `nome`.** O handoff do Bloco 1
+   manda resolver via `nome` normalizado porque "`exercise_id` legado é não-confiável" —
+   **regra superseded por D3.2**, decidida depois. A função resolve por `exercise_id`.
+3. **Partida em duas fases.**
+   - *Fase 1 (pré-lançamento):* resolve `exercise_id` contra `exercises`, aplica o modelo e
+     grava `ic_neural`/`ic_mecanica`/`ic_metabolica` na sessão. Autocontida, não precisa de
+     histórico.
+   - *Fase 2 (posterior):* recalcula `scores.*` e `ritmo_estado` no doc do aluno (RN20/RN21b,
+     adapter por `modelo_periodizacao`). Só passa a importar na **4ª sessão**, quando a
+     camada de sinal do hero destrava (D1.5).
+4. **Não gravar intermediários** (`CargaNorm`, amplificador, FD, FTT) nem os coeficientes do
+   exercício. As sessões guardam os inputs de execução e `exercise_id`, então recalibração é
+   reprocessamento via script (padrão de `fix_ic.js`), não releitura de campo.
+   **Condição declarada:** `exercises` só muda por correção, **nunca por substituição de
+   slug** — se slugs forem reorganizados no futuro, o recálculo perde a âncora.
+5. **Riscos a tratar na implementação** (do handoff, ainda válidos): janela de inconsistência
+   entre a escrita da sessão e a da função — a home deve tolerar sessão sem `ic_*` por alguns
+   segundos sem renderizar estado falso; exercício que não resolve precisa de comportamento
+   explícito (log + sessão marcada, **nunca IC parcial silencioso**).
+
+**Ordem declarada:** D1.2 antes de D1.4 — a função precisa nascer lendo e escrevendo ISO, ou
+cria uma terceira geração de dado. Leitura de `prescricoes` antes de D1.5 e D1.7.
+
+#### Bloco 2 · Check-in e prontidão
+
+A modulação de prontidão **já estava implementada e rodando**. A decisão central do bloco é
+**desligá-la**, mantendo toda a captura. Adiar sem desligar não seria adiamento — seria
+lançar o comportamento atual.
+
+| # | Decisão | Razão | Status |
+|---|---|---|---|
+| **D2.1** | Modulação de prontidão **desligada** na v1. Captura mantida integralmente. | **Calibração, não UX.** Os multiplicadores (0.90/0.75/0.60) são defaults não calibrados, mesma classe dos `wN/wM/wMet`. Aplicar um modulador não calibrado durante a calibração do modelo torna impossível separar variação vinda do **estado real da aluna** de variação **injetada pelo sistema** ao encolher a prescrição. Desligada, o primeiro mesociclo produz o corpus limpo — prontidão declarada × execução real, sem intervenção — e o `fatorProntidao` da v2 nasce de dado. | **implementada** (`b1eb8fd` + `a366840`) |
+| **D2.2** | Pular o check-in grava `estado_prontidao: null`, não `5`. | Prontidão 5 acionava a faixa "Sessão adaptada" (volume 0.75): **"não quero responder" era lido como "dia moderado"** e ela recebia um treino 25% menor sem ter declarado nada. Com D2.1 isso não altera mais o treino, mas altera o corpus — um `5` que ninguém declarou polui exatamente o dataset que vai calibrar a modulação da v2. `null` é honesto e filtrável. | **implementada** (`a366840`) |
+| **D2.3** | Listener `onSnapshot` em `checkins` + **ID determinístico** `checkins/{student_id}_{data_iso}` com `.set()`, nunca `.add()`. | Não existia query nem listener em `checkins`: `S.checkinHoje` só vivia na sessão de navegador. Recarregar a página zerava o estado, o atalho `jaFez` voltava a `false` e um **segundo documento** era criado para o mesmo dia. ID determinístico torna a duplicata impossível **por construção, não por checagem**. | **implementada** (`a366840`) — migração dos docs antigos pendente |
+
+**O que SAIU da v1 com D2.1:** aplicação de `f.volume` sobre as reps; bloco *"Treino
+ajustado: X% do volume · Y% da carga"* da tela de resultado; a parte do banner de execução que
+afirmava ajuste; **qualquer copy que afirme ajuste** — não haverá ajuste, o texto não pode
+dizer que há; `ex.s_original` / `ex.r_original` / `ex.ajustado`, que perdem função.
+
+**O que PERMANECE:** captura dos quatro campos (disposição, cansaço, sono, alimentação);
+`calcEstadoProntidao()` e a exibição do número para a aluna — ela vê seu próprio estado;
+gravação em `checkins`; `estado_prontidao_entrada` e `checkin_id` na sessão;
+`buildCheckinCorrelacao()` na Evolução, que passa a ter dado não-contaminado.
+
+**Precondição para D2.1 voltar (v2) — as três, não duas:**
+1. Corpus de **≥1 mesociclo completo** com prontidão declarada e execução não-modulada.
+2. Multiplicadores **derivados desse corpus**, não default.
+3. **V2-C resolvida** — o fator aplicado precisa ser gravado na sessão.
+
+**Correção acoplada (D2.2) — dois caminhos de entrada.** `startTreino()` e
+`iniciarTreinoComCheckin()` eram ambos alcançáveis e produziam sessões diferentes a partir do
+mesmo estado. Dois entry points divergentes são a origem de sessões inexplicáveis no
+histórico. **Consolidados em um único caminho no C1** (`5a31bc9`).
+
+##### Movido para v2 — contexto preservado
+
+Levantadas, discutidas e **deliberadamente adiadas**. Registradas para não serem
+redescobertas do zero.
+
+**V2-A · O que a prontidão modula: reps, séries ou carga?**
+Volume estava sendo cortado em **reps**, não em séries — escolha implícita, nunca decidida.
+Reduzir reps mantendo carga preserva intensidade e corta volume; cortar séries corta volume
+preservando a qualidade das primeiras execuções. Efeitos distintos sobre densidade e sobre o
+componente Metabólico (`FD = 90/descanso`; número de séries entra em `CargaNorm` direto).
+Alternativas registradas:
+- Só volume, e volume = séries — preserva a zona de estímulo prescrita: *4 reps a 85% ainda é
+  força; 4 reps a 76% não é nada*.
+- Volume em reps + carga como sugestão visível e editável no widget.
+- **Modulação dependente de `tipo_serie`** — em `forca_pura`/`forca_max` a carga é intocável e
+  o corte é em séries; em `hipertrofia`/`volume`, corte em reps; em `tecnica`, nenhum ajuste
+  (o objetivo já é qualidade sobre carga).
+
+A terceira é a **fisiologicamente correta** e depende de `tipo_serie` estar disponível no
+cliente — ou seja, de `prescricoes` ser lido (Bloco 3, já feito).
+
+**V2-B · Estado de "repouso recomendado"**
+Prontidão <2 retornava `volume: 0.00`, que passava por `Math.max(1, Math.round(ex.r * 0))` e
+virava **1 repetição por série** — um treino completo de singles. O texto dizia "considere
+descansar", o botão dizia "Iniciar treino →" e a tela de execução abria normalmente. Com D2.1
+a faixa deixa de ter efeito mecânico. Fica em aberto: se o Momentum quer ter uma opinião sobre
+**não treinar**, o estado precisa ser terminal (recomendação + saída explícita "treinar mesmo
+assim", registrada) ou virar sessão de recuperação real. E, se existir, **um dia de descanso
+recomendado pelo sistema não pode contar como falta na aderência** — conecta com D1.7 e RN02.
+
+**V2-C · O ajuste precisa ser gravado (pré-requisito da reativação)**
+`finishTreino()` grava `estado_prontidao_entrada` e `checkin_id`, mas **não o fator aplicado**
+nem os valores originais. Enquanto nada compara executado contra prescrito, isso não dói.
+Assim que `prescricoes` for lido, tudo que depende da comparação lê errado: aderência, RN26
+`colapso_de_reps` (`r < r_alvo × 0.75`), RN26 `progressão_ok` (`r ≥ r_alvo`), RN13. Um
+mesociclo de dias de prontidão média produziria uma aluna que *"nunca bate o alvo"*.
+Estrutura registrada como preferida: `prescricoes` mantém o alvo prescrito intocado; a sessão
+grava `alvo_dia` (ajustado) por série **e** `ajuste_prontidao: {volume, carga, aplicado_em}`.
+Assim a cadeia fica auditável ponta a ponta — **prescrição → modulação → execução** — e a
+pergunta *"por que ela fez 9 e não 10?"* é lida do banco, não reconstruída. É a mesma
+estrutura que habilita a leitura mais interessante do check-in: correlação entre prontidão
+declarada e desvio de execução. Se ela declara prontidão baixa e entrega volume cheio, o mal
+calibrado é o `fatorProntidao`, não ela.
+
+#### Bloco 3 · Origem do treino e identidade de exercício
+
+Antes desta revisão, `momentum-aluno.html` tinha **zero** ocorrências de `prescricoes`,
+`collection('exercises')`, `EX_NAME_MAP` e `tipo_serie`. Este bloco não melhorou a origem do
+treino — **construiu o caminho de leitura que nunca existiu**. Consequência de prazo: a
+leitura de `prescricoes` deixou de ser evolução e virou **pré-requisito de lançamento**.
+
+| # | Decisão | Razão | Status |
+|---|---|---|---|
+| **D3.1** | `prescricoes` é a **origem única** do treino. `buildTreinoFromProfile()` e os cinco templates são removidos; `s.profile` perde o consumidor e é descontinuado. | Os templates eram **resíduo de mock** — treino de amostra criado de um PDF para testar a tela de execução, nunca decisão de produto. Mas escreviam no Firestore: *andaime que escreve no banco não é andaime*. A intenção de treino vive em `prescricoes`, `dim_dominante` e `modelo_periodizacao`. | **implementada** (`5a31bc9`) |
+| **D3.2** | **`exercise_id` é o campo autoritativo** — supersede a regra de ouro anterior. `nome` continua gravado na sessão como **snapshot de exibição**, nunca como chave. | Validação por nome exige normalização e ainda é aproximada: `'Rosca Direta'` e `'Rosca direta '` colidem, mas `'Supino Reto'` e `'Supino reto c/ barra'` não — é comparação difusa fazendo papel de chave estrangeira. ID é binário: existe ou não. `nome` permanece para que a sessão antiga diga o que foi feito sem depender do join — auditabilidade não deve exigir que a coleção de referência esteja intacta. | **implementada** (`5a31bc9` + `2603d0b`) |
+| **D3.3** | Granularidade de `exercises` = granularidade do modelo. **Um doc por variação.** Agrupamento vem do campo `pattern`, nunca do slug. | Supino com barra, halteres e máquina têm **CT, IM, DN, SV e FC diferentes**: máquina tem CT baixo (trajetória guiada) e estabilização quase nula; halteres têm CT e DN mais altos pela demanda de controle unilateral; barra fica no meio, com maior carga absoluta. Compartilhar um doc faz o modelo perder exatamente a distinção que existe para medir. **Slug identifica; `pattern` agrupa.** | **implementada** — `desenv_halt` cadastrado no backfill |
+| **D3.4** | **A aluna escolhe a sessão do dia**, numa lista das chaves de `prescricoes.sessoes`. | Nada no sistema dizia qual era a sessão de hoje — `students.divisao` é string solta de label, desconectada da estrutura. Zero campo novo, zero inferência, zero risco de servir a sessão errada. | **implementada** (`5a31bc9`) |
+| **D3.5** | O **`alvo` completo** viaja da prescrição para `sessions.exercicios[].alvo`, **mesmo o que a tela não exibe** — incluindo `tipo_serie` e `progressao`. | Os campos sem consumidor eram exatamente os que definem as dimensões que o Momentum mede: `tut_s`/`tempo_s` alimentam FTT na Metabólica; `descanso_s` alimenta FD (`90/descanso`); `pse` é o alvo contra o qual RN26 avalia `progressão_ok`; `tipo_serie` é o enum de intenção que a modulação da v2 vai precisar (V2-A). Custo quase zero — o dado já existe do outro lado. Não gravar é jogar fora informação já escrita. | **implementada** (`5a31bc9`) |
+| **D3.6** | Chaves de `sessoes` separam **slug de label**: chave `"lower-a"`, campo `"label": "Lower A · PR Agachamento"`. `sessions.tipo` grava o **slug**. | Identidade estável não deve ser texto de exibição — mesma razão de D3.2. Antes, renomear quebrava a referência e casar `sessions.tipo` com a chave virava matching de string com sufixo. Feito junto com o backfill porque o documento já seria reescrito: **custo quase zero agora, alto depois**, quando houver sessões referenciando as chaves antigas. | **implementada** — backfill da prescrição da Jacqueline |
+| **D3.7** | ID determinístico em `sessions`: `.set()` com `{student_id}_{data_iso}_{n}`, onde `n` desambigua duas sessões legítimas no mesmo dia. | `.add()` cria sessão duplicada silenciosamente em toque duplo ou reload no meio da escrita. **Duplicata em sessão é pior que em check-in** — polui aderência e o corpus dimensional. Impossibilidade por construção, não por checagem. | **implementada** (`5a31bc9`) |
+
+**D3.5 — `pse_alvo` NÃO é exibido para a aluna na v1.** Efeito de **ancoragem**: se ela vê
+"alvo PSE 8" antes de reportar, o PSE relatado deixa de ser independente — e `PSE_relatada` é
+metade do blend de `PSE_ritmo`. Contaminaria o corpus na semana em que ele mais importa.
+Reavaliar quando a calibração estiver estável.
+
+**D3.1 — nota sobre o dano dos templates.** Três dos cinco nomes não eram exercícios, eram
+categorias: `'Agachamento / Leg Press'` (dois movimentos com IM e DN distintos),
+`'Puxada / Remada'`, `'Isolamento · Bíceps'` (não nomeia movimento). Nenhum resolve contra
+`exercises`. Sessão gravada com esses nomes perdeu a informação de qual movimento foi feito —
+**irrecuperável por reprocessamento**, diferente das lacunas dos Blocos 1 e 2.
+
+**D3.2 — risco verificado e descartado.** Doc ids auto-gerados não sobreviveriam a re-seed com
+`.add()`. **Não se aplica:** `import.js` usa `.doc(ex.id).set(ex)` com slug semântica. IDs já
+determinísticos, sem migração necessária.
+
+**D3.4 — alternativas descartadas para a v1:**
+- *Rotação por histórico* — frágil (chaves com sufixo `· Deload` quebram o casamento) e sem
+  âncora no estado zero.
+- *`ordem` explícita com regra de avanço* — determinístico, mas exige regra que não lida bem
+  com dia pulado. **Nota de set/2026:** o campo `ordem` existe em `prescricoes` e é usado
+  **apenas para ordenar a lista de exibição**. Não há sugestão de próxima sessão, marcação de
+  sessão sugerida nem avanço automático — isso é v1.1.
+
+**Direção v2 (D3.4):** o app propõe segundo a periodização e ela pode divergir; a divergência
+fica registrada como sinal. **Sessão livre** (montar treino escolhendo de `exercises`, RN06)
+fica para v1.1.
+
+##### Varredura · padrão de ID determinístico no sistema
+
+| Coleção | Padrão | Status |
+|---|---|---|
+| `exercises` | `.doc(slug).set()` — slug semântica | ✅ já correto |
+| `students` | `enrique`, `jacqueline` | ✅ já correto |
+| `checkins` | `{student_id}_{data_iso}` | ✅ implementado (D2.3, `a366840`) |
+| `sessions` | `{student_id}_{data_iso}_{n}` | ✅ implementado (D3.7, `5a31bc9`) |
+| `prescricoes.sessoes{}` | slug como chave + campo `label` | ✅ implementado (D3.6, backfill) |
+| `prescricoes` (doc) | `{student_id}` ou `{student_id}_{mesociclo}` | ⚠ **não verificado** |
+
+---
+
 ## Pendências Críticas (bloqueadoras)
 
 ### ⚠ Score Técnica — validade do proxy
@@ -103,6 +322,26 @@ Com FC fora de CargaNorm, exercícios isolados (Extensora, Flexora, Rosca, Aduto
 | 1RM — normalização | Preparar no banco desde o início para comparabilidade inter-alunos. |
 | Wearables (FC cardíaca) | Reservado para versão premium. Estrutura do modelo já comporta. |
 | Instagram session card | Card de resumo de sessão estilo Strava, glassmorphism, "hemômetro", frase gerada por IA. Feature planejada. |
+
+### Migração de `checkins` (pendente, não bloqueante)
+
+Levantado no diagnóstico de banco de set/2026 (50 documentos na coleção):
+
+- **42 documentos com data sem ano** (formato `"10/03"`). O ano precisa ser recuperado do
+  `timestamp`. **Não é mecânico:** em pelo menos um caso `data` e `timestamp` divergem
+  (`"24/03/2026"` com timestamp em 25/03), então a recuperação exige decisão sobre qual campo
+  vence. Quantificar os casos de divergência antes de migrar.
+- **1 duplicata real:** `jacqueline` em 2026-03-25, com prontidão 3 e 8 em documentos
+  separados. As outras 8 "duplicatas" detectadas eram artefato do agrupamento dos docs sem
+  ano, não duplicatas de verdade.
+- **Não bloqueia o lançamento.** Check-ins novos já nascem em ISO com id determinístico
+  (D2.3), e o listener só precisa funcionar dos novos em diante. Migração ambígua feita às
+  pressas cria dado errado com aparência de dado correto.
+
+### Doc id de `prescricoes` — não verificado
+
+A varredura de IDs determinísticos (Bloco 3) deixou o doc de `prescricoes` como único item
+não verificado. Os demais já são determinísticos.
 
 ---
 
@@ -152,10 +391,14 @@ Com FC fora de CargaNorm, exercícios isolados (Extensora, Flexora, Rosca, Aduto
 
 ## Nota sobre Check-in Pré-treino (implementado e em uso)
 
-A coleção `checkins` existe no Firestore e está em uso real — confirmado em 8 de 9 alunos
-ativos com pelo menos 1 documento (Jacqueline está em estado zero, sem checkins, por reset
-recente). Captura contexto *prospectivo* antes do treino, complementando o ΔPSE e os chips
-automáticos, que são *retrospectivos*.
+A coleção `checkins` existe no Firestore e está em uso real — 50 documentos, todos os alunos
+ativos com pelo menos 1. Captura contexto *prospectivo* antes do treino, complementando o
+ΔPSE e os chips automáticos, que são *retrospectivos*.
+
+**Correção (set/2026):** este documento afirmava que a Jacqueline estava *"em estado zero,
+sem checkins, por reset recente"*. **Ela tem 12 check-ins**, confirmados no banco — dado de
+teste, anterior ao lançamento. O estado zero dela vale para `sessions` (0 documentos), não
+para `checkins`. Ver *Migração de `checkins`* nas Pendências Não-Críticas.
 
 **Campos confirmados:**
 - `estado_prontidao` — resposta da pergunta obrigatória de prontidão (🔥 Pronto / 😐 Ok / 🥱 Cansado / 🤕 Pesado)
