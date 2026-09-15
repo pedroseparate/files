@@ -3684,11 +3684,12 @@ function iniciarTreinoComCheckin(checkin) {
     goPage('home');
     return;
   }
-  if (treino.invalidos.length) {
-    console.warn('[Momentum] exercise_id não resolvido:', treino.invalidos);
-  }
-  if (!treino.exs.length) {
-    showToast('Nenhum exercício válido nesta sessão. Fale com seu PT.');
+  // Bloqueio duro: um exercise_id que não resolve recusa a sessão inteira.
+  // Sessão encurtada em silêncio contamina o corpus de calibração sem deixar rastro.
+  if (treino.invalidos.length || !treino.exs.length) {
+    const lista = treino.invalidos.join(', ') || '(sessão sem exercícios)';
+    console.error('[Momentum] Sessão recusada — exercise_id não resolvido:', treino.invalidos);
+    showToast(`Sessão indisponível — sem cadastro: ${lista}. Fale com seu PT.`);
     goPage('home');
     return;
   }
