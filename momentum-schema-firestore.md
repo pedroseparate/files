@@ -57,7 +57,7 @@ precisa ser pedido ao Claude Code no momento — este doc é referência estrutu
 |---|---|
 | `id` | Duplicata do doc id |
 | `student_id` | FK pra `students` |
-| `date` | Formato historicamente inconsistente entre documentos (`"2026-01-08"` vs `"22/03/2026"`) |
+| `date` | **Campo canônico da data da sessão, formato ISO `YYYY-MM-DD`** (D1.2, set/2026). Auditado em set/2026: os 355 documentos estão em ISO — a inconsistência pt-BR registrada antes não existe mais no corpus. Não há campo `data` em `sessions`; `finishTreino()` grava `date`. Gravado com componentes de data locais, não `toISOString()` (em UTC-3 um treino após 21h cairia no dia seguinte) |
 | `mesociclo` | Label denormalizado |
 | `semana` | Número da semana no mesociclo |
 | `tipo` | Label da divisão **executada** (retrospectivo — ex: "Full A") |

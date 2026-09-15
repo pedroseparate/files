@@ -811,13 +811,12 @@ db.collection('sessions')
     S.sessions = snap.docs
       .map(d => ({ id: d.id, ...d.data() }))
       .filter(x => !x.simulado)
+      // Crescente — mais antiga primeiro (D1.3), para que slice(-n) signifique "últimas n"
       .sort((a, b) => {
         const ta = a.timestamp?.seconds || 0;
         const tb = b.timestamp?.seconds || 0;
-        if (ta !== tb) return tb - ta;
-        const da = a.date || a.data || '';
-        const db_ = b.date || b.data || '';
-        return db_.localeCompare(da);
+        if (ta !== tb) return ta - tb;
+        return (a.date || "").localeCompare(b.date || "");
       });
     renderHome();
     renderEvolucao();
@@ -832,6 +831,20 @@ const MONTHS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov
 function fmtDate(){
   const n = new Date();
   return `${DAYS[n.getDay()]}, ${n.getDate()} de ${MONTHS[n.getMonth()]}`;
+}
+
+// ISO YYYY-MM-DD é o formato canônico do campo `date` de `sessions` (D1.2).
+// Componentes locais, não toISOString() — em UTC-3 um treino após 21h cairia no dia seguinte.
+function toISODate(d){
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function hojeISO(){ return toISODate(new Date()); }
+
+// Exibição pt-BR curta a partir de ISO — para rótulos sem espaço para o formato longo
+function fmtDataCurta(iso){
+  if(!iso) return '—';
+  const [a,m,dd] = String(iso).slice(0,10).split('-');
+  return (a && m && dd) ? `${dd}/${m}` : String(iso).slice(0,5);
 }
 
 // Formata data de sessão como "Seg · S3" ou "12 abr" como fallback
@@ -981,7 +994,7 @@ function buildHeroCard(s) {
       : `→ top ${heroPct}% do seu histórico`;
 
   // ── Gráfico de trajetória — 3 linhas dimensionais ────────────────────
-  const trajPts = sess.slice(0, 12).reverse();
+  const trajPts = sess.slice(-12);
   let trajSVG = '';
   if(trajPts.length >= 3) {
     const W=320, H=72, PL=2, PR=2, PT=4, PB=4;
@@ -1049,13 +1062,12 @@ function buildHeroCard(s) {
     ? disponStr.split(/[/·,\s]+/).map(d => DIAS_MAP[d]).filter(x => x !== undefined)
     : [1,3,5];
 
-  // sess está ordenado decrescente — oldest é o último elemento
-  // Prioriza mesociclo_inicio do banco; senão infere pela sessão mais antiga (desc → último)
-  const sessOldest = sess.length > 0 ? sess[sess.length - 1] : null;
+  // Prioriza mesociclo_inicio do banco; senão infere pela sessão mais antiga (cresc → primeiro)
+  const sessOldest = sess.length > 0 ? sess[0] : null;
   const firstSessDate = s.mesociclo_inicio
     ? new Date(s.mesociclo_inicio)
     : sessOldest
-      ? new Date(sessOldest.date || sessOldest.data || Date.now())
+      ? new Date(sessOldest.date || Date.now())
       : new Date();
 
   // Dias decorridos desde a primeira sessão até hoje (cap no total do mesociclo)
@@ -1074,16 +1086,16 @@ function buildHeroCard(s) {
   }
 
   // Sessões realizadas: conta sessões com data dentro do intervalo do mesociclo
-  const todayStr = todayDate.toISOString().slice(0,10);
-  const firstStr = firstSessDate.toISOString().slice(0,10);
+  const todayStr = toISODate(todayDate);
+  const firstStr = toISODate(firstSessDate);
   // Sessões realizadas: só conta dentro da janela do mesociclo (firstStr → mesoEnd)
   const mesoEndDate = new Date(firstSessDate);
   mesoEndDate.setDate(firstSessDate.getDate() + totalDias - 1);
-  const mesoEndStr = mesoEndDate.toISOString().slice(0,10);
+  const mesoEndStr = toISODate(mesoEndDate);
   const windowEnd = todayStr < mesoEndStr ? todayStr : mesoEndStr;
 
   const sessDateSet = new Set(
-    sess.map(x => (x.date || x.data || '').slice(0,10))
+    sess.map(x => (x.date || "").slice(0,10))
         .filter(d => d >= firstStr && d <= windowEnd)
   );
   const realizados = sessDateSet.size;
@@ -1140,7 +1152,7 @@ function buildHeroCard(s) {
     const dotsArr = Array.from({length: 7}, (_,d) => {
       const dayDate = new Date(firstSessDate);
       dayDate.setDate(firstSessDate.getDate() + w * 7 + d);
-      const dayStr = dayDate.toISOString().slice(0,10);
+      const dayStr = toISODate(dayDate);
       const isFuture = dayStr > windowEnd;
       const treinou  = sessDateSet.has(dayStr);
       // Dias passados sem sessão que eram dia de treino (por FREQ)
@@ -1310,7 +1322,7 @@ function buildSessoesList(){
   if(!sessoes.length){
     return `<div class="empty-state">Prescrição sem sessões cadastradas.<br>Fale com seu PT.</div>`;
   }
-  const ultimo = S.sessions[0]?.sessao_nome || null;
+  const ultimo = S.sessions[S.sessions.length-1]?.sessao_nome || null;
   return `<div class="sess-list">${sessoes.map(x=>{
     const nEx = (x.sessao.exercicios||[]).length;
     const dim = x.sessao.dim_dominante ? ` · ${x.sessao.dim_dominante}` : '';
@@ -1542,7 +1554,7 @@ function buildMesoDots(s) {
 
 function buildScoreSparkline(key) {
   // Histórico do score via proxy IC por dimensão nas sessões
-  const sess = S.sessions.filter(x => !x.simulado).slice(0,10).reverse();
+  const sess = S.sessions.filter(x => !x.simulado).slice(-10);
   if(sess.length < 2) return '';
   const keyMap = {'neural':'ic_neural','mecanica':'ic_mecanica','metabolica':'ic_metabolica',
                   'ritmo':'ratio_adaptacao','tecnica':null,'momentum':'indice_carga'};
@@ -1582,27 +1594,20 @@ function buildScoreSparkline(key) {
 function buildWeekStrip(s){
   const diasSemana = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
   const hoje = new Date();
-  const hojeStr = hoje.toISOString().slice(0,10); // YYYY-MM-DD
+  const hojeStr = toISODate(hoje);
 
   // Monta slots dos últimos 7 dias para encontrar sessões reais
   const slots = [];
   for(let offset = -3; offset <= 3; offset++){
     const d = new Date(hoje);
     d.setDate(d.getDate() + offset);
-    const dStr = d.toISOString().slice(0,10);
+    const dStr = toISODate(d);
     const dow  = d.getDay();
     const lbl  = diasSemana[dow];
     const isHoje = offset === 0;
 
     // Encontra sessão deste dia no histórico
-    const sessDay = S.sessions.find(ss => {
-      const sd = ss.date||ss.data||'';
-      // Tenta match por ISO (YYYY-MM-DD) ou formato DD/MM
-      if(sd.startsWith(dStr)) return true;
-      const parts = dStr.split('-');
-      const ptBR = `${parts[2]}/${parts[1]}`;
-      return sd.startsWith(ptBR);
-    });
+    const sessDay = S.sessions.find(ss => (ss.date||'').startsWith(dStr));
 
     if(sessDay){
       const idx = S.sessions.indexOf(sessDay);
@@ -1660,11 +1665,11 @@ function buildNarrativaHome() {
     sobrecarga: 'PSE elevado — atenção à recuperação.',
   };
 
-  const pses     = sess.slice(0, 5).map(x => x.pse).filter(Boolean);
+  const pses     = sess.slice(-5).map(x => x.pse).filter(Boolean);
   const pseMedia = pses.length
     ? (pses.reduce((a, b) => a + b, 0) / pses.length).toFixed(1)
     : null;
-  const ics      = sess.slice(0, 3)
+  const ics      = sess.slice(-3).reverse()   // mais recente primeiro
     .map(x => x.ic_executado || x.indice_carga)
     .filter(Boolean);
   const icTrend  = ics.length >= 2
@@ -1799,7 +1804,7 @@ function buildCheckinCorrelacao(s, sess) {
   if (comCheckin.length >= 3) {
     const maxIC = Math.max(...comCheckin.map(x=>x.indice||x.indice_carga||0), 1);
     const pCor = p => p>=8?'#6aa050':p>=6?'#c8a060':p>=4?'#a07840':'#b84030';
-    const pts = comCheckin.slice(0,10).map(ss => {
+    const pts = comCheckin.slice(-10).map(ss => {
       const p = ss.estado_prontidao_entrada;
       const ic = ss.indice||ss.indice_carga||0;
       const x = ((p-1)/9)*88 + 4;
@@ -1842,7 +1847,7 @@ function buildCheckinCorrelacao(s, sess) {
 }
 
 function buildICChart(sess){
-  const items = sess.slice(0,10).reverse();
+  const items = sess.slice(-10);
   if(items.length<2) return '';
   const ics = items.map(x=>x.indice||x.indice_carga||0);
   const maxIC = Math.max(...ics,1);
@@ -1859,7 +1864,7 @@ function buildICChart(sess){
     const isLast=i===items.length-1;
     return `<div class="ic-bar-col">
       <div class="ic-bar" style="height:${h}px;background:${isLast?'var(--gold)':'var(--copper)'};opacity:${isLast?1:0.55}"></div>
-      <div class="ic-bar-lbl">${(ss.date||ss.data||'').slice(0,5)}</div>
+      <div class="ic-bar-lbl">${fmtDataCurta(ss.date)}</div>
     </div>`;
   }).join('');
 
@@ -1880,7 +1885,7 @@ function buildPRs(sess){
       if(!nome) return;
       const score=(ex.kg||0)*(ex.r||ex.reps||1);
       if(!exMap[nome]||score>exMap[nome].score)
-        exMap[nome]={nome,kg:ex.kg||0,r:ex.r||ex.reps||0,s:ex.s||3,score,data:ss.data};
+        exMap[nome]={nome,kg:ex.kg||0,r:ex.r||ex.reps||0,s:ex.s||3,score,data:ss.date};
     });
   });
   const prs=Object.values(exMap).sort((a,b)=>b.score-a.score).slice(0,6);
@@ -1890,7 +1895,7 @@ function buildPRs(sess){
       <div class="pr-ico">🏋️</div>
       <div class="pr-info">
         <div class="pr-exname">${pr.nome}</div>
-        <div class="pr-desc">${pr.date||pr.data||''} · ${pr.s}×${pr.r} reps</div>
+        <div class="pr-desc">${fmtDataCurta(pr.data)} · ${pr.s}×${pr.r} reps</div>
       </div>
       <div class="pr-right">
         <div class="pr-kg">${pr.kg>0?pr.kg:'—'}</div>
@@ -1934,7 +1939,7 @@ function renderHistorico(){
         <div class="sec-title">${sess.length} sessão${sess.length!==1?'s':''}</div>
         <div class="sec-line"></div>
       </div>
-      ${sess.map((ss,i)=>{
+      ${sess.map((ss,i)=>({ss,i})).reverse().map(({ss,i})=>{
         const n=ss.n||0, m=ss.m||0, met=ss.met||0, tot=n+m+met||1;
         const np=+(n/tot*100).toFixed(0), mp=+(m/tot*100).toFixed(0), metp=100-np-mp;
         const ic=Math.round(ss.indice_carga||ss.indice||0);
@@ -1947,7 +1952,7 @@ function renderHistorico(){
               <div class="hist-tipo">${ss.tipo||ss.treino_id||'—'}</div>
               <div style="font-size:7px;padding:1px 6px;background:${domCol};color:rgba(20,16,10,.85);border-radius:2px;font-weight:600">${domLabel}</div>
             </div>
-            <div class="hist-date">${fmtSessDate(ss.date||ss.data, S.student?.mesociclo_inicio)}</div>
+            <div class="hist-date">${fmtSessDate(ss.date, S.student?.mesociclo_inicio)}</div>
           </div>
           <div style="height:6px;background:var(--b);border-radius:3px;overflow:hidden;margin:7px 0;display:flex">
             <div style="width:${np}%;background:rgba(150,144,220,.75)" title="Neural ${np}%"></div>
@@ -2548,7 +2553,7 @@ async function finishTreino(){
       tipo:        S.treino.sessaoNome || null,
       sessao_nome: S.treino.sessaoNome || null,
       sessao_label: S.treino.sessaoLabel || null,
-      data: new Date().toLocaleDateString('pt-BR'),
+      date: hojeISO(),
       timestamp: firebase.firestore.FieldValue.serverTimestamp(),
       pse: +pseMedia.toFixed(1),
       duracao_min: durMin,
@@ -2887,7 +2892,7 @@ function openModal(type){
       (ss.exercicios||[]).forEach(ex=>{
         if((ex.nome||ex.n||'')===nome)
           historico.push({
-            data:ss.date||ss.data,
+            data:ss.date,
             kg:ex.kg||0, r:ex.r||ex.reps||0, s:ex.s||3,
             pse:ex.pse||ss.pse||7,
             ic:ex.ic||0,
@@ -2953,9 +2958,9 @@ function openModal(type){
           ${dots}
         </svg>
         <div style="display:flex;justify-content:space-between;font-size:7px;color:var(--ink3);margin-top:4px">
-          <span>${historico[0]?.data||''}</span>
+          <span>${fmtDataCurta(historico[0]?.data)}</span>
           <span>PSE: <span style="color:var(--moss2)">baixo</span> → <span style="color:var(--gold)">médio</span> → <span style="color:var(--danger2)">alto</span></span><!-- [emoji-pass] -->
-          <span>${historico[n-1]?.data||''}</span>
+          <span>${fmtDataCurta(historico[n-1]?.data)}</span>
         </div>
       </div>
 
@@ -2963,7 +2968,7 @@ function openModal(type){
         <div style="font-size:7px;text-transform:uppercase;letter-spacing:.16em;color:var(--ink3);margin-bottom:8px">Todos os registros</div>
         ${historico.slice().reverse().map(h=>`
           <div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--b)">
-            <span style="font-size:8px;color:var(--ink3)">${h.data||'—'}</span>
+            <span style="font-size:8px;color:var(--ink3)">${fmtDataCurta(h.data)}</span>
             <span style="font-size:9px;color:var(--ink2)">${h.s}×${h.r}</span>
             <span style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.02em;line-height:1;color:${h.kg===pr.kg?'#ddb870':'var(--gold)'}">${h.kg>0?h.kg+'kg':'—'}</span>
             <span style="font-size:8px;color:${h.pse>=9?'#b84030':h.pse>=7?'#a07040':'var(--ink3)'}">esforço ${h.pse||'—'}</span>
@@ -2974,7 +2979,7 @@ function openModal(type){
     // Mostra detalhes da sessão do dia clicado, ou mensagem se não houver
     const dataKey = type.replace('dia_','');
     const sessHoje = S.sessions.find(ss=>{
-      const d=ss.date||ss.data||'';
+      const d=ss.date||"";
       return d===dataKey || type==='treino_hoje';
     });
     if(sessHoje){
@@ -2984,7 +2989,7 @@ function openModal(type){
       const tot=n+m+met||1;
       html=`
         <div class="modal-title">${sessHoje.tipo||'Treino'}</div>
-        <div class="modal-sub">${sessHoje.date||sessHoje.data||''} · esforço ${sessHoje.pse||'—'}</div>
+        <div class="modal-sub">${fmtDataCurta(sessHoje.date)} · esforço ${sessHoje.pse||'—'}</div>
         <div style="display:flex;gap:12px;margin:14px 0">
           <div style="flex:1;background:var(--bg3);border:1px solid var(--b);border-radius:4px;padding:10px;text-align:center">
             <div style="font-size:6px;text-transform:uppercase;letter-spacing:.14em;color:var(--ink3);margin-bottom:4px">Carga</div>
@@ -3021,7 +3026,7 @@ function openModal(type){
     }
 
   } else if(type==='ic_chart'){
-    const sess=S.sessions.slice(0,12).reverse();
+    const sess=S.sessions.slice(-12);
     const ics=sess.map(x=>+(x.indice_carga||x.indice||0));
     const pses=sess.map(x=>+(x.pse||0));
     const avg=ics.length?Math.round(ics.reduce((a,b)=>a+b,0)/ics.length):0;
@@ -3088,7 +3093,7 @@ function openModal(type){
           return `<div style="display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--b)">
             <div>
               <div style="font-size:8px;color:var(--ink2)">${ss.tipo||'—'}</div>
-              <div style="font-size:7px;color:var(--ink3)">${ss.date||ss.data||''}</div>
+              <div style="font-size:7px;color:var(--ink3)">${fmtSessDate(ss.date, S.student?.mesociclo_inicio)}</div>
             </div>
             <div style="text-align:right">
               <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.02em;line-height:1;color:var(--gold)">${ic}</div>
@@ -3100,13 +3105,13 @@ function openModal(type){
 
   } else if(type.startsWith('sessao_')) {
     const sessId = type.replace('sessao_','');
-    const ss = S.sessions.find(x=>x.id===sessId) || S.sessions[0];
+    const ss = S.sessions.find(x=>x.id===sessId) || S.sessions[S.sessions.length-1];
     if(!ss){ html=`<div class="modal-title">Sessão não encontrada</div>`; }
     else {
       const exs = (ss.exercicios||[]).filter(e=>e.tipo!=='aquecimento');
       const ic  = Math.round(ss.indice_carga||ss.indice||0);
       const allSess = S.sessions.filter(x=>x.tipo===ss.tipo);
-      const hist4 = allSess.filter(x=>x.id!==ss.id).slice(0,4);
+      const hist4 = allSess.filter(x=>x.id!==ss.id).slice(-4);
       const avgN   = hist4.length ? hist4.reduce((a,x)=>a+(x.n||0),0)/hist4.length : ss.n||0;
       const avgM   = hist4.length ? hist4.reduce((a,x)=>a+(x.m||0),0)/hist4.length : ss.m||0;
       const avgMet = hist4.length ? hist4.reduce((a,x)=>a+(x.met||0),0)/hist4.length : ss.met||0;
@@ -3201,7 +3206,7 @@ function openModal(type){
 
       html=`
         <div class="modal-title">${ss.tipo||'Treino'}</div>
-        <div class="modal-sub">${fmtSessDate(ss.date||ss.data, S.student?.mesociclo_inicio)} · ${ss.mesociclo||''}</div>
+        <div class="modal-sub">${fmtSessDate(ss.date, S.student?.mesociclo_inicio)} · ${ss.mesociclo||''}</div>
 
         <div style="display:flex;gap:8px;margin:14px 0 16px">
           <div style="flex:1;background:rgba(200,160,96,.05);border:1px solid rgba(200,160,96,.12);border-radius:6px;padding:8px 10px">
@@ -3258,7 +3263,7 @@ function openModal(type){
     const parts = type.replace('exercicio_','').split('__');
     const exNome = decodeURIComponent(parts[0]||'');
     const sessId = parts[1]||'';
-    const ss = S.sessions.find(x=>x.id===sessId) || S.sessions[0];
+    const ss = S.sessions.find(x=>x.id===sessId) || S.sessions[S.sessions.length-1];
     const ex = ss ? (ss.exercicios||[]).find(e=>e.nome===exNome) : null;
 
     if(!ex){ html=`<div class="modal-title">${exNome}</div><div class="modal-prose">Dados não encontrados.</div>`; }
@@ -3311,7 +3316,7 @@ function openModal(type){
 
       html=`
         <div class="modal-title">${exNome}</div>
-        <div class="modal-sub">${ss?.tipo||''} · ${ss?.date||ss?.data||''}</div>
+        <div class="modal-sub">${ss?.tipo||''} · ${fmtDataCurta(ss?.date)}</div>
 
         <div style="background:rgba(200,160,96,.04);border:1px solid rgba(200,160,96,.1);border-radius:8px;padding:10px 12px;margin:14px 0">
           <div style="font-size:7px;text-transform:uppercase;letter-spacing:.14em;color:var(--ink3);margin-bottom:6px">Execução</div>
@@ -3413,7 +3418,7 @@ function renderMemoriaPositiva(){
   if(sess.length === 0) return '';
 
   // Procura PR em qualquer sessão recente
-  for(const ss of sess.slice(0,5)){
+  for(const ss of sess.slice(-5).reverse()){
     const exs = ss.exercicios||[];
     for(const ex of exs){
       if(ex.pr && ex.kg>0){
@@ -3426,9 +3431,9 @@ function renderMemoriaPositiva(){
   }
 
   // Senão: sessão com PSE baixo e IC alto (ótima eficiência)
-  const eficiente = sess.find(ss => ss.pse && ss.pse <= 7 && (ss.indice||ss.indice_carga||0) > 60);
+  const eficiente = [...sess].reverse().find(ss => ss.pse && ss.pse <= 7 && (ss.indice||ss.indice_carga||0) > 60);
   if(eficiente){
-    const dtStr = fmtSessDate(eficiente.date||eficiente.data, S.student?.mesociclo_inicio);
+    const dtStr = fmtSessDate(eficiente.date, S.student?.mesociclo_inicio);
     return `<div class="memoria-card">
       <div style="font-size:7px;text-transform:uppercase;letter-spacing:.16em;color:var(--gold);margin-bottom:6px">memória · eficiência</div>
       <div class="memoria-txt">Em ${dtStr} você treinou com IC alto e PSE controlado — sinal de boa adaptação.</div>
@@ -3465,8 +3470,7 @@ function calcEstadoProntidao(ci) {
 
 function openCheckin() {
   // Verifica se já fez check-in hoje
-  const hoje = new Date().toLocaleDateString('pt-BR');
-  const jaFez = S.checkinHoje && S.checkinHoje.data === hoje;
+  const jaFez = S.checkinHoje && S.checkinHoje.data === hojeISO();
   if (jaFez) {
     // Reutiliza check-in do dia e vai direto ao treino
     iniciarTreinoComCheckin(S.checkinHoje);
