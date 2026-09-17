@@ -1,2 +1,12 @@
 momentum-dashboard-v3.html
 home/
+
+# Credenciais — regra de ouro do CLAUDE.md, nunca commitar
+*Key.json
+*.env
+
+# Dependências das Cloud Functions
+functions/node_modules/
+
+# Lixo do macOS
+.DS_Store
