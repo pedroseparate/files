@@ -93,7 +93,7 @@ o handoff é a fonte da razão, não do estado atual.
 | **D1.1** | Sem autenticação na v1 — `STUDENT_ID` vem de query param. Comportamento declarado, não acidental. | A v1 roda com uma aluna, em fase de teste. Consequências aceitas: quem tiver a URL e um `id` válido lê o dashboard de qualquer aluno; se as Security Rules estiverem abertas, o banco é legível por quem tiver a config do Firebase — que está no cliente por definição. | decidida — nenhuma ação (decisão de não fazer) |
 | **D1.2** | **`date` é o campo canônico da data da sessão, formato ISO `YYYY-MM-DD`.** Formatação pt-BR é responsabilidade exclusiva da camada de exibição. | Comparação de data é lexicográfica em todo o app. Misturar pt-BR com ISO faz `"01/09/2026" >= "2026-09-01"` retornar `false`, filtrando a sessão para fora da aderência. Ver correção de escopo abaixo. | **implementada** (`f8d4de7`) |
 | **D1.3** | `S.sessions` passa a ser ordenado **crescente** (mais antigo primeiro), para que `slice(-n)` signifique literalmente "últimas n". | O hero usava `slice(-4)` sobre array decrescente: o percentil "recente" lia as 4 **mais antigas** e o sinal da tendência vinha **invertido** — aluna progredindo aparecia como queda. Três convenções coexistiam no mesmo arquivo. | **implementada** (`f8d4de7`) |
-| **D1.4** | Cálculo dimensional (`ic_neural`/`ic_mecanica`/`ic_metabolica`) em Cloud Function `onCreate` de `sessions`. | Mantém os coeficientes CT/IM/DN/SV/FC — propriedade do Momentum — fora do cliente, e a home atualiza sozinha via o `onSnapshot` já existente. Hoje `finishTreino()` não grava os `ic_*`, então a sessão recém-executada é invisível para percentis e tendências: a aluna treina e a home não muda. | **pendente** — ver notas abaixo |
+| **D1.4** | Cálculo dimensional (`ic_neural`/`ic_mecanica`/`ic_metabolica`) em Cloud Function disparada por escrita em `sessions`. | Mantém os coeficientes CT/IM/DN/SV/FC — propriedade do Momentum — fora do cliente, e a home atualiza sozinha via o `onSnapshot` já existente. Sem ela, a sessão recém-executada é invisível para percentis e tendências: a aluna treina e a home não muda. | **Fase 1 implementada** — ver correção de premissa abaixo. Fase 2 desligada deliberadamente |
 | **D1.5** | Zero-state dedicado: a camada de intenção do hero renderiza normal; a camada de sinal é **substituída**, não atenuada. Hero didático sobre a periodização prescrita. | Com <4 sessões, `dimEstado(0.5, 0)` devolve `'estavel'` nas três dimensões e o hero exibe um número no meio da escala **sem dado de origem** — violação direta do pilar de auditabilidade. O zero-state antecipa o desenho do ciclo em vez de relatar passado inexistente. Threshold: a camada de sinal não aparece até **4 sessões com dado dimensional válido**. | pendente |
 | **D1.6** | Fim de mesociclo: estado mínimo na home (*"mesociclo encerrado — aguardando novo ciclo"*). RN18 (tela de transição com resumo) vai para v1.1. | Hoje `semanaAtual` é clampado e a home congela em "semana N de N" indefinidamente. A aluna continua podendo treinar; as sessões param de contar para a aderência do ciclo encerrado. RN18 depende de evolução de CargaObjetiva, que depende de D1.4 rodando e estabilizado. | pendente |
 | **D1.7** | Campo `frequencia_semanal` (número) em `prescricoes`, escrito pelo PT. Aderência vira `sessões da semana ÷ frequencia_semanal`, independente de qual dia. | Desacopla do calendário — a aluna não é penalizada por treinar terça em vez de segunda. Elimina o parse frágil de texto livre de `anamnese.disponibilidade` e seu default silencioso `[1,3,5]`. Move o denominador de um campo de **preferência declarada pela aluna** para um de **prescrição do PT** — auditável, com autor. | pendente |
@@ -133,9 +133,43 @@ Dois efeitos colaterais achados na implementação, não previstos no handoff:
   campo `date`, divergindo do doc id (que usa componentes locais). Padronizado em
   `toISODate()` com componentes locais.
 
-##### D1.4 — contexto revisado (set/2026), posterior ao handoff
+##### D1.4 — a premissa estava errada: a função já existia
 
-1. **A infraestrutura de backend já existe.** `firebase.json` com runtime nodejs22,
+**A decisão foi tomada, priorizada e registrada assumindo que a função não existia. Ela
+existia — implantada e ACTIVE.** `onSessionWrite`, gcfv1, trigger `document.write` em
+`sessions/{sessionId}`, nodejs22, us-central1, já fazendo as cinco responsabilidades que o
+handoff atribuía a uma função a ser escrita.
+
+**Causa do erro:** `functions/` estava **fora do controle de versão** — o repositório é
+`files/`, e `functions/` era irmão dele na raiz do projeto. Não aparecia em nenhum `git log`,
+`git ls-files` ou diff; qualquer inspeção via git concluía que o backend não existia.
+
+Vale registrar o que **não** foi a causa: o `CLAUDE.md` documentava a pasta corretamente, na
+árvore de estrutura e na seção Stack (`firebase-functions ^4.9, Node 22`). A informação estava
+escrita e disponível — a revisão simplesmente não a consultou, e a afirmação do handoff de que
+esta seria a *"primeira dependência de backend do projeto"* já era contraditada pelo próprio
+`CLAUDE.md` no momento em que foi escrita. Não é caso de documentação faltante, é caso de
+decisão tomada sem verificar o estado do sistema — a regra de ouro nº 1 do projeto.
+
+Corrigido: `functions/` e `firebase.json` foram movidos para dentro de `files/` e versionados
+(`0dffc95`), e a árvore do `CLAUDE.md` foi atualizada para a nova localização. Consequência
+operacional: `firebase deploy --only functions` passa a ser rodado de `files/`.
+
+**O que a Fase 1 corrigiu (set/2026).** A função lia `ex.s`, `ex.r`, `ex.kg` e `ex.descanso_s`
+do topo do exercício — campos que o payload aninhado do C1 não tem. `kg` caía no default `0`,
+zerando `CargaNorm`, que multiplica as três dimensões: **todo IC ia a zero**, gravado por cima
+do documento correto, por trigger automático, sem erro para a aluna nem aviso para o PT. A
+correção lê `series[]`, resolve por `exercise_id` (D3.2), implementa a Metabólica de §2c
+completa (com SV, que estava fora sem menção no código), elimina o fallback de coeficientes
+genéricos e corrige o guard de loop, que fazia o corpo da função rodar duas vezes por sessão.
+
+**A Fase 2 continua desligada — agora por decisão, não por acidente.** `recalcStudentScores`
+lançava `FAILED_PRECONDITION` por índice composto ausente, fora de try/catch, matando a função
+antes da escrita no doc do aluno. Era isso, e só isso, que impedia quatro sessões zeradas de
+gravarem `scores: 10/10/10` no perfil. Dois defeitos se cancelando não é salvaguarda: a
+chamada passou a ser guardada por `FASE_2_ATIVA = false`.
+
+1. **A infraestrutura de backend já existe — e a função também.** `firebase.json` com runtime nodejs22,
    `functions/functions_index.js`, `firebase-functions ^4.9`, `DEPLOY-TUTORIAL.md`. **O
    handoff afirma que esta seria a "primeira dependência de backend do projeto" — está
    incorreto.** É uma função nova num projeto que já deploya.
@@ -324,6 +358,90 @@ Com FC fora de CargaNorm, exercícios isolados (Extensora, Flexora, Rosca, Aduto
 | 1RM — normalização | Preparar no banco desde o início para comparabilidade inter-alunos. |
 | Wearables (FC cardíaca) | Reservado para versão premium. Estrutura do modelo já comporta. |
 | Instagram session card | Card de resumo de sessão estilo Strava, glassmorphism, "hemômetro", frase gerada por IA. Feature planejada. |
+
+### Mapa nome-legado → exercise_id
+
+21 das 355 sessões têm ao menos um exercício resolvido pelo fallback genérico
+`{CT:4, IM:5, DN:5, SV:3, FC:0.6}` — 116 medições. Nomes não resolvidos, por ocorrência:
+Cadeira Abdutora em Pé (14), Coice Perna Flexionada (14), Agachamento Sumo Máquina (11),
+Cadeira Abdutora (11), Cadeira Extensora (10), Cadeira Adutora (7), Remada Máquina Pronada (7),
+Remada Baixa Triângulo (7), Elevação Lateral Halteres (7), Abdominal Máquina (7),
+Búlgaro no Smith (7), Elevação Pélvica Máquina (7), Elevação Lateral Polia Média (4),
+Hack Linear (3).
+Ao menos um (`Cadeira Extensora`) existe no catálogo sob outro nome. Vários são isolados —
+justamente os marcados como pendentes de recalibração de IM.
+
+**Auditado em set/2026:** `exercise_id` está presente em **100%** dos 1.594 exercícios
+legados, mas só **39,7% resolvem** contra `exercises` — os demais são slugs de nome geradas
+por script (`leg_press_45`, `supino_reto`, `remada_máquina`). Onde `exercise_id` e nome
+resolvem, **concordam em 633 de 633 casos, sem nenhuma discordância** — por isso a função
+corrigida pode cair para o nome como caminho de compatibilidade sem introduzir ambiguidade.
+A pendência é o mapa `exercise_id-legado → slug do catálogo`.
+
+### `series[]` truncado no corpus legado
+
+Dos 1.556 exercícios legados com `series[]`, **176 (11,3%) têm menos entradas que o campo
+`s`** — `s=4` com uma única série gravada, por exemplo. Nesses casos os campos achatados
+(`s`/`r`/`kg`) são o registro mais completo, e somar as séries parciais subcontaria o volume
+em até 75%. A função corrigida ramifica explicitamente: usa `series[]` quando é o registro
+completo (sem `s`, ou `series.length === s`), e cai para o achatado quando `series[]` é
+demonstravelmente parcial. Globalmente a diferença entre as duas formas no corpus é de
+−2,49%. Pendência: decidir se os 176 devem ser corrigidos na origem ou permanecem assim.
+
+### Captura do descanso real (antes do lançamento)
+
+`FD = 90/descanso_s` usa hoje `alvo.descanso_s` (prescrito). O cronômetro de descanso já roda
+em `momentum-aluno.html` e o valor é descartado. Descanso é o que separa um protocolo de força
+de um metabólico com a mesma carga e reps. A função já lê o campo real quando existe (T2b);
+falta a captura no cliente. **`descanso_s` está ausente em 100% dos 1.594 exercícios
+legados** — reprocessá-los aplicaria `FD = 1` a todos, ou seja, Metabólica sem informação
+alguma de densidade.
+
+### `series_prescritas` não é gravado pelo cliente
+
+`finishTreino()` grava `exercicios[].series[]` com o executado, mas não o número de séries
+prescritas — o dado existe em `prescricoes` e não viaja para a sessão. A função grava
+`series_executadas` sempre e `series_prescritas` apenas quando derivável do campo achatado
+`s` (legado); para sessões novas fica `null`. Sem isso, uma sessão abandonada na metade é
+indistinguível de uma sessão curta por prescrição.
+
+### Três fórmulas divergentes para `ic_metabolica`
+
+Função (pré-correção): `cn × FD`. `fix_ic.js`: `s × r × kg × SV` (sem FD). Modelo §2c:
+`CargaNorm × FTT × SV × FD`. T2 alinhou a função ao modelo. Escrevem em `sessions`:
+`fix_ic.js`, `fix_all.js`, `fix_remaining.js`, `fill_missing_sessions.js`,
+`seed_ic_planejado.js` — e `fill_missing_sessions.js` também grava `_recalculated`, então o
+flag não identifica quem calculou o quê. Definir a fonte canônica antes de qualquer
+reprocessamento futuro.
+
+### `chips` nunca é gravado
+
+O bloco longitudinal de `calcChips` roda em try/catch e a query falha por índice ausente; o
+catch engole. 0 de 355 sessões têm o campo. `colapso_de_reps` nunca dispararia: das 5.029
+séries, 102 têm `r_alvo` e nenhuma satisfaz `r < r_alvo × 0.75`.
+
+### Pesos `wN/wM/wMet` — chaves que caem no default
+
+O mapa explícito de `getWeights` (T8) reproduz exatamente o comportamento anterior, mas torna
+visível que `"Legs"` (20 sessões), `"Volume"`, `"Treino A"`–`"Treino E"` sempre caíram no
+default `[0.30, 0.40, 0.30]` — `"Legs"` é sessão de perna e não recebe os pesos de `lower`.
+Não alterado nesta correção: os pesos seguem pendentes de revisão fisiológica.
+
+### `firebase-admin`: ^12 em `functions/`, ^13.8 na raiz
+
+Divergência de versão não tocada na correção de leitura — mudar dependência de função é risco
+de deploy. Quebra em deploy futuro sem relação aparente com a mudança.
+
+### `firestore.indexes.json` ausente
+
+Índices compostos exigidos por `recalcStudentScores` (`student_id` + `date`) e por
+`calcChips` (`student_id` + `tipo` + `date`) não estão declarados. Criar junto com a Fase 2 de
+D1.4, não antes — criar o índice sem corrigir a leitura destravaria o segundo defeito.
+
+### Órfãos na raiz do projeto
+
+`public/index.html` e `src/index.ts` não se relacionam a nada do projeto ativo. Possível
+resíduo de `firebase init`. Não tocados.
 
 ### Migração de `checkins` (pendente, não bloqueante)
 

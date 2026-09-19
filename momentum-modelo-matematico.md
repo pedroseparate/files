@@ -26,8 +26,20 @@ Fixos no banco de exercícios — propriedades do movimento, não do aluno. **Al
 Base de todos os componentes. FC **não entra aqui** — fisiologicamente incorreto.
 
 ```
-CargaNorm_i = kg_i × reps_i × séries_i
+CargaNorm_i = Σ_j (kg_j × reps_j)        sobre as séries j do exercício i
 ```
+
+A forma anterior — `kg_i × reps_i × séries_i` — **assumia implicitamente que todas as séries
+do exercício têm a mesma carga e as mesmas repetições**, assunção nunca declarada. `Σ(kg×r)` é
+a generalização exata que remove essa assunção: no caso uniforme as duas formas são
+identicamente iguais, então nenhum valor histórico muda.
+
+Médias por exercício foram descartadas (set/2026). Dentro de um exercício, kg e reps são
+anticorrelacionadas por construção — mais peso, menos repetições — e o produto das médias de
+duas variáveis anticorrelacionadas **superestima sistematicamente** o produto real: +0,9% em
+top-set com back-off, +2,7% em pirâmide, +27,3% em drop set. O erro não é ruído que se cancela
+ao longo de um mesociclo; cresce com a dispersão entre séries, ou seja, justamente nos
+protocolos em que a carga foi manipulada de propósito. Viés correlacionado com o sinal medido.
 
 > **⚠ Consequência da saída de FC do CargaNorm:** IM dos exercícios isolados (Extensora, Flexora, Rosca, etc.) precisa ser recalibrado. Com FC fora de CargaNorm, a Mecânica desses exercícios aumenta — IM deve refletir honestamente a tensão mecânica local.
 
