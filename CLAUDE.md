@@ -76,9 +76,9 @@ Versões antigas (v2, v3, v4, aluno3, _1, _2, _5) existem na pasta mas **não s�
 | Coleção | Docs | Status | Descrição |
 |---------|------|--------|-----------|
 | `sessions` | **0** | ★ MVP ativo | Sessões executadas pelos alunos. **Esvaziada em set/2026** — as 355 sessões legadas foram apagadas para não conviverem com a escala nova de Metabólica (§2c). Backup em `backups/sessions-2026-09-19.json`, fora do repo. A primeira sessão da Jacqueline será a primeira do corpus. |
-| `checkins` | 50 | ★ MVP ativo | Check-ins pré-treino. Gravados pelo aluno, lidos pelo PT dashboard. `session_id` vinculado retroativamente ao salvar sessão. |
+| `checkins` | **0** | ★ MVP ativo | Check-ins pré-treino. **Esvaziada em set/2026** junto com `sessions` — zero-state completo para o lançamento. Backup em `backups/`. Docs novos nascem em ISO com id determinístico `{student_id}_{data_iso}` (D2.3). |
 | `exercises` | 85 | ★ MVP ativo | Banco de exercícios com coeficientes |
-| `students` | 10 | ★ MVP ativo | Perfis de alunos |
+| `students` | 10 | ★ MVP ativo | Perfis de alunos. `scores.*`, `ritmo_estado` e `momentum_snapshot` foram **removidos de todos** em set/2026 — eram seed sem sessão por trás. Voltam com a Fase 2 de D1.4. |
 | `prescricoes` | 10 | ★ MVP ativo | Origem única do treino do aluno (D3.1). 9 dos 10 docs foram gerados retroativamente a partir do histórico; só o da **Jacqueline** é prescrição prospectiva genuína. |
 | `pt_interactions` | 241 | v2 / analytics | Tracking de cliques do PT no dashboard — só escrita, nunca leitura operacional |
 | `academias` | 1 | v2 | Dados da academia/estúdio |

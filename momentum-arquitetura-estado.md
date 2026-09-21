@@ -383,6 +383,27 @@ valores sem origem até a Fase 2 de D1.4 entrar. Pendência aberta.
 **Ressalva registrada:** as 21 sessões de `julia_duzzi` foram apagadas junto, apesar de
 indícios de que ela é atleta real — ver abaixo. Estão no backup.
 
+### `checkins` esvaziada e `scores` removidos de `students` (set/2026)
+
+Completam o zero-state da Jacqueline antes do lançamento.
+
+**`checkins` (50 docs) apagada.** Encerra por eliminação duas pendências que estavam abertas:
+a migração dos 42 documentos que gravavam `data` como `"DD/MM"` sem ano, e a dedupe da
+duplicata real da Jacqueline em 2026-03-25 (prontidão 3 e 8 no mesmo dia). Docs novos nascem
+em ISO com id determinístico `{student_id}_{data_iso}` (D2.3), então a duplicata é impossível
+por construção. Backup: `backups/checkins-2026-09-21.json`.
+
+**`scores.*`, `ritmo_estado` e `momentum_snapshot` removidos dos 10 docs de `students`.** Eram
+valores de seed estático; com `sessions` vazia, não tinham nenhuma sessão por trás — números
+exibidos sem origem, o oposto do pilar de auditabilidade. Com a Fase 2 de D1.4 desligada, os
+campos ficam **ausentes** (não nulos) até ela entrar. O `momentum_snapshot.sessao_id`
+apontava para documentos que já não existiam. Nenhum outro campo foi tocado — verificado doc
+a doc contra o backup. Backup: `backups/students-2026-09-21.json`.
+
+Consequência para o cliente: a home precisa tolerar `scores` ausente sem cair em default
+numérico silencioso — é o mesmo comportamento que D1.5 (zero-state) já exige, e continua
+pendente.
+
 ### `julia_duzzi` — sintética ou real? (contradição não resolvida)
 
 Este documento afirma as duas coisas: *"Simulação Julia Duzzi (página de demo de atleta)"*
@@ -436,14 +457,17 @@ completo (sem `s`, ou `series.length === s`), e cai para o achatado quando `seri
 demonstravelmente parcial. Globalmente a diferença entre as duas formas no corpus é de
 −2,49%. Pendência: decidir se os 176 devem ser corrigidos na origem ou permanecem assim.
 
-### Captura do descanso real (antes do lançamento)
+### Captura do descanso real — v2
 
-`FD = 90/descanso_s` usa hoje `alvo.descanso_s` (prescrito). O cronômetro de descanso já roda
-em `momentum-aluno.html` e o valor é descartado. Descanso é o que separa um protocolo de força
-de um metabólico com a mesma carga e reps. A função já lê o campo real quando existe (T2b);
-falta a captura no cliente. **`descanso_s` está ausente em 100% dos 1.594 exercícios
-legados** — reprocessá-los aplicaria `FD = 1` a todos, ou seja, Metabólica sem informação
-alguma de densidade.
+`FD = 90/descanso_s` usa o descanso **prescrito** (`alvo.descanso_s`). Decisão de escopo
+tomada em set/2026: na v1 o descanso é **output para a aluna** — exibido junto do cronômetro
+na tela de treino — e não input do modelo. Consequência declarada em
+`momentum-modelo-matematico.md` §2c: FD reflete a intenção de programação e não varia com a
+execução; duas sessões do mesmo exercício com pausas diferentes produzem a mesma Metabólica.
+
+Movido para **v2**, não mais pré-lançamento. A `onSessionWrite` já lê o campo executado
+quando existe e cai para o prescrito quando não — ligar a captura no cliente basta, sem tocar
+no modelo.
 
 ### `series_prescritas` não é gravado pelo cliente
 
@@ -490,21 +514,6 @@ D1.4, não antes — criar o índice sem corrigir a leitura destravaria o segund
 
 `public/index.html` e `src/index.ts` não se relacionam a nada do projeto ativo. Possível
 resíduo de `firebase init`. Não tocados.
-
-### Migração de `checkins` (pendente, não bloqueante)
-
-Levantado no diagnóstico de banco de set/2026 (50 documentos na coleção):
-
-- **42 documentos com data sem ano** (formato `"10/03"`). O ano precisa ser recuperado do
-  `timestamp`. **Não é mecânico:** em pelo menos um caso `data` e `timestamp` divergem
-  (`"24/03/2026"` com timestamp em 25/03), então a recuperação exige decisão sobre qual campo
-  vence. Quantificar os casos de divergência antes de migrar.
-- **1 duplicata real:** `jacqueline` em 2026-03-25, com prontidão 3 e 8 em documentos
-  separados. As outras 8 "duplicatas" detectadas eram artefato do agrupamento dos docs sem
-  ano, não duplicatas de verdade.
-- **Não bloqueia o lançamento.** Check-ins novos já nascem em ISO com id determinístico
-  (D2.3), e o listener só precisa funcionar dos novos em diante. Migração ambígua feita às
-  pressas cria dado errado com aparência de dado correto.
 
 ### Doc id de `prescricoes` — não verificado
 
@@ -559,14 +568,18 @@ não verificado. Os demais já são determinísticos.
 
 ## Nota sobre Check-in Pré-treino (implementado e em uso)
 
-A coleção `checkins` existe no Firestore e está em uso real — 50 documentos, todos os alunos
-ativos com pelo menos 1. Captura contexto *prospectivo* antes do treino, complementando o
-ΔPSE e os chips automáticos, que são *retrospectivos*.
+A coleção `checkins` está **vazia** — os 50 documentos foram apagados em set/2026 junto com
+as `sessions`, para levar a Jacqueline a zero-state completo antes do lançamento. Backup em
+`backups/checkins-2026-09-21.json`, fora do repositório, com cópia redundante.
 
-**Correção (set/2026):** este documento afirmava que a Jacqueline estava *"em estado zero,
-sem checkins, por reset recente"*. **Ela tem 12 check-ins**, confirmados no banco — dado de
-teste, anterior ao lançamento. O estado zero dela vale para `sessions` (0 documentos), não
-para `checkins`. Ver *Migração de `checkins`* nas Pendências Não-Críticas.
+Isso encerrou duas pendências por eliminação: a migração dos 42 documentos que gravavam
+`data` como `"DD/MM"` sem ano, e a dedupe da duplicata real da Jacqueline em 2026-03-25
+(prontidão 3 e 8 no mesmo dia). Nenhuma das duas precisa mais ser resolvida — check-ins novos
+nascem em ISO com doc id determinístico `{student_id}_{data_iso}` (D2.3), então a duplicata é
+impossível por construção.
+
+A feature em si continua implementada e em uso: captura contexto *prospectivo* antes do
+treino, complementando o ΔPSE e os chips automáticos, que são *retrospectivos*.
 
 **Campos confirmados:**
 - `estado_prontidao` — resposta da pergunta obrigatória de prontidão (🔥 Pronto / 😐 Ok / 🥱 Cansado / 🤕 Pesado)

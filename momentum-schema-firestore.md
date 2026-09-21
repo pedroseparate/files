@@ -32,12 +32,12 @@ precisa ser pedido ao Claude Code no momento — este doc é referência estrutu
 | `divisao` | Label descritivo da divisão (ex: "Full Body 3x") — string solta, separada da estrutura real de prescrição que vive em `prescricoes` |
 | `modelo_periodizacao` | `linear / dup / block / conjugado / assimetrico` — fallback: infere do nome do mesociclo; default `linear` |
 | `dim_dominante` | Dimensão declarada como foco do mesociclo — alimenta a lógica editorial do hero card |
-| `ritmo_estado` | `alta/estável/baixo/sobrecarga` — ausente em estado zero (campo removido, não nulo) |
+| `ritmo_estado` | `alta/estável/baixo/sobrecarga` — **removido de todos os 10 docs em set/2026**, junto com `scores.*` e `momentum_snapshot`: eram valores de seed sem sessão por trás. Volta a ser escrito quando a Fase 2 de D1.4 entrar. Ausente, não nulo |
 | `recuperacao_estimada_h` | Janela de recuperação estimada — uso exato não confirmado no código, provavelmente informativo pro PT |
 | `progressao_mae.modelo` | Aparece também em `prescricoes` — **possível duplicidade entre coleções**, não resolvido |
 | `progressao_mae.logica_volume` | Idem |
-| `scores.neural` / `.mecanica` / `.metabolica` / `.tecnica` / `.ritmo` / `.momentum` | Os 6 scores 0–10 — ausentes em estado zero |
-| `momentum_snapshot.valor` / `.data` / `.sessao_id` | Cache do último score Momentum + sessão que gerou — ausente em estado zero |
+| `scores.neural` / `.mecanica` / `.metabolica` / `.tecnica` / `.ritmo` / `.momentum` | Os 6 scores 0–10 — **ausentes em todos os 10 docs** desde set/2026. Eram seed estático; com `sessions` vazia não tinham origem. Passam a ser calculados pela Fase 2 de D1.4 |
+| `momentum_snapshot.valor` / `.data` / `.sessao_id` | Cache do último score Momentum + sessão que gerou — **removido em set/2026**: o `sessao_id` apontava para documentos que não existem mais |
 | `records.*` | PRs — chaves dinâmicas por exercício, não é schema fixo |
 | `anamnese.idade` / `.sexo` / `.peso_kg` / `.altura_cm` | Dados biométricos |
 | `anamnese.objetivo` | Lido em todas as telas — campo real de objetivo, junto com `goal` |
@@ -53,11 +53,16 @@ precisa ser pedido ao Claude Code no momento — este doc é referência estrutu
 
 ## `sessions`
 
+**Coleção vazia desde set/2026.** As 355 sessões legadas foram apagadas para não conviverem
+com a escala nova de Metabólica (§2c) — ver `momentum-arquitetura-estado.md`. Backup em
+`backups/sessions-2026-09-19.json`. A estrutura abaixo descreve o que `finishTreino()` e
+`onSessionWrite` gravam daqui para frente.
+
 | Campo | Nota |
 |---|---|
 | `id` | Duplicata do doc id |
 | `student_id` | FK pra `students` |
-| `date` | **Campo canônico da data da sessão, formato ISO `YYYY-MM-DD`** (D1.2, set/2026). Auditado em set/2026: os 355 documentos estão em ISO — a inconsistência pt-BR registrada antes não existe mais no corpus. Não há campo `data` em `sessions`; `finishTreino()` grava `date`. Gravado com componentes de data locais, não `toISOString()` (em UTC-3 um treino após 21h cairia no dia seguinte) |
+| `date` | **Campo canônico da data da sessão, formato ISO `YYYY-MM-DD`** (D1.2, set/2026). Não há campo `data` em `sessions`; `finishTreino()` grava `date`. Gravado com componentes de data locais, não `toISOString()` (em UTC-3 um treino após 21h cairia no dia seguinte) |
 | `mesociclo` | Label denormalizado |
 | `semana` | Número da semana no mesociclo |
 | `tipo` | Label da divisão **executada** (retrospectivo — ex: "Full A") |
@@ -144,17 +149,16 @@ cria documentos.
 **Confirmado: feature em uso real**, não é dado de seed. `arquitetura-estado.md` descreve essa
 feature como "proposta, não implementada" — **isso está desatualizado, precisa correção**.
 
-Auditado em set/2026 (50 docs): **a Jacqueline tem 12 check-ins**, apesar de ter 0 sessões. O
-"estado zero" dela vale para `sessions`, não para `checkins` — `arquitetura-estado.md` afirma
-que ela não tem check-ins, e isso está errado. Há 1 duplicata real (Jacqueline em 2026-03-25,
-com `estado_prontidao` 3 e 8 no mesmo dia), resolvida por construção nos docs novos pelo id
-determinístico de D2.3.
+**Esvaziada em set/2026.** Os 50 documentos foram apagados junto com as `sessions` — a
+auditoria tinha encontrado 12 check-ins da Jacqueline (apesar de 0 sessões), 42 docs gravando
+`data` como `"DD/MM"` sem ano, e 1 duplicata real dela em 2026-03-25 com prontidão 3 e 8.
+Nada disso precisa mais ser migrado. Backup em `backups/checkins-2026-09-21.json`.
 
 | Campo | Nota |
 |---|---|
 | `student_id` | FK |
 | `session_id` | FK — vincula o check-in a uma sessão específica |
-| `data` / `timestamp` | Data/hora. **Divergente de `sessions`, que usa `date`.** Auditado em set/2026: dos 50 docs, 42 gravam `data` como `"DD/MM"` **sem ano** e 8 como pt-BR completo — nenhum em ISO. Check-ins novos nascem em ISO com doc id determinístico `{student_id}_{data_iso}` (D2.3); os antigos seguem no formato velho, pendentes de migração |
+| `data` / `timestamp` | Data/hora. **Divergente de `sessions`, que usa `date`.** Docs novos gravam `data` em ISO `YYYY-MM-DD`, com doc id determinístico `{student_id}_{data_iso}` (D2.3). O formato antigo (`"DD/MM"` sem ano) morreu com o esvaziamento da coleção |
 | `estado_prontidao` | Resposta da pergunta obrigatória de prontidão — usado extensivamente em `momentum-aluno.html` |
 | `sono` | Qualidade de sono |
 | `alimentacao` | Alimentação adequada |

@@ -72,6 +72,20 @@ FD_i  = 90 / descanso_s_i        (fator de densidade; referência 90s)
 Metabólica_i = CargaNorm_i × FTT_i × SV_i × FD_i
 ```
 
+**Na v1, `descanso_s` é o descanso PRESCRITO** (`alvo.descanso_s`, que viaja da prescrição
+para a sessão por D3.5), não o executado. O descanso é tratado como **output para a aluna** —
+exibido junto do cronômetro na tela de treino — e não como input do modelo.
+
+Consequência declarada: **FD reflete a intenção de programação e não varia com a execução.**
+Duas sessões do mesmo exercício, uma cumprida com 90s de pausa e outra com 180s, produzem a
+mesma Metabólica. O que FD mede na v1 é a densidade *prescrita* pelo PT, não a densidade
+*realizada* pela aluna.
+
+Isso é decisão de escopo, não limitação técnica: capturar o descanso real é barato — o
+cronômetro já roda e o valor é descartado — e está registrado como pendência de v2. A função
+`onSessionWrite` já lê o campo executado quando ele existe, caindo para o prescrito quando
+não; ligar a captura no cliente basta para FD passar a medir execução, sem tocar no modelo.
+
 ### 2d · Radar do aluno (proporção dimensional)
 
 Mesma fórmula, camada de apresentação diferente:
