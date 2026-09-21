@@ -64,10 +64,15 @@ function cargaNorm(ex) {
   const temSeries = Array.isArray(ex.series) && ex.series.length > 0;
   const temAchatado = ex.kg != null && ex.r != null && ex.s != null;
 
-  // series[] é a fonte quando é o registro completo da execução. No corpus
-  // legado, 176 de 1556 exercícios têm series[] truncado (menos entradas que
-  // `s`) — ali os campos achatados são o registro mais completo, e somar as
-  // séries parciais subcontaria o volume em até 75%.
+  // series[] é a fonte quando é o registro completo da execução.
+  //
+  // O ramo achatado abaixo é CÓDIGO MORTO no corpus atual: as 355 sessões
+  // legadas foram apagadas em set/2026 (escala única, decisão do PT) e o
+  // cliente só grava o formato aninhado do C1, sem `s`/`r`/`kg` no topo.
+  // Mantido porque é inofensivo e porque `series.length === s` era a única
+  // defesa contra um problema real do legado: 176 de 1556 exercícios tinham
+  // series[] truncado, e somar as séries parciais subcontaria o volume em até
+  // 75%. Só volta a valer se algum script reintroduzir o formato achatado.
   const seriesCompleta = temSeries && (!temAchatado || ex.series.length === ex.s);
 
   if (seriesCompleta) {

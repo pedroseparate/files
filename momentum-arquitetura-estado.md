@@ -359,6 +359,54 @@ Com FC fora de CargaNorm, exercícios isolados (Extensora, Flexora, Rosca, Aduto
 | Wearables (FC cardíaca) | Reservado para versão premium. Estrutura do modelo já comporta. |
 | Instagram session card | Card de resumo de sessão estilo Strava, glassmorphism, "hemômetro", frase gerada por IA. Feature planejada. |
 
+### `sessions` esvaziada — escala única de Metabólica (set/2026)
+
+As 355 sessões legadas foram **apagadas**. Decisão do PT: não manter duas escalas de
+Metabólica convivendo. A função calculava `cn × FD`; §2c define `CargaNorm × FTT × SV × FD`,
+e SV varia de 0,2 a 9 entre exercícios — a diferença é de escala, não de arredondamento.
+
+**Por que apagar em vez de reprocessar.** `descanso_s` estava ausente em **100%** dos 1.594
+exercícios legados, então reprocessar aplicaria `FD = 1` a todos: escala única, porém com a
+Metabólica cega para densidade — metade do que o componente existe para medir. Somado a isso,
+116 medições vinham do fallback de coeficientes genéricos e 176 exercícios tinham `series[]`
+truncado. O corpus não servia para calibração.
+
+**Backup:** `backups/sessions-2026-09-19.json` (355 docs, 1.594 exercícios, 1,5MB,
+sha256 `3666a6c6af34f05227c0d13abf2c503f`), fora do repositório, com cópia redundante `.bak`.
+A exclusão foi feita em lotes, após verificar que todo doc do banco constava do backup.
+
+**Consequência:** a primeira sessão da Jacqueline passa a ser a primeira do corpus, na escala
+§2c desde o início — que era o objetivo. Os scores de seed em `students` **não** foram
+apagados e agora não têm sessões por trás: `scores.*` e `ritmo_estado` dos nove alunos são
+valores sem origem até a Fase 2 de D1.4 entrar. Pendência aberta.
+
+**Ressalva registrada:** as 21 sessões de `julia_duzzi` foram apagadas junto, apesar de
+indícios de que ela é atleta real — ver abaixo. Estão no backup.
+
+### `julia_duzzi` — sintética ou real? (contradição não resolvida)
+
+Este documento afirma as duas coisas: *"Simulação Julia Duzzi (página de demo de atleta)"*
+em Estado Atual do Projeto, e *"Atletas atuais no sistema: Julia Duzzi, Enrique"* em Contexto
+do PT. O `CLAUDE.md` repete a segunda.
+
+Indícios levantados em set/2026 de que o dado é **real**:
+
+- É a **única** dos dez alunos **sem `email`** — os outros nove têm o padrão de seed
+  `nome@email.com`.
+- `anamnese.observacoes` traz observação de quem acompanhou a execução: *"Treino elaborado
+  por PT externo. Protocolo baseado em máquinas com foco em isolamento de inferiores. PSE
+  naturalmente alto (8.6–9.7) — padrão da aluna."*
+- **A faixa de PSE da nota bate com o dado gravado** (9.1, 9.4, 9.6, 9.5, 8.6, 9.8).
+- É citada como **evidência em duas decisões arquiteturais fechadas** — a remoção do Score
+  Momentum único e o Momentum Dimensional usam o A/B/C/D/E assimétrico dela como caso.
+- `scores` dispersos (6.19 / 6.67 / 6.67 / 3.84 / 7.14), sem o artefato de valores uniformes
+  que marca os dados sintéticos.
+- Nenhum script do projeto cria alunos; os dois que a mencionam são de correção retroativa.
+
+**Não resolvido.** O PT optou por apagar mesmo assim. As 21 sessões estão no backup e podem
+ser restauradas. Se ela for atleta real, este documento precisa parar de chamá-la de
+simulação — foi essa contradição que quase levou à exclusão silenciosa de dado real.
+
 ### Mapa nome-legado → exercise_id
 
 21 das 355 sessões têm ao menos um exercício resolvido pelo fallback genérico
