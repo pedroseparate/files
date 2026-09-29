@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Victor + Momentum</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600;1,700&family=IBM+Plex+Mono:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════
+   TOKENS — extraídos de momentum-aluno.html, sem alteração.
+   As cores dimensionais já existiam no arquivo (DIM_COLS):
+   neural rgba(150,144,220,.9) · mecanica var(--copper2) · metabolica rgba(106,160,80,.85)
+   ═══════════════════════════════════════════════════════════ */
+:root{
+  --bg:   #271f13;
+  --bg2:  #2e2618;
+  --bg3:  #352d1e;
+  --bg4:  #3c3425;
+  --ink:  rgba(200,160,96,.90);
+  --ink2: rgba(200,160,96,.78);
+  --ink3: rgba(200,160,96,.52);
+  --b:    rgba(200,160,96,.10);
+  --b2:   rgba(200,160,96,.18);
+  --b3:   rgba(200,160,96,.30);
+  --copper:#8a6030;--copper2:#a07840;
+  --gold:  #c8a060;--gold2:#ddb870;--gold3:#e8cc90;
+  --moss:  #4a6832;--moss2:#5a8040;--moss3:#6aa050;
+  --slate: #2e5060;--slate2:#3a6878;
+  --danger:#8a3020;--danger2:#b84030;
+  --page:  #f5f0e6;
+
+  /* dimensões — herdadas do app, não inventadas */
+  --dim-n:   rgba(150,144,220,.90);
+  --dim-n-d: rgba(150,144,220,.22);
+  --dim-m:   var(--copper2);
+  --dim-m-d: rgba(160,120,64,.22);
+  --dim-met: rgba(106,160,80,.85);
+  --dim-met-d: rgba(106,160,80,.20);
+  /* "de jogo" = mesma matiz moss, mais intensa. Token que já existia. */
+  --dim-met-jogo: var(--moss3);
+}
+
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html{-webkit-text-size-adjust:100%;}
+body{
+  background:var(--bg);color:var(--ink);
+  font-family:'IBM Plex Mono',monospace;font-size:13px;line-height:1.6;
+  overflow-x:hidden;
+}
+.wrap{max-width:430px;margin:0 auto;padding:0 20px;position:relative;}
+
+/* grão sutil, igual ao app */
+body::after{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;opacity:.02;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23g)'/%3E%3C/svg%3E");
+}
+
+:focus-visible{outline:2px solid var(--gold2);outline-offset:3px;border-radius:2px;}
+
+/* ═══ COMPONENTE DE BARRA EM BLOCOS ═══
+   3 blocos = alta · 2 = média · 1 = baixa · 4º só no estado "+ Momentum" */
+.dim{display:flex;align-items:center;gap:10px;}
+.dim-lbl{
+  font-size:8px;text-transform:uppercase;letter-spacing:.18em;color:var(--ink3);
+  width:64px;flex-shrink:0;
+}
+.bar{display:flex;gap:3px;align-items:center;position:relative;}
+.blk{
+  width:26px;height:12px;border-radius:1px;flex-shrink:0;
+  background:var(--track);position:relative;overflow:hidden;
+}
+.blk::after{
+  content:'';position:absolute;inset:0;background:var(--slot);border-radius:1px;
+  transform:scaleX(1);transform-origin:left center;
+  transition:transform 420ms cubic-bezier(.34,1.56,.64,1),background-color 520ms ease;
+  transition-delay:var(--d,0ms);
+}
+.blk.off::after{transform:scaleX(0);}
+/* 4º bloco: não ocupa espaço no estado 1 */
+.blk4{width:0;margin-left:-3px;
+  transition:width 420ms cubic-bezier(.34,1.56,.64,1),margin-left 420ms ease;
+  transition-delay:var(--d,0ms);}
+.on .blk4{width:26px;margin-left:0;}
+.bar[data-dim="n"]   { --slot:var(--dim-n);   --track:var(--dim-n-d);   }
+.bar[data-dim="m"]   { --slot:var(--dim-m);   --track:var(--dim-m-d);   }
+.bar[data-dim="met"] { --slot:var(--dim-met); --track:var(--dim-met-d); }
+.dim-src{
+  font-size:8px;color:var(--ink3);line-height:1.6;margin-top:6px;
+  padding-left:74px;letter-spacing:.02em;
+}
+
+/* fileira de dias */
+.days{display:flex;gap:5px;padding-left:74px;margin-top:9px;align-items:center;flex-wrap:nowrap;}
+.day{
+  width:9px;height:9px;border-radius:50%;
+  background:var(--dim-m);border:1px solid transparent;
+  transition:background-color 300ms ease,border-color 300ms ease,opacity 300ms ease;
+  transition-delay:var(--d,0ms);
+}
+.day.dim{background:transparent;border-color:var(--b2);}
+.day.flex{background:transparent;border:1px dashed var(--copper2);opacity:.75;}
+.days-lbl{font-size:8px;color:var(--ink3);margin-left:9px;letter-spacing:.04em;white-space:nowrap;}
+
+/* ═══ HERO ═══ */
+.hero{padding:56px 0 40px;position:relative;}
+.hero-glow{
+  position:absolute;left:50%;top:26%;width:340px;height:340px;
+  transform:translate(-50%,-50%);pointer-events:none;z-index:0;
+  background:radial-gradient(circle,rgba(200,160,96,.10) 0%,transparent 68%);
+  opacity:.45;transition:opacity 800ms ease;transition-delay:var(--d,0ms);
+}
+.hero > *:not(.hero-glow){position:relative;z-index:1;}
+
+.lockup{
+  font-family:'Bebas Neue',sans-serif;letter-spacing:.06em;line-height:1;
+  font-size:34px;color:var(--gold2);display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;
+}
+.lockup .plus{
+  color:var(--gold3);
+  clip-path:inset(0 100% 0 0);
+  transition:clip-path 450ms cubic-bezier(.22,1,.36,1);
+  transition-delay:var(--d,0ms);
+  white-space:nowrap;
+}
+.head-stack{position:relative;margin:18px 0 26px;min-height:104px;}
+.head{
+  font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:300;
+  font-size:31px;line-height:1.24;color:var(--ink);
+  position:absolute;inset:0;
+}
+.head.out{opacity:0;transform:translateY(-8px);filter:blur(4px);
+  transition:opacity 300ms ease-in,transform 300ms ease-in,filter 300ms ease-in;}
+.head.in{opacity:1;transform:none;filter:none;
+  transition:opacity 450ms cubic-bezier(.22,1,.36,1),transform 450ms cubic-bezier(.22,1,.36,1),filter 450ms cubic-bezier(.22,1,.36,1);
+  transition-delay:var(--d,0ms);}
+.head.pre{opacity:0;transform:translateY(8px);filter:blur(4px);}
+
+.dims{display:flex;flex-direction:column;gap:22px;margin-bottom:30px;}
+
+.tag{
+  display:inline-block;font-size:8px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--dim-n);border:1px solid rgba(150,144,220,.35);border-radius:2px;
+  padding:2px 6px;margin-left:8px;vertical-align:middle;
+  opacity:0;transform:translateX(-4px);
+  transition:opacity 300ms ease,transform 300ms ease;transition-delay:var(--d,0ms);
+}
+.tag.show{opacity:1;transform:none;}
+
+/* crossfade de rótulo */
+.swap{display:grid;}
+.swap > span{
+  grid-area:1/1;transition:opacity 260ms ease;transition-delay:var(--d,0ms);
+}
+.swap .b{opacity:0;}
+
+/* sweep de brilho na Mecânica (sinal de "otimizada", sem mudar tamanho) */
+.bar .shine{
+  position:absolute;inset:0;pointer-events:none;border-radius:1px;
+  background:linear-gradient(90deg,transparent,rgba(232,204,144,.55),transparent);
+  transform:translateX(-110%);opacity:0;
+}
+.on .bar[data-dim="m"] .shine{animation:sweep 600ms ease-out var(--d,0ms) 1;}
+@keyframes sweep{
+  0%{transform:translateX(-110%);opacity:0;}
+  18%{opacity:1;}
+  100%{transform:translateX(110%);opacity:0;}
+}
+/* pulso único no 4º bloco do Neural */
+.on .bar[data-dim="n"] .blk4{animation:pulse 500ms ease-out var(--d,0ms) 1;}
+@keyframes pulse{
+  0%{box-shadow:0 0 0 0 rgba(232,204,144,0);}
+  40%{box-shadow:0 0 10px 2px rgba(232,204,144,.55);}
+  100%{box-shadow:0 0 0 0 rgba(232,204,144,0);}
+}
+/* Metabólica muda de natureza: sweep de cor moss → moss intenso */
+.on .bar[data-dim="met"] .blk::after{background:var(--dim-met-jogo);}
+
+.closing{
+  font-size:9px;color:var(--ink3);line-height:1.8;letter-spacing:.02em;
+  border-top:1px solid var(--b);padding-top:14px;margin-top:4px;
+  opacity:0;transform:translateY(4px);
+  transition:opacity 400ms ease-out,transform 400ms ease-out;transition-delay:var(--d,0ms);
+}
+.closing.show{opacity:1;transform:none;}
+
+/* ═══ TOGGLE ═══ */
+.toggle-row{display:flex;align-items:center;gap:12px;margin:4px 0 28px;}
+.sw{
+  width:52px;height:28px;border-radius:14px;flex-shrink:0;
+  background:var(--bg3);border:1px solid var(--b2);
+  position:relative;cursor:pointer;
+  transition:background-color 300ms ease,border-color 300ms ease;
+}
+.sw[aria-checked="true"]{background:var(--copper);border-color:var(--copper2);}
+.sw::after{
+  content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;
+  background:var(--gold2);
+  transition:transform 300ms cubic-bezier(.65,0,.35,1);
+}
+.sw[aria-checked="true"]::after{transform:translateX(24px);}
+.sw-lbl{
+  font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink2);
+  transition:color 300ms ease;
+}
+.sw[aria-checked="true"] + .sw-lbl{color:var(--gold2);}
+
+
+/* ═══ CAPÍTULOS ═══ */
+.chap{padding:46px 0 10px;border-top:1px solid var(--b);margin-top:40px;}
+.chap-open{margin-bottom:26px;}
+.chap-kicker{
+  font-size:8px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink3);
+  margin-bottom:14px;
+}
+.chap h2{
+  font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:300;
+  font-size:26px;line-height:1.26;color:var(--ink);margin-bottom:16px;
+}
+.chap p{font-size:11px;line-height:1.85;color:var(--ink2);margin-bottom:14px;}
+.foot{
+  font-size:8px;color:var(--ink3);letter-spacing:.04em;line-height:1.7;
+  border-left:1px solid var(--b2);padding-left:10px;margin:18px 0;
+}
+.close-line{
+  font-family:'Cormorant Garamond',serif;font-style:italic;font-size:16px;
+  color:var(--gold2);line-height:1.5;margin-top:24px;padding-top:16px;border-top:1px solid var(--b);
+}
+.tiny{font-size:8px;color:var(--ink3);letter-spacing:.06em;margin-top:10px;}
+
+/* ═══ CAP 1 · espelho ═══ */
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;}
+.chip{
+  font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.06em;
+  padding:7px 10px;border:1px solid var(--b2);border-radius:2px;
+  background:transparent;color:var(--ink2);cursor:pointer;
+  transition:border-color 200ms ease,color 200ms ease,background-color 200ms ease;
+}
+.chip[aria-pressed="true"]{border-color:var(--dim-n);color:var(--gold2);background:rgba(150,144,220,.10);}
+.conn{display:block;height:26px;width:100%;}
+.conn line{stroke:var(--dim-n);stroke-width:1;stroke-dasharray:26;stroke-dashoffset:26;}
+.conn.draw line{transition:stroke-dashoffset 350ms ease-out;stroke-dashoffset:0;}
+.mirror{
+  display:grid;grid-template-columns:1fr 1fr;gap:1px;
+  background:var(--b);border:1px solid var(--b);border-radius:3px;overflow:hidden;
+}
+.mcol{background:var(--bg2);padding:14px 12px;}
+.mcol-h{
+  font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);
+  margin-bottom:8px;line-height:1.5;min-height:22px;
+}
+.mcol-name{
+  font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;
+  color:var(--gold2);line-height:1.3;margin-bottom:12px;min-height:40px;
+}
+.mini{display:flex;align-items:center;gap:7px;margin-bottom:6px;}
+.mini-lbl{font-size:7px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);width:26px;flex-shrink:0;}
+.mini .blk{width:14px;height:8px;}
+.ct{
+  display:flex;align-items:center;gap:7px;margin-top:11px;padding-top:9px;border-top:1px solid var(--b);
+}
+.ct-lbl{font-size:7px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);}
+.ct-dots{display:flex;gap:3px;}
+.ct-dot{width:5px;height:5px;border-radius:50%;background:var(--b2);}
+.ct-dot.on{background:var(--gold);}
+
+/* ═══ CAP 2 · semana real ═══ */
+.instr{font-size:9px;color:var(--ink3);letter-spacing:.04em;margin:18px 0 9px;}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+.wd{
+  border:1px solid var(--b2);border-radius:2px;background:transparent;
+  padding:7px 2px;cursor:pointer;text-align:center;
+  transition:border-color 200ms ease,background-color 200ms ease;
+}
+.wd-n{font-size:8px;letter-spacing:.08em;color:var(--ink3);text-transform:uppercase;}
+.wd[aria-pressed="true"]{border-color:var(--dim-met);background:rgba(106,160,80,.12);}
+.wd[aria-pressed="true"] .wd-n{color:var(--dim-met-jogo);}
+.seg{display:flex;gap:4px;margin:16px 0 4px;align-items:center;}
+.seg-lbl{font-size:9px;color:var(--ink3);letter-spacing:.04em;margin-right:4px;}
+.segb{
+  font-family:'IBM Plex Mono',monospace;font-size:10px;width:30px;height:26px;
+  border:1px solid var(--b2);border-radius:2px;background:transparent;color:var(--ink2);cursor:pointer;
+  transition:border-color 200ms ease,color 200ms ease,background-color 200ms ease;
+}
+.segb[aria-pressed="true"]{border-color:var(--dim-m);color:var(--gold2);background:rgba(160,120,64,.14);}
+.plan{display:flex;flex-direction:column;gap:5px;margin-top:16px;}
+.pday{
+  display:grid;grid-template-columns:34px 1fr;gap:9px;align-items:center;
+  padding:8px 9px;border:1px solid var(--b);border-radius:2px;background:var(--bg2);
+  transition:background-color 250ms ease,border-color 250ms ease,opacity 250ms ease;
+}
+.pday.rest{opacity:.42;}
+.pday-d{font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);}
+.pday-t{font-size:9px;color:var(--ink2);line-height:1.4;margin-bottom:5px;}
+.pday.fut .pday-t{color:var(--dim-met-jogo);}
+.pday-bars{display:flex;flex-direction:column;gap:3px;}
+.pday .mini .blk{width:12px;height:6px;}
+.warn{font-size:7px;color:var(--danger2);letter-spacing:.04em;margin-top:3px;}
+.dyn{
+  font-size:10px;color:var(--ink2);line-height:1.7;margin-top:16px;
+  padding:11px 12px;border:1px solid var(--b2);border-radius:2px;background:var(--bg2);
+}
+.dyn b{color:var(--gold2);font-weight:400;}
+.princ{list-style:none;margin:18px 0 0;}
+.princ li{
+  font-size:9px;color:var(--ink3);line-height:1.7;padding-left:13px;position:relative;margin-bottom:5px;
+}
+.princ li::before{content:'·';position:absolute;left:3px;color:var(--copper2);}
+
+/* ═══ CAP 3 · gráfico ═══ */
+.chart{margin:20px 0 6px;}
+.chart svg{display:block;width:100%;height:auto;}
+.chart path{fill:none;stroke-linejoin:round;stroke-linecap:round;}
+.chart .jogo{stroke:var(--dim-met-jogo);stroke-width:1.6;}
+.chart .cont{stroke:var(--ink2);stroke-width:1.4;stroke-dasharray:4 4;}
+.chart path.anim{stroke-dasharray:var(--len);stroke-dashoffset:var(--len);}
+.chart.drawn path.anim{transition:stroke-dashoffset 1400ms ease-out;stroke-dashoffset:0;}
+.chart.drawn .cont{stroke-dasharray:3 3;stroke-dashoffset:0;transition:opacity 600ms ease 700ms;}
+.legend{display:flex;gap:16px;font-size:8px;color:var(--ink3);letter-spacing:.06em;margin-top:8px;}
+.legend i{display:inline-block;width:14px;height:0;border-top:2px solid;margin-right:5px;vertical-align:middle;}
+
+
+/* ═══ CAP 4 · fiação ═══ */
+.serie{
+  font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.04em;
+  color:var(--ink2);background:var(--bg2);border:1px solid var(--b2);border-radius:2px;
+  padding:11px 12px;line-height:1.7;margin:18px 0 6px;
+}
+.serie b{color:var(--gold2);font-weight:400;}
+.serie-tag{
+  display:inline-block;font-size:7px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--ink3);border:1px solid var(--b2);border-radius:2px;padding:1px 5px;margin-left:6px;
+}
+.wiring{position:relative;display:grid;grid-template-columns:1fr 92px;gap:0 10px;margin-top:8px;}
+.wires{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible;}
+.wires path{fill:none;stroke-width:1.1;opacity:.5;transition:opacity 220ms ease,stroke-width 220ms ease;}
+.wires path.dim{opacity:.12;}
+.wires path.hot{opacity:1;stroke-width:1.8;}
+.wires path.norm{stroke-dasharray:3 3;}
+.wcol{display:flex;flex-direction:column;justify-content:space-around;gap:7px;position:relative;z-index:1;}
+.inp,.dimt{
+  font-family:'IBM Plex Mono',monospace;text-align:left;cursor:pointer;
+  background:var(--bg2);border:1px solid var(--b2);border-radius:2px;
+  color:var(--ink2);transition:border-color 220ms ease,color 220ms ease,opacity 220ms ease;
+}
+.inp{font-size:9px;line-height:1.45;padding:8px 9px;}
+.dimt{font-size:8px;letter-spacing:.12em;text-transform:uppercase;padding:9px 7px;text-align:center;}
+.inp.norm{border-style:dashed;}
+.wiring.act .inp:not(.hot),.wiring.act .dimt:not(.hot){opacity:.34;}
+.inp.hot,.dimt.hot{color:var(--gold2);}
+.dimt[data-dim="n"].hot{border-color:var(--dim-n);}
+.dimt[data-dim="m"].hot{border-color:var(--dim-m);}
+.dimt[data-dim="met"].hot{border-color:var(--dim-met);}
+.inp[data-dim="n"].hot{border-color:var(--dim-n);}
+.inp[data-dim="m"].hot{border-color:var(--dim-m);}
+.inp[data-dim="met"].hot{border-color:var(--dim-met);}
+.inp[data-dim="all"].hot{border-color:var(--gold);}
+
+/* ═══ CAP 5 · recibo ═══ */
+.receipt{
+  position:relative;background:var(--bg2);margin:34px 0 10px;padding:30px 22px 26px;
+  border-left:1px solid var(--b);border-right:1px solid var(--b);
+}
+.receipt::before,.receipt::after{
+  content:'';position:absolute;left:0;right:0;height:9px;
+  background-image:radial-gradient(circle at 5px 0,transparent 5px,var(--bg2) 5px);
+  background-size:10px 9px;background-repeat:repeat-x;
+}
+.receipt::before{top:-8px;transform:rotate(180deg);}
+.receipt::after{bottom:-8px;}
+.rc-lock{
+  font-family:'Bebas Neue',sans-serif;font-size:21px;letter-spacing:.08em;
+  color:var(--gold2);text-align:center;line-height:1;
+}
+.rc-sub{
+  font-size:7px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink3);
+  text-align:center;margin-top:7px;
+}
+.rc-rule{border:0;border-top:1px dashed var(--b2);margin:20px 0;}
+.rc-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:13px;}
+.rc-k{font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);flex-shrink:0;}
+.rc-v{font-size:10px;color:var(--ink2);text-align:right;line-height:1.6;}
+.rc-big{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:.03em;color:var(--gold3);line-height:1;}
+.rc-ok{color:var(--moss3);}
+.rc-foot{
+  font-size:7px;letter-spacing:.1em;color:var(--ink3);text-align:center;
+  line-height:1.9;margin-top:22px;padding-top:16px;border-top:1px dashed var(--b2);
+}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    transition-duration:150ms!important;transition-delay:0ms!important;
+    animation-duration:150ms!important;animation-delay:0ms!important;animation-iteration-count:1!important;
+  }
+  .head.out,.head.pre{transform:none!important;filter:none!important;}
+  .closing{transform:none!important;}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ═══════════ 0 · HERO ═══════════ -->
+<section class="hero" id="hero" aria-label="Victor e Momentum">
+  <div class="hero-glow" id="glow"></div>
+
+  <div class="lockup">
+    <span>VICTOR</span><span class="plus" id="plus">+ MOMENTUM</span>
+  </div>
+
+  <div class="head-stack">
+    <h1 class="head in" id="head1">Victor já chega longe sozinho.</h1>
+    <h1 class="head pre" id="head2" aria-hidden="true">Imagina com o Momentum.</h1>
+  </div>
+
+  <div class="dims" id="dims">
+    <div>
+      <div class="dim">
+        <span class="dim-lbl">Neural</span>
+        <span class="bar" data-dim="n" id="bar-n">
+          <i class="blk off"></i><i class="blk off"></i><i class="blk off"></i><i class="blk off blk4" id="n4"></i>
+        </span>
+        <span class="tag" id="tag-n">+ velocidade</span>
+      </div>
+      <div class="dim-src">carga alta nos básicos da musculação</div>
+    </div>
+
+    <div>
+      <div class="dim">
+        <span class="dim-lbl">Mecânica</span>
+        <span class="bar" data-dim="m" id="bar-m">
+          <i class="blk off"></i><i class="blk off"></i><i class="blk off"></i>
+          <i class="shine"></i>
+        </span>
+      </div>
+      <div class="dim-src">massa muscular construída sem atalho</div>
+      <div class="days" id="days">
+        <i class="day"></i><i class="day"></i><i class="day"></i>
+        <i class="day"></i><i class="day"></i><i class="day"></i><i class="day"></i>
+        <span class="days-lbl swap" id="days-lbl">
+          <span class="a">custo: 3 dias fixos</span><span class="b">cabe em 1 a 3 dias</span>
+        </span>
+      </div>
+    </div>
+
+    <div>
+      <div class="dim">
+        <span class="dim-lbl">Metabólica</span>
+        <span class="bar" data-dim="met" id="bar-met">
+          <i class="blk off"></i><i class="blk off"></i><i class="blk off"></i><i class="blk off blk4" id="met4"></i>
+        </span>
+      </div>
+      <div class="dim-src">
+        <span class="swap" id="met-lbl">
+          <span class="a">2 jogos por semana + campeonatos — resistência geral</span>
+          <span class="b">2 jogos por semana + campeonatos — resistência de jogo</span>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="toggle-row">
+    <span class="sw" id="sw" role="switch" aria-checked="false" tabindex="0" aria-label="Ativar Momentum"></span>
+    <span class="sw-lbl">+ Momentum</span>
+  </div>
+
+  <p class="closing" id="closing">
+    Não é mais volume. É cada dimensão treinada pro jogo que você joga.
+  </p>
+</section>
+
+<!-- ═══════════ CAP 1 · NEURAL ═══════════ -->
+<section class="chap" id="cap1">
+  <div class="chap-open">
+    <div class="chap-kicker">Capítulo 1 · Neural</div>
+    <div class="dim">
+      <span class="dim-lbl">Neural</span>
+      <span class="bar" data-dim="n"><i class="blk"></i><i class="blk"></i><i class="blk"></i><i class="blk"></i></span>
+      <span class="tag show">+ velocidade</span>
+    </div>
+  </div>
+
+  <h2>Força você tem. A questão é quanto dela chega no campo.</h2>
+  <p>No agachamento, a subida leva um ou dois segundos, então dá tempo de produzir força. Numa arrancada, o pé fica menos de 0,2s no chão. Quem aplica mais força nesse intervalo chega antes.</p>
+  <div class="foot">isso tem nome: taxa de desenvolvimento de força (RFD).</div>
+
+  <div class="instr">Toque num gesto do jogo.</div>
+  <div class="chips" id="chips" role="group" aria-label="Gestos do jogo"></div>
+  <svg class="conn" id="conn" viewBox="0 0 100 26" preserveAspectRatio="none" aria-hidden="true">
+    <line x1="14" y1="0" x2="14" y2="26"></line>
+  </svg>
+  <div class="mirror">
+    <div class="mcol">
+      <div class="mcol-h">o que o jogo pede</div>
+      <div class="mcol-name" id="m-gesto">—</div>
+      <div id="m-bars-a"></div>
+      <div class="ct"><span class="ct-lbl">CT</span><span class="ct-dots" id="m-ct-a"></span></div>
+    </div>
+    <div class="mcol">
+      <div class="mcol-h">o que o exercício treina</div>
+      <div class="mcol-name" id="m-ex">—</div>
+      <div id="m-bars-b"></div>
+      <div class="ct"><span class="ct-lbl">CT</span><span class="ct-dots" id="m-ct-b"></span></div>
+    </div>
+  </div>
+
+  <p class="close-line">Esses exercícios não substituem seu treino. Abrem ele: curtos, sempre no começo, com o sistema nervoso descansado.</p>
+</section>
+
+<!-- ═══════════ CAP 2 · MECÂNICA ═══════════ -->
+<section class="chap" id="cap2">
+  <div class="chap-open">
+    <div class="chap-kicker">Capítulo 2 · Mecânica</div>
+    <div class="dim">
+      <span class="dim-lbl">Mecânica</span>
+      <span class="bar" data-dim="m"><i class="blk"></i><i class="blk"></i><i class="blk"></i></span>
+    </div>
+    <div class="days">
+      <i class="day"></i><i class="day flex"></i><i class="day flex"></i>
+      <i class="day dim"></i><i class="day dim"></i><i class="day dim"></i><i class="day dim"></i>
+      <span class="days-lbl">cabe em 1 a 3 dias</span>
+    </div>
+  </div>
+
+  <h2>O ABC foi feito pra quem treina 5, 6 vezes por semana.</h2>
+  <p>Na sua semana real, cada grupo volta a ser treinado a cada uma ou duas semanas, e a perna ainda divide recuperação com o fut.</p>
+
+  <div class="instr">Toque nos dias do seu fut.</div>
+  <div class="week" id="week" role="group" aria-label="Dias da semana"></div>
+
+  <div class="seg" role="group" aria-label="Dias de academia">
+    <span class="seg-lbl">Dias de academia:</span>
+    <button class="segb" data-n="1" aria-pressed="false">1</button>
+    <button class="segb" data-n="2" aria-pressed="false">2</button>
+    <button class="segb" data-n="3" aria-pressed="true">3</button>
+  </div>
+
+  <div class="plan" id="plan"></div>
+  <div class="dyn" id="dyn"></div>
+  <div class="tiny">Exemplo de distribuição. Sua prescrição sai do Momentum.</div>
+
+  <ul class="princ">
+    <li>potência sempre na abertura do treino</li>
+    <li>perna pesada longe da véspera do jogo</li>
+    <li>com poucos dias, corpo inteiro rende mais que divisão</li>
+  </ul>
+
+  <p class="close-line">Manter massa exige menos do que construir. O Momentum distribui o que precisa, nos dias que você tem.</p>
+</section>
+
+<!-- ═══════════ CAP 3 · METABÓLICA ═══════════ -->
+<section class="chap" id="cap3">
+  <div class="chap-open">
+    <div class="chap-kicker">Capítulo 3 · Metabólica</div>
+    <div class="dim">
+      <span class="dim-lbl">Metabólica</span>
+      <span class="bar" data-dim="met" id="bar-met-c3"><i class="blk"></i><i class="blk"></i><i class="blk"></i><i class="blk"></i></span>
+    </div>
+    <div class="dim-src">resistência de jogo</div>
+  </div>
+
+  <h2>O fut não atrapalha seu treino. Ele é treino.</h2>
+  <p>Society é tiro, pausa, tiro. Correr 30 minutos contínuos não prepara pra isso. O que decide o fim do jogo é repetir o sprint e recuperar entre um lance e outro.</p>
+
+  <div class="chart" id="chart">
+    <svg viewBox="0 0 320 96" preserveAspectRatio="none" aria-label="Perfil de intensidade: jogo versus corrida contínua">
+      <path class="cont" d="M0,47 L320,47"></path>
+      <path class="jogo anim" id="p-jogo" d=""></path>
+    </svg>
+    <div class="legend">
+      <span><i style="border-color:var(--dim-met-jogo)"></i>jogo</span>
+      <span><i style="border-color:var(--ink3)"></i>corrida contínua</span>
+    </div>
+    <div class="tiny">ilustrativo</div>
+  </div>
+
+  <p class="close-line">No Momentum, seus jogos entram na conta. Carga que não é contada vira fadiga que ninguém explica.</p>
+</section>
+
+<!-- ═══════════ CAP 4 · AUDITABILIDADE ═══════════ -->
+<section class="chap" id="cap4">
+  <div class="chap-kicker">Capítulo 4</div>
+  <h2>Nada aqui é achismo.</h2>
+
+  <div class="serie">
+    Agachamento · <b>120 kg × 6</b> · RIR <b>2</b> · PSE <b>8</b> · descanso <b>2min30</b>
+    <span class="serie-tag">exemplo</span>
+  </div>
+
+  <div class="instr">Toque num número — ou numa dimensão.</div>
+
+  <div class="wiring" id="wiring">
+    <svg class="wires" id="wires" aria-hidden="true"></svg>
+    <div class="wcol">
+      <button class="inp" data-dim="m"   id="i-m">kg × reps × séries</button>
+      <button class="inp" data-dim="n"   id="i-n">RIR · falhas de rep</button>
+      <button class="inp" data-dim="met" id="i-met">descanso · cadência · tempo sob tensão</button>
+      <button class="inp norm" data-dim="all" id="i-all">PSE <span style="color:var(--ink3)">· normalizador</span></button>
+    </div>
+    <div class="wcol">
+      <button class="dimt" data-dim="n"   id="d-n">Neural</button>
+      <button class="dimt" data-dim="m"   id="d-m">Mecânica</button>
+      <button class="dimt" data-dim="met" id="d-met">Metabólica</button>
+    </div>
+  </div>
+
+  <p style="margin-top:20px">Cada número que você vê tem origem: o que você fez, como sentiu, quanto sobrou.</p>
+</section>
+
+<!-- ═══════════ CAP 5 · CONVITE ═══════════ -->
+<section class="chap" id="cap5">
+  <div class="receipt">
+    <div class="rc-lock">VICTOR + MOMENTUM</div>
+    <div class="rc-sub">comprovante de entrada</div>
+
+    <hr class="rc-rule">
+
+    <div class="rc-row">
+      <span class="rc-k">Entrada</span>
+      <span class="rc-big">R$ 0,00</span>
+    </div>
+    <div class="rc-row">
+      <span class="rc-k">Forma de pagamento</span>
+      <span class="rc-v">dedicação · compromisso<br>intensidade</span>
+    </div>
+    <div class="rc-row">
+      <span class="rc-k">Saldo do Victor</span>
+      <span class="rc-v rc-ok">suficiente ✓</span>
+    </div>
+
+    <div class="rc-foot">
+      Emitido por João Pedro<br>Personal Trainer · CREF 207271-G/SP
+    </div>
+  </div>
+</section>
+
+</div>
+<script>
+'use strict';
+const RM = matchMedia('(prefers-reduced-motion: reduce)');
+const $ = s => document.querySelector(s);
+
+/* ── coreografia declarativa ──
+   delay de ida (ms). A volta usa a ordem reversa a 70% das durações. */
+const CUES = {
+  head:    0,
+  plus:    150,
+  head2:   250,
+  neural:  400,
+  mec:     700,
+  met:     1000,
+  glow:    1300,
+  closing: 1500,
+};
+const TOTAL = 1900;
+
+const el = {
+  hero:$('#hero'), plus:$('#plus'), h1:$('#head1'), h2:$('#head2'),
+  n4:$('#n4'), met4:$('#met4'), tagN:$('#tag-n'), barM:$('#bar-m'),
+  days:[...document.querySelectorAll('#days .day')],
+  daysLbl:$('#days-lbl'), metLbl:$('#met-lbl'), glow:$('#glow'),
+  closing:$('#closing'), sw:$('#sw'),
+};
+const setD = (node,ms) => node && node.style.setProperty('--d', (RM.matches?0:ms)+'ms');
+
+let on = false;
+
+function render(target){
+  const k = RM.matches ? 0 : 1;
+  const f = target ? 1 : 0.7;               // volta a 70%
+  const at = c => (target ? CUES[c] : (TOTAL - CUES[c]) * 0.7) * k * (target?1:1);
+  // na volta, a ordem se inverte: fechamento primeiro, lockup por último
+  const d = target
+    ? CUES
+    : { closing:0, glow:120, met:260, mec:460, neural:680, head2:880, plus:980, head:1020 };
+
+  el.hero.classList.toggle('on', target);
+
+  setD(el.plus, d.plus);
+  el.plus.style.clipPath = target ? 'inset(0 0 0 0)' : 'inset(0 100% 0 0)';
+
+  setD(el.h1, d.head);
+  el.h1.className = 'head ' + (target ? 'out' : 'in');
+  setD(el.h2, d.head2);
+  el.h2.className = 'head ' + (target ? 'in' : 'pre');
+  el.h1.setAttribute('aria-hidden', target ? 'true' : 'false');
+  el.h2.setAttribute('aria-hidden', target ? 'false' : 'true');
+
+  /* Neural: ganha o 4º bloco */
+  setD(el.n4, d.neural);
+  el.n4.classList.toggle('off', !target);
+  setD(el.tagN, d.neural + 160);
+  el.tagN.classList.toggle('show', target);
+
+  /* Mecânica: NÃO cresce. Só o custo muda. */
+  setD(el.barM.querySelector('.shine'), d.mec);
+  el.days.forEach((dot,i) => {
+    setD(dot, d.mec + (target ? i*60 : (6-i)*60*0.7));
+    dot.classList.toggle('dim',  target ? i>2 : i>2);
+    dot.classList.toggle('flex', target && (i===1 || i===2));
+  });
+  setD(el.daysLbl.querySelector('.a'), d.mec+200);
+  setD(el.daysLbl.querySelector('.b'), d.mec+200);
+  el.daysLbl.querySelector('.a').style.opacity = target ? 0 : 1;
+  el.daysLbl.querySelector('.b').style.opacity = target ? 1 : 0;
+
+  /* Metabólica: sobe e muda de natureza */
+  setD(el.met4, d.met);
+  el.met4.classList.toggle('off', !target);
+  el.hero.querySelectorAll('#bar-met .blk').forEach((b,i) => setD(b, d.met + i*70));
+  setD(el.metLbl.querySelector('.a'), d.met+200);
+  setD(el.metLbl.querySelector('.b'), d.met+200);
+  el.metLbl.querySelector('.a').style.opacity = target ? 0 : 1;
+  el.metLbl.querySelector('.b').style.opacity = target ? 1 : 0;
+
+  setD(el.glow, d.glow);
+  el.glow.style.opacity = target ? .95 : .45;
+
+  setD(el.closing, d.closing);
+  el.closing.classList.toggle('show', target);
+
+  el.sw.setAttribute('aria-checked', String(target));
+}
+
+function toggle(){
+  on = !on;
+  if (navigator.vibrate) { try{ navigator.vibrate(10); }catch(e){} }
+  render(on);
+}
+el.sw.addEventListener('click', toggle);
+el.sw.addEventListener('keydown', e => {
+  if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggle(); }
+});
+
+/* ── carga inicial: barras preenchem bloco a bloco ──
+   única animação automática da página */
+function boot(){
+  const bars = [['#bar-n',0], ['#bar-m',120], ['#bar-met',240]];
+  bars.forEach(([sel, base]) => {
+    document.querySelectorAll(sel + ' .blk').forEach((b,i) => {
+      if (i === 3) return;                  // 4º bloco só no estado "+ Momentum"
+      setD(b, RM.matches ? 0 : base + i*80);
+      requestAnimationFrame(() => b.classList.remove('off'));
+    });
+  });
+  // dias do estado 1: 3 acesos
+  el.days.forEach((dot,i) => dot.classList.toggle('dim', i > 2));
+}
+setTimeout(boot, RM.matches ? 0 : 420);
+
+/* ═══════════════════════════════════════════════════════════
+   DADOS — fáceis de editar
+   nível: 3 = alta · 2 = média · 1 = baixa
+   Gesto e exercício compartilham o MESMO perfil na mesma linha:
+   a correspondência visual das barras é o argumento.
+   ═══════════════════════════════════════════════════════════ */
+const GESTOS = [
+  { gesto:'Arrancar',               ex:'salto horizontal / sprint curto',       n:3, m:2, met:1, ct:3 },
+  { gesto:'Frear e mudar direção',  ex:'pliometria lateral',                    n:3, m:2, met:1, ct:3 },
+  { gesto:'Saltar e cabecear',      ex:'salto vertical',                        n:3, m:1, met:1, ct:2 },
+  { gesto:'Chutar',                 ex:'arremesso rotacional de medicine ball', n:3, m:1, met:1, ct:3 },
+  { gesto:'Disputar corpo',         ex:'unilaterais e estabilidade',            n:2, m:3, met:2, ct:2 },
+];
+
+const SESSOES = {
+  fut:      { nome:'Fut',                     n:3, m:2, met:3 },
+  inteiro:  { nome:'Corpo inteiro + potência',n:3, m:3, met:2 },
+  inferior: { nome:'Inferiores + potência',   n:3, m:3, met:2 },
+  superior: { nome:'Superiores',              n:2, m:3, met:2 },
+  descanso: { nome:'Descanso',                n:0, m:0, met:0 },
+};
+const DIAS = ['seg','ter','qua','qui','sex','sáb','dom'];
+
+/* ── componente de barra reutilizado em toda a página ── */
+function barraHTML(dim, nivel, cls){
+  let h = '<span class="bar ' + (cls||'') + '" data-dim="' + dim + '">';
+  for (let i = 0; i < 3; i++) h += '<i class="blk' + (i < nivel ? '' : ' off') + '"></i>';
+  return h + '</span>';
+}
+function trioHTML(d){
+  return [['n','N',d.n],['m','M',d.m],['met','Met',d.met]].map(([k,lbl,v]) =>
+    '<span class="mini"><span class="mini-lbl">' + lbl + '</span>' + barraHTML(k, v) + '</span>'
+  ).join('');
+}
+function ctHTML(v){
+  let h = '';
+  for (let i = 0; i < 3; i++) h += '<i class="ct-dot' + (i < v ? ' on' : '') + '"></i>';
+  return h;
+}
+
+/* ═══ CAP 1 · espelho campo ↔ academia ═══ */
+const chips = document.getElementById('chips');
+const conn  = document.getElementById('conn');
+let gestoAtivo = 0;
+
+chips.innerHTML = GESTOS.map((g,i) =>
+  '<button class="chip" data-i="' + i + '" aria-pressed="' + (i===0) + '">' + g.gesto + '</button>'
+).join('');
+
+function pintarEspelho(i){
+  const g = GESTOS[i];
+  gestoAtivo = i;
+  chips.querySelectorAll('.chip').forEach(c =>
+    c.setAttribute('aria-pressed', String(+c.dataset.i === i)));
+  document.getElementById('m-gesto').textContent = g.gesto;
+  document.getElementById('m-ex').textContent    = g.ex;
+  document.getElementById('m-bars-a').innerHTML  = trioHTML(g);
+  document.getElementById('m-bars-b').innerHTML  = trioHTML(g);
+  document.getElementById('m-ct-a').innerHTML    = ctHTML(g.ct);
+  document.getElementById('m-ct-b').innerHTML    = ctHTML(g.ct);
+  // conector se desenha a cada troca
+  conn.classList.remove('draw');
+  void conn.offsetWidth;
+  conn.classList.add('draw');
+}
+chips.addEventListener('click', e => {
+  const b = e.target.closest('.chip');
+  if (b) pintarEspelho(+b.dataset.i);
+});
+pintarEspelho(0);
+
+/* ═══ CAP 2 · a semana real ═══ */
+const week = document.getElementById('week');
+const plan = document.getElementById('plan');
+const dyn  = document.getElementById('dyn');
+let fut = new Set();
+let nAcad = 3;
+
+week.innerHTML = DIAS.map((d,i) =>
+  '<button class="wd" data-i="' + i + '" aria-pressed="false" aria-label="' + d + '"><span class="wd-n">' + d + '</span></button>'
+).join('');
+
+/* escolhe n dias livres maximizando o menor intervalo circular entre eles */
+function melhorDistribuicao(livres, n){
+  if (livres.length < n) return null;
+  let melhor = null, melhorGap = -1;
+  const combina = (inicio, atual) => {
+    if (atual.length === n){
+      let gap = Infinity;
+      for (let i = 0; i < atual.length; i++){
+        const a = atual[i], b = atual[(i+1) % atual.length];
+        const d = n === 1 ? 7 : ((b - a + 7) % 7) || 7;
+        if (d < gap) gap = d;
+      }
+      if (gap > melhorGap){ melhorGap = gap; melhor = atual.slice(); }
+      return;
+    }
+    for (let i = inicio; i < livres.length; i++) combina(i+1, atual.concat(livres[i]));
+  };
+  combina(0, []);
+  return melhor;
+}
+
+const vespera = d => fut.has((d + 1) % 7);
+
+/* atribui os tipos de sessão respeitando a regra da véspera de jogo */
+function atribuir(dias, n){
+  const tipos = n === 1 ? ['inteiro']
+              : n === 2 ? ['inteiro','inteiro']
+              : ['inferior','superior','inteiro'];
+  const pesado = t => t === 'inferior' || t === 'inteiro';
+  const perms = [];
+  const gerar = (resto, atual) => {
+    if (!resto.length) { perms.push(atual); return; }
+    resto.forEach((t,i) => gerar(resto.slice(0,i).concat(resto.slice(i+1)), atual.concat(t)));
+  };
+  gerar(tipos, []);
+  let melhor = perms[0], menos = Infinity;
+  perms.forEach(p => {
+    const v = p.reduce((acc,t,i) => acc + (pesado(t) && vespera(dias[i]) ? 1 : 0), 0);
+    if (v < menos){ menos = v; melhor = p; }
+  });
+  return melhor.map((t,i) => ({ dia: dias[i], tipo: t, aviso: pesado(t) && vespera(dias[i]) }));
+}
+
+function renderSemana(){
+  const livres = [0,1,2,3,4,5,6].filter(d => !fut.has(d));
+  const dias   = melhorDistribuicao(livres, nAcad);
+
+  if (!dias){
+    plan.innerHTML = '<div class="dyn" style="color:var(--danger2)">Não cabem ' + nAcad +
+      ' dias de academia com esse calendário. Tire um dia de fut ou reduza a academia.</div>';
+    dyn.innerHTML = '';
+    return;
+  }
+
+  const atribuicao = atribuir(dias, nAcad);
+  const porDia = {};
+  atribuicao.forEach(a => porDia[a.dia] = a);
+
+  plan.innerHTML = DIAS.map((nome,d) => {
+    let key = 'descanso', aviso = false;
+    if (fut.has(d)) key = 'fut';
+    else if (porDia[d]) { key = porDia[d].tipo; aviso = porDia[d].aviso; }
+    const s = SESSOES[key];
+    const vazio = key === 'descanso';
+    return '<div class="pday ' + (vazio?'rest ':'') + (key==='fut'?'fut':'') + '">' +
+      '<span class="pday-d">' + nome + '</span>' +
+      '<span><span class="pday-t">' + s.nome + '</span>' +
+      '<span class="pday-bars">' + (vazio ? '' : trioHTML(s)) + '</span>' +
+      (aviso ? '<span class="warn">véspera de jogo — sem alternativa neste calendário</span>' : '') +
+      '</span></div>';
+  }).join('');
+
+  const x = { 1:21, 2:10, 3:7 }[nAcad];
+  dyn.innerHTML = 'No ABC, com <b>' + nAcad + ' dia' + (nAcad>1?'s':'') +
+    '</b> por semana, cada grupo volta a ser treinado a cada <b>' + x + ' dias</b>.';
+}
+
+week.addEventListener('click', e => {
+  const b = e.target.closest('.wd');
+  if (!b) return;
+  const d = +b.dataset.i;
+  fut.has(d) ? fut.delete(d) : fut.add(d);
+  b.setAttribute('aria-pressed', String(fut.has(d)));
+  renderSemana();
+});
+document.querySelectorAll('.segb').forEach(b => b.addEventListener('click', () => {
+  nAcad = +b.dataset.n;
+  document.querySelectorAll('.segb').forEach(o => o.setAttribute('aria-pressed', String(o === b)));
+  renderSemana();
+}));
+renderSemana();
+
+/* ═══ CAP 3 · perfil de intensidade ═══ */
+/* determinístico: mesma curva em todo load, sem Math.random */
+(function(){
+  const W = 320, H = 96, base = 78, topo = 12;
+  /* 13 lances com pausa real entre eles — a pausa é metade do argumento.
+     Alturas variadas; nada aleatório, a curva é a mesma em todo load. */
+  const picos = [
+    [14,3],[38,4],[58,2],[84,4],[106,3],[128,2],[152,4],
+    [176,3],[196,2],[222,4],[246,3],[270,4],[296,2],
+  ];
+  let d = 'M0,' + base;
+  picos.forEach(([x,alt]) => {
+    const y = base - (alt / 4) * (base - topo);
+    d += ' L' + (x-7) + ',' + base +
+         ' L' + (x-3) + ',' + y.toFixed(1) +
+         ' L' + (x+3) + ',' + y.toFixed(1) +
+         ' L' + (x+7) + ',' + base;
+  });
+  d += ' L' + W + ',' + base;
+  const p = document.getElementById('p-jogo');
+  p.setAttribute('d', d);
+  const len = p.getTotalLength();
+  p.style.setProperty('--len', len);
+
+  const chart = document.getElementById('chart');
+  if (RM.matches) { chart.classList.add('drawn'); return; }
+  const io = new IntersectionObserver(es => {
+    es.forEach(e => { if (e.isIntersecting){ chart.classList.add('drawn'); io.disconnect(); } });
+  }, { threshold: 0.35 });
+  io.observe(chart);
+})();
+
+/* ═══ CAP 4 · fiação input → dimensão ═══ */
+(function(){
+  const wiring = document.getElementById('wiring');
+  const svg    = document.getElementById('wires');
+  const COR = { n:'var(--dim-n)', m:'var(--dim-m)', met:'var(--dim-met)', all:'var(--gold)' };
+  /* mapeamento do modelo: PSE é normalizador, liga às três */
+  const LIGA = { m:['m'], n:['n'], met:['met'], all:['n','m','met'] };
+
+  function desenhar(){
+    const box = wiring.getBoundingClientRect();
+    svg.setAttribute('viewBox', '0 0 ' + box.width + ' ' + box.height);
+    let d = '';
+    Object.keys(LIGA).forEach(k => {
+      const a = document.getElementById('i-' + k).getBoundingClientRect();
+      LIGA[k].forEach(alvo => {
+        const b = document.getElementById('d-' + alvo).getBoundingClientRect();
+        const x1 = a.right - box.left, y1 = a.top + a.height/2 - box.top;
+        const x2 = b.left  - box.left, y2 = b.top + b.height/2 - box.top;
+        const mx = (x1 + x2) / 2;
+        d += '<path data-src="' + k + '" data-dst="' + alvo + '"' +
+             (k === 'all' ? ' class="norm"' : '') +
+             ' stroke="' + COR[k] + '"' +
+             ' d="M' + x1 + ',' + y1 + ' C' + mx + ',' + y1 + ' ' + mx + ',' + y2 + ' ' + x2 + ',' + y2 + '"/>';
+      });
+    });
+    svg.innerHTML = d;
+  }
+
+  let ativo = null;
+  function realcar(k, tipo){
+    ativo = k;
+    wiring.classList.toggle('act', !!k);
+    const alvos = k ? (tipo === 'inp' ? LIGA[k] : null) : null;
+    wiring.querySelectorAll('.inp').forEach(el => {
+      const d = el.dataset.dim;
+      el.classList.toggle('hot', !!k && (tipo === 'inp' ? d === k : LIGA[d].includes(k)));
+    });
+    wiring.querySelectorAll('.dimt').forEach(el => {
+      const d = el.dataset.dim;
+      el.classList.toggle('hot', !!k && (tipo === 'inp' ? alvos.includes(d) : d === k));
+    });
+    svg.querySelectorAll('path').forEach(p => {
+      const liga = tipo === 'inp' ? p.dataset.src === k : p.dataset.dst === k;
+      p.classList.toggle('hot', !!k && liga);
+      p.classList.toggle('dim', !!k && !liga);
+    });
+  }
+
+  wiring.addEventListener('click', e => {
+    const inp = e.target.closest('.inp'), dim = e.target.closest('.dimt');
+    const alvo = inp || dim;
+    if (!alvo) return;
+    const k = alvo.dataset.dim;
+    const tipo = inp ? 'inp' : 'dim';
+    (ativo === k + tipo) ? (realcar(null), ativo = null) : (realcar(k, tipo), ativo = k + tipo);
+  });
+
+  desenhar();
+  addEventListener('resize', desenhar);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(desenhar);
+})();
+
+</script>
+</body>
+</html>
