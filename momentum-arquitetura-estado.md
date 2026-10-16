@@ -243,7 +243,7 @@ Alternativas registradas:
   força; 4 reps a 76% não é nada*.
 - Volume em reps + carga como sugestão visível e editável no widget.
 - **Modulação dependente de `tipo_serie`** — em `forca_pura`/`forca_max` a carga é intocável e
-  o corte é em séries; em `hipertrofia`/`volume`, corte em reps; em `tecnica`, nenhum ajuste
+  o corte é em séries; em `hipertrofia`/`resistencia`, corte em reps; em `tecnica`, nenhum ajuste
   (o objetivo já é qualidade sobre carga).
 
 A terceira é a **fisiologicamente correta** e depende de `tipo_serie` estar disponível no
@@ -282,11 +282,11 @@ leitura de `prescricoes` deixou de ser evolução e virou **pré-requisito de la
 | # | Decisão | Razão | Status |
 |---|---|---|---|
 | **D3.1** | `prescricoes` é a **origem única** do treino. `buildTreinoFromProfile()` e os cinco templates são removidos; `s.profile` perde o consumidor e é descontinuado. | Os templates eram **resíduo de mock** — treino de amostra criado de um PDF para testar a tela de execução, nunca decisão de produto. Mas escreviam no Firestore: *andaime que escreve no banco não é andaime*. A intenção de treino vive em `prescricoes`, `dim_dominante` e `modelo_periodizacao`. | **implementada** (`5a31bc9`) |
-| **D3.2** | **`exercise_id` é o campo autoritativo** — supersede a regra de ouro anterior. `nome` continua gravado na sessão como **snapshot de exibição**, nunca como chave. | Validação por nome exige normalização e ainda é aproximada: `'Rosca Direta'` e `'Rosca direta '` colidem, mas `'Supino Reto'` e `'Supino reto c/ barra'` não — é comparação difusa fazendo papel de chave estrangeira. ID é binário: existe ou não. `nome` permanece para que a sessão antiga diga o que foi feito sem depender do join — auditabilidade não deve exigir que a coleção de referência esteja intacta. | **implementada** (`5a31bc9` + `2603d0b`) |
+| **D3.2** | **`exercise_id` é o campo autoritativo** — supersede a regra de ouro anterior. `nome` continua gravado na sessão como **snapshot de exibição**, nunca como chave. | Validação por nome exige normalização e ainda é aproximada: `'Rosca Direta'` e `'Rosca direta '` colidem, mas `'Supino Reto'` e `'Supino reto c/ barra'` não — é comparação difusa fazendo papel de chave estrangeira. ID é binário: existe ou não. `nome` permanece para que a sessão antiga diga o que foi feito sem depender do join — auditabilidade não deve exigir que a coleção de referência esteja intacta. | **contrato mantido** (`5a31bc9` + `2603d0b`) — o backfill de `exercise_id` na prescrição da Jacqueline foi removido com a coleção em out/2026; o dado vive no backup. Qualquer prescrição nova nasce com `exercise_id` em todos os exercícios |
 | **D3.3** | Granularidade de `exercises` = granularidade do modelo. **Um doc por variação.** Agrupamento vem do campo `pattern`, nunca do slug. | Supino com barra, halteres e máquina têm **CT, IM, DN, SV e FC diferentes**: máquina tem CT baixo (trajetória guiada) e estabilização quase nula; halteres têm CT e DN mais altos pela demanda de controle unilateral; barra fica no meio, com maior carga absoluta. Compartilhar um doc faz o modelo perder exatamente a distinção que existe para medir. **Slug identifica; `pattern` agrupa.** | **implementada** — `desenv_halt` cadastrado no backfill |
 | **D3.4** | **A aluna escolhe a sessão do dia**, numa lista das chaves de `prescricoes.sessoes`. | Nada no sistema dizia qual era a sessão de hoje — `students.divisao` é string solta de label, desconectada da estrutura. Zero campo novo, zero inferência, zero risco de servir a sessão errada. | **implementada** (`5a31bc9`) |
 | **D3.5** | O **`alvo` completo** viaja da prescrição para `sessions.exercicios[].alvo`, **mesmo o que a tela não exibe** — incluindo `tipo_serie` e `progressao`. | Os campos sem consumidor eram exatamente os que definem as dimensões que o Momentum mede: `tut_s`/`tempo_s` alimentam FTT na Metabólica; `descanso_s` alimenta FD (`90/descanso`); `pse` é o alvo contra o qual RN26 avalia `progressão_ok`; `tipo_serie` é o enum de intenção que a modulação da v2 vai precisar (V2-A). Custo quase zero — o dado já existe do outro lado. Não gravar é jogar fora informação já escrita. | **implementada** (`5a31bc9`) |
-| **D3.6** | Chaves de `sessoes` separam **slug de label**: chave `"lower-a"`, campo `"label": "Lower A · PR Agachamento"`. `sessions.tipo` grava o **slug**. | Identidade estável não deve ser texto de exibição — mesma razão de D3.2. Antes, renomear quebrava a referência e casar `sessions.tipo` com a chave virava matching de string com sufixo. Feito junto com o backfill porque o documento já seria reescrito: **custo quase zero agora, alto depois**, quando houver sessões referenciando as chaves antigas. | **implementada** — backfill da prescrição da Jacqueline |
+| **D3.6** | Chaves de `sessoes` separam **slug de label**: chave `"lower-a"`, campo `"label": "Lower A · PR Agachamento"`. `sessions.tipo` grava o **slug**. | Identidade estável não deve ser texto de exibição — mesma razão de D3.2. Antes, renomear quebrava a referência e casar `sessions.tipo` com a chave virava matching de string com sufixo. Feito junto com o backfill porque o documento já seria reescrito: **custo quase zero agora, alto depois**, quando houver sessões referenciando as chaves antigas. | **contrato mantido** — o backfill da prescrição da Jacqueline foi removido em out/2026 junto com a coleção; o dado vive no backup. Qualquer prescrição nova segue slug + `label` |
 | **D3.7** | ID determinístico em `sessions`: `.set()` com `{student_id}_{data_iso}_{n}`, onde `n` desambigua duas sessões legítimas no mesmo dia. | `.add()` cria sessão duplicada silenciosamente em toque duplo ou reload no meio da escrita. **Duplicata em sessão é pior que em check-in** — polui aderência e o corpus dimensional. Impossibilidade por construção, não por checagem. | **implementada** (`5a31bc9`) |
 
 **D3.5 — `pse_alvo` NÃO é exibido para a aluna na v1.** Efeito de **ancoragem**: se ela vê
@@ -329,6 +329,49 @@ fica para v1.1.
 
 ---
 
+---
+
+## Cenários de progressão — registro declarativo (set/2026)
+
+> **Nada aqui tem consumidor.** Não existe engine de progressão nem tela de prescrição.
+> Esta seção registra a intenção para quando um dos dois existir — escrevê-la como tabela no
+> código criaria mais um campo declarativo sem leitor, o mesmo padrão de `progressao` e do
+> antigo `ordem`.
+
+### Os três eixos de uma progressão
+
+1. **Modelo** — linear, ondulatório, em blocos, duplo-fator.
+2. **Variável-mãe** — carga, volume, densidade, intensidade relativa.
+3. **Magnitude** — quanto, por semana.
+
+`progressao_mae: {modelo, logica_volume}` já cobre os eixos 1 e 2 no nível do documento.
+**A magnitude e a sobreposição por exercício ainda não existem** em lugar nenhum do schema.
+
+### Cenário padrão por `tipo_serie`
+
+Preset para a futura tela de prescrição: o PT escolhe o `tipo_serie`, a interface sugere o
+cenário, o PT aceita ou troca. Nunca automático.
+
+| `tipo_serie` | Cenário padrão | Observação |
+|---|---|---|
+| `forca_pura` | Linear de carga | |
+| `excentrico` | Linear de carga, metade da magnitude | o ideal seria progredir em TUT, mas `tut_s` é `null` em 100% dos exercícios |
+| `hipertrofia` | Dupla progressão | faixa de reps; sobe reps até o teto, depois carga |
+| `resistencia` | Acúmulo de séries/reps | cenário herdado de `volume`; **rever quando o engine existir** — a definição mudou |
+| `tecnica` | Estável | explícito, não omissão |
+| `densidade` | Redução de descanso | mexe diretamente em FD |
+| `amrap`, `emom`, `isometrico`, `pausa`, `forca_explosiva` | não definido | nunca atribuídos a nenhum exercício; definir quando forem usados |
+
+### Explicitamente NÃO decidido
+
+Registrado como pergunta aberta, não como decisão:
+
+- **Magnitudes** de progressão por cenário — quanto sobe, por semana, em cada um.
+- **Deload como modificador de semana** — volume e carga reduzidos na semana marcada,
+  independente do cenário. É um eixo transversal, não um cenário.
+- **Modulação por `nivel` do aluno** — se iniciante e avançado devem usar magnitudes
+  diferentes no mesmo cenário.
+
 ## Pendências Críticas (bloqueadoras)
 
 ### ⚠ Score Técnica — validade do proxy
@@ -358,6 +401,100 @@ Com FC fora de CargaNorm, exercícios isolados (Extensora, Flexora, Rosca, Aduto
 | 1RM — normalização | Preparar no banco desde o início para comparabilidade inter-alunos. |
 | Wearables (FC cardíaca) | Reservado para versão premium. Estrutura do modelo já comporta. |
 | Instagram session card | Card de resumo de sessão estilo Strava, glassmorphism, "hemômetro", frase gerada por IA. Feature planejada. |
+
+### ⚠ Escrever a nova prescrição da Jacqueline — bloqueia o lançamento
+
+Sem prescrição não há treino (D3.1: "sem prescrição válida não há treino"). A Jacqueline não
+consegue treinar até que alguém escreva a dela. **Não existe tela de prescrição** (é v2),
+então será por script.
+
+Ponto de partida: `backups/prescricao-jacqueline-estrutura-validada-2026-10-16.json`.
+
+`reset_jacqueline.js` **não serve como está** — foi escrito antes de D3.2/D3.6 e divergiria da
+estrutura validada em cinco pontos:
+
+| | o script escreveria | a estrutura validada tem |
+|---|---|---|
+| chaves de `sessoes` | `"Lower A"`, `"Upper A"` … (label como chave) | slugs `lower-a`, `upper-a` … (D3.6) |
+| `label` | não escreve | presente em todas as 6 sessões |
+| `ordem` | não escreve | 1 a 6, declarada com intenção de periodização |
+| `exercise_id` | **nenhum exercício tem** | presente nos 33 (D3.2) |
+| Desenvolvimento Halteres | só por `nome`, sem id | `exercise_id: desenv_halt` |
+
+Além disso o script resolve coeficientes por `getCoef(exMap, ex.nome)` — lookup por nome, que
+D3.2 descontinuou — e sua TAREFA 1 **deleta** sessões, a prescrição e campos de
+`students/jacqueline` antes de escrever. Rodá-lo hoje seria destrutivo.
+
+Nesta rodada só o literal de `tipo_serie` foi corrigido no script. A atualização estrutural
+fica para quando a nova prescrição for escrita.
+
+Ao escrever, vale aplicar a definição nova de `resistencia` (>12 reps). Na prescrição removida,
+**8 dos 10 exercícios rotulados `volume` tinham 15 reps** — encaixam direto. E o **Hip Thrust
+de Lower C tinha 15 reps rotulado `hipertrofia`**, que sob a definição nova seria `resistencia`.
+
+### A prescrição descreve uma sessão-tipo, não um mesociclo
+
+Verificado em `prescricoes/jacqueline` (documento removido em out/2026, backup em `backups/`):
+cada exercício tinha só seis chaves — `nome`, `exercise_id`, `tipo_serie`, `series`,
+`progressao`, `alvo`. `progressao` é um **rótulo de eixo** (`carga` / `volume` / `estavel`)
+sem incremento, sem cronograma e sem condição de disparo. Zero ocorrências de `semana`,
+`week`, `deload`, ondulação, top set / back-off no documento inteiro. `alvo` é um objeto
+único para todas as séries, então top set / back-off não cabe sem mudar o schema.
+
+O engine que calcularia a progressão a partir do histórico — descrito neste documento — **não
+existe**. O alvo é um ponto fixo: o mesmo 40 kg × 11 em toda sessão de Lower A, até o
+documento ser reescrito. Consequência: o app serve a mesma carga na semana 1 e na semana 8.
+
+Resolver exige cronograma na prescrição **ou** o engine. É pré-requisito de qualquer projeção
+temática do hero. **Vale levar isso em conta ao escrever a nova prescrição.**
+
+### `muscles[]` não permite "volume por músculo" confiável
+
+85/85 exercícios têm `pattern` e `muscles[]` preenchidos, mas `pattern` (12 valores) e grupo
+muscular são eixos diferentes: `pattern: squat` devolve 6 exercícios, enquanto 18 recrutam
+quadríceps. `muscles[]` tem 37 rótulos com duplicatas de grafia — Deltóide em 6 formas,
+Peitoral em 5 — e não distingue primário de secundário, então "volume de quadríceps" contaria
+o farmer's walk e o dead bug com o mesmo peso do agachamento.
+
+Precisa de campo `muscle_group` canônico ou mapa de sinônimos, com porção
+(anterior / lateral / posterior) em segundo nível, e de peso por papel.
+
+### `buildInsight()` não cobre `forca_explosiva`
+
+O enum documentado tem esse valor e `buildInsight()` em `momentum-aluno.html` não tem o case:
+se for prescrito, o insight sai vazio, sem erro visível. Inofensivo hoje — ninguém o usa.
+
+### Seis valores do enum nunca foram atribuídos
+
+`amrap`, `emom`, `densidade`, `isometrico`, `pausa` e `forca_explosiva` existem na documentação
+e não apareceram em nenhuma das 10 prescrições existentes até out/2026 (304 exercícios).
+
+### `prescricoes` zerada — os 10 documentos (out/2026)
+
+Decisão do PT. Removidos **todos os 10**, inclusive o da Jacqueline. Com `sessions` e
+`checkins` já em zero desde set/2026, o banco fica sem nenhum dado operacional de treino.
+
+**Backups** em `backups/`, fora do repositório, cada um com cópia redundante:
+
+- `prescricoes-2026-10-16.json` — os 10 docs, 304 exercícios, 126.489 bytes,
+  sha256 `6dc00309ae8544b426ca7d0a42986f5d`
+- `prescricao-jacqueline-estrutura-validada-2026-10-16.json` — só a dela, em arquivo próprio,
+  sha256 `5465573a0103226b983ab18a98165908`. **É a referência de estrutura correta** para
+  quem escrever a nova: chaves em slug, campo `label`, `ordem` declarada, `exercise_id` em
+  todos os exercícios.
+- `restaurar-prescricoes.js` — restaura doc a doc com o id original e **recusa sobrescrever**
+  documento existente sem `--overwrite`. Testado em dry-run antes da exclusão.
+
+Nove dos dez eram retroativos: gerados por `add_tipo_serie_prescricoes.js` a partir de sessões
+sintéticas que também já não existem. O script foi marcado como histórico e proibido de
+re-executar.
+
+`students` **não** foi tocado — `divisao`, `semanas_total`, `mesociclo_inicio` e
+`progressao_mae` continuam. Consequência registrada: **os 10 alunos têm `progressao_mae` sem
+contraparte em `prescricoes`.**
+
+Verificado após a exclusão: o app com `?id=jacqueline` mostra *"Sem prescrição ativa. Fale com
+seu PT."*, não abre a tela de execução e **não gera erro no console**.
 
 ### `sessions` esvaziada — escala única de Metabólica (set/2026)
 
@@ -428,35 +565,6 @@ Indícios levantados em set/2026 de que o dado é **real**:
 ser restauradas. Se ela for atleta real, este documento precisa parar de chamá-la de
 simulação — foi essa contradição que quase levou à exclusão silenciosa de dado real.
 
-### Mapa nome-legado → exercise_id
-
-21 das 355 sessões têm ao menos um exercício resolvido pelo fallback genérico
-`{CT:4, IM:5, DN:5, SV:3, FC:0.6}` — 116 medições. Nomes não resolvidos, por ocorrência:
-Cadeira Abdutora em Pé (14), Coice Perna Flexionada (14), Agachamento Sumo Máquina (11),
-Cadeira Abdutora (11), Cadeira Extensora (10), Cadeira Adutora (7), Remada Máquina Pronada (7),
-Remada Baixa Triângulo (7), Elevação Lateral Halteres (7), Abdominal Máquina (7),
-Búlgaro no Smith (7), Elevação Pélvica Máquina (7), Elevação Lateral Polia Média (4),
-Hack Linear (3).
-Ao menos um (`Cadeira Extensora`) existe no catálogo sob outro nome. Vários são isolados —
-justamente os marcados como pendentes de recalibração de IM.
-
-**Auditado em set/2026:** `exercise_id` está presente em **100%** dos 1.594 exercícios
-legados, mas só **39,7% resolvem** contra `exercises` — os demais são slugs de nome geradas
-por script (`leg_press_45`, `supino_reto`, `remada_máquina`). Onde `exercise_id` e nome
-resolvem, **concordam em 633 de 633 casos, sem nenhuma discordância** — por isso a função
-corrigida pode cair para o nome como caminho de compatibilidade sem introduzir ambiguidade.
-A pendência é o mapa `exercise_id-legado → slug do catálogo`.
-
-### `series[]` truncado no corpus legado
-
-Dos 1.556 exercícios legados com `series[]`, **176 (11,3%) têm menos entradas que o campo
-`s`** — `s=4` com uma única série gravada, por exemplo. Nesses casos os campos achatados
-(`s`/`r`/`kg`) são o registro mais completo, e somar as séries parciais subcontaria o volume
-em até 75%. A função corrigida ramifica explicitamente: usa `series[]` quando é o registro
-completo (sem `s`, ou `series.length === s`), e cai para o achatado quando `series[]` é
-demonstravelmente parcial. Globalmente a diferença entre as duas formas no corpus é de
-−2,49%. Pendência: decidir se os 176 devem ser corrigidos na origem ou permanecem assim.
-
 ### Captura do descanso real — v2
 
 `FD = 90/descanso_s` usa o descanso **prescrito** (`alvo.descanso_s`). Decisão de escopo
@@ -514,17 +622,6 @@ D1.4, não antes — criar o índice sem corrigir a leitura destravaria o segund
 
 `public/index.html` e `src/index.ts` não se relacionam a nada do projeto ativo. Possível
 resíduo de `firebase init`. Não tocados.
-
-### Doc id de `prescricoes` — não verificado
-
-A varredura de IDs determinísticos (Bloco 3) deixou o doc de `prescricoes` como único item
-não verificado. Os demais já são determinísticos.
-
----
-
-## Estado Atual do Projeto
-
-**Estimativa de conclusão (uso pessoal):** ~40% · ~8–10 sessões de desenvolvimento
 
 ### Telas e Features Implementadas
 - PT Dashboard v5 com schema correto e layout responsivo
@@ -988,7 +1085,7 @@ Para DUP/ondulatória: cada dimensão é comparada com ela mesma, não com IC to
 | `forca_pura` | "Foco na carga — execute com máxima intenção" | Força máxima, 1–5 reps, PSE alvo como critério principal |
 | `forca_explosiva` | "Intenção máxima na fase concêntrica — velocidade é a carga" | Potência, pliométrico, olímpicos |
 | `hipertrofia` | "Complete todas as reps com controle" | 6–15 reps, carga + reps alvo |
-| `volume` | "A fadiga no final é o objetivo" | Muitas reps, descanso curto, acúmulo metabólico |
+| `resistencia` | "Série longa — sustente o ritmo até a última repetição" | Mais de 12 reps por série, descanso curto. Resistência muscular localizada: tolerância ao acúmulo metabólico e capacidade de sustentar esforço em séries longas |
 | `tecnica` | "Carga leve — qualidade acima de tudo" | Aprendizado motor, amplitude, reabilitação |
 | `amrap` | "Máximo de reps com boa técnica" | Reps abertas, carga fixa |
 | `emom` | "Respeite o intervalo — ritmo constante" | Intervalo fixo define FD diretamente |
@@ -996,6 +1093,19 @@ Para DUP/ondulatória: cada dimensão é comparada com ela mesma, não com IC to
 | `isometrico` | "Sustente a posição pelo tempo prescrito" | TUT = tempo_s, reps = 1 |
 | `excentrico` | "Controle total na descida — a fase negativa é o trabalho" | Excêntrico acentuado, nórdico, tempo na descida |
 | `pausa` | "Pause na posição de maior tensão — sem usar o elástico" | Supino com pausa, agachamento com pausa |
+
+**`volume` foi aposentado como valor de `tipo_serie` (set/2026).** Razão: toda série tem
+volume, então o rótulo não distinguia nada — não era uma zona de treino, era uma grandeza
+usada como categoria. O gatilho foi a **Elevação Lateral** na prescrição da Jacqueline:
+4 × 9 reps a PSE 7, rotulada `volume`. Rótulo e alvo não coincidiam — 9 repetições não são
+uma série de resistência sob nenhuma definição.
+
+Substituído por **`resistencia`** (slug sem acento, como `tecnica` e `forca_pura`; o acento
+aparece só na exibição). A definição passa a ser uma **zona de reps**, não uma quantidade:
+mais de 12 repetições por série, esforço sustentado. O enum continua com 11 valores.
+
+Atenção ao escopo: `progressao: "volume"` (o eixo de progressão) e `progressao_mae.logica_volume`
+**não mudam** — são outro campo e outro significado.
 
 **Para v2 (não implementar agora):**
 - `rest_pause` — mini-séries com pausa curta intra-série
@@ -1007,7 +1117,7 @@ Para DUP/ondulatória: cada dimensão é comparada com ela mesma, não com IC to
 
 **Como o sistema lerá em v2:** cada tipo_serie define qual coeficiente domina o cálculo:
 - `forca_pura` / `forca_explosiva` → Neural domina; chip `colapso_de_reps` desativado
-- `volume` → Metabólica domina; chip `colapso_de_reps` altamente relevante
+- `resistencia` → Metabólica domina; chip `colapso_de_reps` altamente relevante *(nota herdada de `volume` — **precisa de revisão do PT**: a definição mudou de quantidade para zona de reps, e o comportamento esperado do chip pode mudar junto)*
 - `tecnica` → IC intencionalmente baixo, não sinalizar como problema; PSE baixo esperado
 - `amrap` → ic_planejado estimado com média histórica de reps; comparação planejado vs executado especialmente valiosa
 
@@ -1021,7 +1131,7 @@ Nem todo exercício terá carga + reps alvo simultaneamente. A estrutura `alvo` 
 |---|---|---|
 | `forca_pura` | carga_kg + pse_alvo | reps (aluno executa até não conseguir com boa técnica) |
 | `hipertrofia` | carga_kg + reps_alvo + pse_alvo | — |
-| `volume` | reps_alvo + pse_alvo | carga (aluno escolhe o que permite completar) |
+| `resistencia` | reps_alvo + pse_alvo | carga (aluno escolhe o que permite completar) |
 | `tecnica` | carga_kg fixa baixa + reps_alvo | pse (irrelevante) |
 | `amrap` | carga_kg + tempo_s | reps (máximo possível) |
 | `emom` | carga_kg + reps_alvo + intervalo_s | — |

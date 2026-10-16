@@ -79,7 +79,7 @@ Versões antigas (v2, v3, v4, aluno3, _1, _2, _5) existem na pasta mas **não s�
 | `checkins` | **0** | ★ MVP ativo | Check-ins pré-treino. **Esvaziada em set/2026** junto com `sessions` — zero-state completo para o lançamento. Backup em `backups/`. Docs novos nascem em ISO com id determinístico `{student_id}_{data_iso}` (D2.3). |
 | `exercises` | 85 | ★ MVP ativo | Banco de exercícios com coeficientes |
 | `students` | 10 | ★ MVP ativo | Perfis de alunos. `scores.*`, `ritmo_estado` e `momentum_snapshot` foram **removidos de todos** em set/2026 — eram seed sem sessão por trás. Voltam com a Fase 2 de D1.4. |
-| `prescricoes` | 10 | ★ MVP ativo | Origem única do treino do aluno (D3.1). 9 dos 10 docs foram gerados retroativamente a partir do histórico; só o da **Jacqueline** é prescrição prospectiva genuína. |
+| `prescricoes` | **0** | ★ MVP ativo | Origem única do treino do aluno (D3.1). **Zerada em out/2026** por decisão do PT — os 10 docs, incluindo o da Jacqueline. Backups em `backups/`, com `restaurar-prescricoes.js` ao lado. **Sem prescrição não há treino:** escrever a da Jacqueline é pendência bloqueante do lançamento. |
 | `pt_interactions` | 241 | v2 / analytics | Tracking de cliques do PT no dashboard — só escrita, nunca leitura operacional |
 | `academias` | 1 | v2 | Dados da academia/estúdio |
 
@@ -151,10 +151,17 @@ hoje e é pré-requisito de lançamento (D3.1).
 O app está sendo preparado para a **primeira aluna real**, Jacqueline. Isso muda como
 tratar o banco:
 
-- O doc de `prescricoes` da Jacqueline é o **único prospectivo** — escrito antes de
-  qualquer execução (`reset_jacqueline.js`). Os outros nove foram gerados retroativamente
-  por `add_tipo_serie_prescricoes.js`, inferindo prescrição a partir de sessões já
-  executadas: são documentação do passado, não plano.
+- **`prescricoes` foi zerada em out/2026** (decisão do PT): os 10 documentos, incluindo o da
+  Jacqueline. Os outros nove eram retroativos, gerados por `add_tipo_serie_prescricoes.js` a
+  partir de sessões sintéticas que também já não existem.
+  Backups em `backups/`: `prescricoes-2026-10-16.json` (os 10),
+  `prescricao-jacqueline-estrutura-validada-2026-10-16.json` (só a dela, **referência da
+  estrutura correta**) e `restaurar-prescricoes.js`, que recusa sobrescrever sem `--overwrite`.
+- **A prescrição da Jacqueline precisa ser reescrita antes do lançamento** — sem ela o app não
+  monta treino (D3.1). Estrutura obrigatória: chaves de `sessoes` em slug com campo `label`,
+  `exercise_id` em todos os exercícios, `ordem` declarada, e `tipo_serie` sem `volume`
+  (aposentado; use `resistencia` para séries de mais de 12 reps). `reset_jacqueline.js` **não
+  serve como está** — ver as divergências em `momentum-arquitetura-estado.md`.
 - Ela está em **estado zero** — sem histórico de sessões. Lógica que assume histórico denso
   (percentis, tendências, médias móveis) precisa de comportamento explícito para N=0.
 - As sessões que ela executar são o **corpus de calibração** dos coeficientes ainda

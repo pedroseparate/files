@@ -81,7 +81,7 @@ com a escala nova de Metabólica (§2c) — ver `momentum-arquitetura-estado.md`
 | `exercicios[].nome` / `.exercise_id` | `exercise_id` autoritativo (D3.2); `nome` é snapshot de exibição gravado junto — nunca usado como chave |
 | `exercicios[].kg` / `.r` / `.s` / `.pse` | Valores executados |
 | `exercicios[].ic` / `.ic_neural` / `.ic_mecanica` / `.ic_metabolica` | IC por exercício |
-| `exercicios[].tipo_serie` | Enum de intenção — só texto exibido em v1 |
+| `exercicios[].tipo_serie` | Enum de intenção — só texto exibido em v1. 11 valores; `volume` foi **aposentado** em set/2026 e substituído por `resistencia` (zona de >12 reps). Não confundir com `progressao: "volume"`, que é outro campo e continua válido |
 | `exercicios[].alvo.*` | **Resolvido** — snapshot congelado de um backfill pontual (`add_tipo_serie_prescricoes.js`), não é campo vivo. `finishTreino()` não escreve nele no fluxo normal. O alvo ativo de verdade está em `prescricoes`, não aqui |
 | `exercicios[].series[].kg` / `.r` / `.pse` / `.n` / `.tipo` | Valores executados por série |
 | `exercicios[].series[].kg_alvo` / `.r_alvo` / `.pse_alvo` | Valores alvo por série |
@@ -91,7 +91,13 @@ com a escala nova de Metabólica (§2c) — ver `momentum-arquitetura-estado.md`
 
 ## `prescricoes` (descoberta durante esta revisão — não fazia parte do inventário original)
 
-10 documentos — todos os alunos têm um. `sessoes` é **objeto-mapa**, não array: cada chave é
+**Coleção vazia desde out/2026.** Os 10 documentos foram removidos por decisão do PT — nove
+eram retroativos (`add_tipo_serie_prescricoes.js`, a partir de sessões sintéticas) e o da
+Jacqueline era o único prospectivo. Backups em `backups/`, incluindo a estrutura validada dela
+em arquivo próprio e um script de restauração. A estrutura abaixo descreve o contrato que
+qualquer prescrição nova deve seguir.
+
+`sessoes` é **objeto-mapa**, não array: cada chave é
 o nome livre da sessão/divisão, definido pelo PT (`"Lower A"`, `"Full B"`, `"Treino C"`,
 `"Lower A · Deload"`, `"Lower A · PR Agachamento"` — sem enum fixo, varia por aluno).
 
@@ -107,7 +113,7 @@ o nome livre da sessão/divisão, definido pelo PT (`"Lower A"`, `"Full B"`, `"T
 | `sessoes.<NomeSessao>.notas_pt` | Nota do PT específica daquela sessão prescrita |
 | `sessoes.<NomeSessao>.exercicios[].nome` | Nome do exercício |
 | `sessoes.<NomeSessao>.exercicios[].exercise_id` | Ausente em documentos mais novos (ex: Lower C e Upper C da Jacqueline) — diverge de D3.2; esses docs precisam de backfill de `exercise_id` |
-| `sessoes.<NomeSessao>.exercicios[].tipo_serie` | Enum de intenção |
+| `sessoes.<NomeSessao>.exercicios[].tipo_serie` | Enum de intenção — ver nota em `sessions`. `volume` aposentado, substituído por `resistencia` |
 | `sessoes.<NomeSessao>.exercicios[].series` | Número de séries prescritas |
 | `sessoes.<NomeSessao>.exercicios[].progressao` | Modelo de progressão daquele exercício |
 | `sessoes.<NomeSessao>.exercicios[].alvo.carga_kg` / `.reps` / `.pse` / `.descanso_s` / `.tut_s` / `.tempo_s` / `.pausa_s` / `.intervalo_s` | Alvo completo por exercício — **esta é a estrutura real de "Treino A/B/C"** que eu não tinha encontrado antes |
