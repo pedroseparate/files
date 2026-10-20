@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Raquel + Momentum</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════
+   TOKENS — extraídos de momentum-aluno.html, sem alteração de matiz.
+   Cores dimensionais (Neural/Mecânica/Metabólica) seguem o mesmo
+   mapeamento já formalizado em momentum-convite-victor.html, que por
+   sua vez herdou de rgba literais usadas em momentum-aluno.html
+   (domCol, linha ~1959): neural periwinkle, mecanica copper2, metabolica moss.
+   Aqui usamos as versões sólidas (sem alpha) — ver nota de contraste abaixo.
+   ═══════════════════════════════════════════════════════════ */
+:root{
+  --bg:   #271f13;
+  --bg-deep: #1c150c;
+  --card: #31281a;
+  --bg2:  #2e2618;
+  --bg3:  #352d1e;
+  --bg4:  #3c3425;
+  --b:    rgba(200,160,96,.12);
+  --b2:   rgba(200,160,96,.26);
+  --b3:   rgba(200,160,96,.40);
+  --copper: #8a6030;--copper2:#a07840;
+  --gold:   #c8a060;--gold2:#ddb870;--gold3:#e8cc90;
+  --moss3:  #6aa050;
+
+  /* texto — tokens próprios desta página, não os --ink do app.
+     Motivo: --ink do app (rgba(200,160,96,.90)) mede ~5.7:1 sobre --bg,
+     abaixo do piso de 7:1 exigido aqui para corpo. Ver relatório no final. */
+  --text:    #e6dccb;   /* corpo — ~7:1+ sobre --bg e --bg2 */
+  --text2:   #b8ad9b;   /* secundário/legendas — ~4.5:1+ */
+  --text3:   #8c8373;   /* terciário, só decorativo, nunca único portador de informação */
+
+  /* dimensões — mesma matiz do app, versão sólida para contraste mais forte.
+     Luminosidades: neural 0.32 > metabólica 0.29 > mecânica 0.21 — degrau
+     perceptível além da diferença de matiz (ver relatório). */
+  --dim-n:    #9690dc;  /* Neural — periwinkle, já usado no app (domCol) */
+  --dim-n-d:  rgba(150,144,220,.20);
+  --dim-m:    var(--copper2);   /* Mecânica — já formalizado no app (2x) */
+  --dim-m-d:  rgba(160,120,64,.20);
+  --dim-met:    var(--moss3);   /* Metabólica — já usado no app (domCol) */
+  --dim-met-d:  rgba(106,160,80,.20);
+}
+
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html{-webkit-text-size-adjust:100%;background:var(--bg-deep);}
+body{
+  background:linear-gradient(180deg,#1f1810 0%,#271f13 26%,#271f13 72%,#1c150c 100%);
+  color:var(--text);
+  font-family:'IBM Plex Mono',monospace;
+  font-size:.875rem;font-weight:400;line-height:1.6;
+  overflow-x:hidden;
+  padding-top:env(safe-area-inset-top);
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.wrap{max-width:430px;margin:0 auto;padding:0 20px;position:relative;}
+
+:focus-visible{outline:2px solid var(--gold2);outline-offset:3px;border-radius:2px;}
+
+/* ── ESCALA TIPOGRÁFICA ──
+   corpo: Cormorant 500, clamp(19,5vw,21), lh 1.55–1.65, medida ~35–45ch
+   títulos de seção: Cormorant ≥28px
+   mono: ≥14px, peso 400–500
+   Bebas: só lockups/numerais, ≥28px
+   piso absoluto: nada abaixo de 14px em lugar nenhum. */
+.body-txt{
+  font-family:'Cormorant Garamond',serif;font-weight:600;font-style:normal;
+  font-size:clamp(1.25rem,5.4vw,1.3125rem);line-height:1.55;color:var(--text);
+  max-width:40ch;
+}
+.body-txt + .body-txt{margin-top:16px;}
+h1,h2,h3{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:500;color:var(--text);}
+.sec-title{font-size:clamp(2.1rem,9.6vw,2.5rem);line-height:1.12;margin:16px 0 24px;}
+
+/* ═══ EYEBROW — numeral + rótulo + filete, acima de cada h2.sec-title ═══ */
+.eyebrow{
+  display:flex;align-items:center;gap:12px;
+  font-family:'IBM Plex Mono',monospace;font-size:.875rem;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--gold2);
+}
+.eyebrow b{
+  font-family:'Bebas Neue',sans-serif;font-weight:400;font-size:26px;
+  letter-spacing:.06em;line-height:1;color:var(--gold);
+}
+.eyebrow i{flex:1;height:1px;background:linear-gradient(90deg,var(--b3),transparent);font-style:normal;}
+.mono{font-family:'IBM Plex Mono',monospace;font-weight:400;font-size:.875rem;letter-spacing:.03em;color:var(--text2);line-height:1.6;}
+.mono.lbl{font-size:.875rem;text-transform:uppercase;letter-spacing:.14em;color:var(--text2);}
+.bebas{font-family:'Bebas Neue',sans-serif;letter-spacing:.04em;line-height:1;color:var(--gold2);}
+
+/* ═══ COMPONENTE DE BARRA EM BLOCOS ═══
+   Sempre 3 blocos, cheios — usado nas seções 3 e 4 como selo/ícone
+   estático por dimensão, nunca como medidor. O hero tem seu próprio
+   componente (fio de constância, abaixo). */
+.dim{display:flex;align-items:center;gap:10px;flex-wrap:wrap;row-gap:8px;}
+.dim-lbl{
+  font-family:'IBM Plex Mono',monospace;font-size:.875rem;text-transform:uppercase;
+  letter-spacing:.04em;color:var(--text2);width:100%;flex-basis:100%;
+  margin-bottom:2px;
+}
+.bar{display:flex;gap:3px;align-items:center;position:relative;}
+.blk{
+  width:30px;height:15px;border-radius:1px;flex-shrink:0;
+  background:var(--track);position:relative;overflow:hidden;
+}
+.blk::after{
+  content:'';position:absolute;inset:0;background:var(--slot);border-radius:1px;
+  transform:scaleX(1);transform-origin:left center;
+  transition:transform 420ms cubic-bezier(.34,1.56,.64,1);
+  transition-delay:var(--d,0ms);
+}
+.blk.off::after{transform:scaleX(0);}
+.bar[data-dim="n"]   { --slot:var(--dim-n);   --track:var(--dim-n-d);   }
+.bar[data-dim="m"]   { --slot:var(--dim-m);   --track:var(--dim-m-d);   }
+.bar[data-dim="met"] { --slot:var(--dim-met); --track:var(--dim-met-d); }
+
+/* ═══ HERO ═══
+   Valores de CSS seguem comp-visual-raquel.html (fonte de verdade pra
+   tamanhos/cores/espaçamentos). Classes e ids inalterados — o JS
+   (render/toggle/CUES) continua o mesmo. */
+.hero{margin:0 -20px;padding:44px 20px 40px;overflow:hidden;position:relative;}
+.hero-glow{
+  position:absolute;left:50%;top:50%;width:150%;aspect-ratio:1;
+  transform:translate(-50%,-50%);pointer-events:none;z-index:0;
+  background:radial-gradient(circle,rgba(200,160,96,.22) 0%,rgba(200,160,96,.07) 36%,transparent 66%);
+  opacity:.5;transition:opacity .9s ease .6s;
+}
+.hero.on .hero-glow{opacity:1;}
+.hero > *:not(.hero-glow){position:relative;z-index:1;}
+
+.lockup{
+  font-family:'Bebas Neue',sans-serif;letter-spacing:.05em;line-height:1;
+  font-size:2.5rem;color:var(--gold2);
+  display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:22px;
+}
+.lockup .plus{
+  color:var(--gold3);clip-path:inset(0 100% 0 0);
+  transition:clip-path 450ms cubic-bezier(.22,1,.36,1);transition-delay:var(--d,0ms);
+  overflow-wrap:break-word;
+}
+
+.head-stack{display:grid;}
+.head{
+  grid-area:1/1;
+  font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;
+  font-size:clamp(2.6rem,12.4vw,3.25rem);line-height:1.04;color:var(--text);
+  margin:0;
+}
+.head.out{opacity:0;transform:translateY(-8px);filter:blur(4px);
+  transition:opacity 300ms ease-in,transform 300ms ease-in,filter 300ms ease-in;}
+.head.in{opacity:1;transform:none;filter:none;
+  transition:opacity 450ms cubic-bezier(.22,1,.36,1),transform 450ms cubic-bezier(.22,1,.36,1),filter 450ms cubic-bezier(.22,1,.36,1);
+  transition-delay:var(--d,0ms);}
+.head.pre{opacity:0;transform:translateY(8px);filter:blur(4px);}
+
+.rule{width:44px;height:2px;background:var(--gold);border-radius:2px;margin:20px 0 16px;}
+
+/* ═══ FIO DE CONSTÂNCIA ═══
+   Um ponto por treino, em fio contínuo. Ao ligar o Momentum, cada ponto
+   vira mini-barras de proximidade da falha / carga / descanso — a
+   constância já é dela, o significado é o que muda. Níveis e contagem
+   são sempre ilustrativos. */
+.fio-legend-wrap{position:relative;min-height:1.6em;margin-bottom:22px;}
+.fio-legend{
+  font-family:'IBM Plex Mono',monospace;font-size:.875rem;line-height:1.6;color:var(--text2);
+  position:absolute;inset:0;opacity:0;
+  transition:opacity 400ms ease-out;transition-delay:var(--d,0ms);
+}
+.fio-legend.show{opacity:1;}
+
+.fio{display:flex;flex-direction:column;gap:2px;margin-bottom:14px;}
+.fio-row{position:relative;display:grid;grid-template-columns:repeat(var(--n,14),minmax(0,1fr));}
+.fio-row::before{
+  content:'';position:absolute;top:50%;z-index:0;pointer-events:none;
+  left:calc(100%/var(--n,14)/2);
+  width:calc(100% * (var(--cells,14) - 1) / var(--n,14));
+  height:1px;background:var(--copper);opacity:.6;transform:translateY(-50%);
+}
+.fio-row.future{height:27px;opacity:1;}
+.fio-row.future::before{
+  background:none;border-top:1px dashed var(--copper);height:0;opacity:0;
+  transition:opacity 400ms ease-out;transition-delay:var(--d,0ms);
+}
+.fio-row.future.show::before{opacity:.6;}
+
+.fio-cell{position:relative;height:27px;display:flex;align-items:center;justify-content:center;z-index:1;}
+.fio-dot{
+  width:10px;height:10px;border-radius:50%;background:var(--gold);display:block;
+  box-shadow:0 0 9px rgba(200,160,96,.38);
+  transition:transform 300ms cubic-bezier(.22,1,.36,1),opacity 300ms cubic-bezier(.22,1,.36,1);
+  transition-delay:var(--d,0ms);
+}
+.fio-dot.gap{width:5px;height:5px;background:var(--text3);box-shadow:none;}
+.fio-dot.dashed{
+  width:10px;height:10px;box-sizing:border-box;background:none;border:1px dashed var(--gold);
+  box-shadow:none;opacity:0;transform:scale(.6);
+}
+.fio-row.future.show .fio-dot.dashed{opacity:1;transform:scale(1);}
+
+.fio-bars{
+  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:3px;pointer-events:none;
+}
+.fb{
+  width:min(70%,19px);height:4.5px;border-radius:1px;transform-origin:left center;transform:scaleX(0);
+  transition:transform 350ms cubic-bezier(.34,1.56,.64,1);transition-delay:var(--d,0ms);
+}
+.fb-n{background:var(--dim-n);}
+.fb-m{background:var(--dim-m);}
+.fb-t{background:var(--dim-met);}
+
+.fio-note{margin-bottom:16px;}
+
+.fio-dimlegend{
+  display:flex;flex-wrap:wrap;gap:6px 18px;margin-bottom:8px;opacity:0;
+  transition:opacity 400ms ease-out;transition-delay:var(--d,0ms);
+}
+.fio-dimlegend.show{opacity:1;}
+.fio-dl-item{
+  display:flex;align-items:center;gap:6px;
+  font-family:'IBM Plex Mono',monospace;font-size:.875rem;letter-spacing:.04em;color:var(--text2);
+}
+.fio-dl-swatch{width:16px;height:6px;border-radius:1px;display:inline-block;}
+.fio-dl-swatch[data-dim="n"]{background:var(--dim-n);}
+.fio-dl-swatch[data-dim="m"]{background:var(--dim-m);}
+.fio-dl-swatch[data-dim="met"]{background:var(--dim-met);}
+
+.toggle-row{display:flex;flex-wrap:wrap;align-items:center;gap:16px;margin:10px 0 6px;}
+.sw-hit{display:flex;align-items:center;gap:14px;min-height:56px;cursor:pointer;}
+.sw{
+  width:68px;height:38px;border-radius:19px;flex-shrink:0;
+  background:var(--card);border:1.5px solid var(--gold);
+  position:relative;
+  transition:background-color 300ms ease,border-color 300ms ease;
+  animation:hero-pulse 2.4s ease-in-out infinite;
+}
+.hero.touched .sw{animation:none;}
+.sw[aria-checked="true"]{background:var(--copper);border-color:var(--copper2);}
+.sw::after{
+  content:'';position:absolute;top:3.5px;left:3.5px;width:28px;height:28px;border-radius:50%;
+  background:var(--gold2);
+  transition:transform 300ms cubic-bezier(.65,0,.35,1);
+}
+.sw[aria-checked="true"]::after{transform:translateX(30px);}
+.sw-lbl{
+  font-family:'IBM Plex Mono',monospace;font-size:.9375rem;font-weight:500;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--gold2);
+}
+.hint{color:var(--text2);transition:opacity 300ms;}
+.hero.touched .hint{opacity:0;}
+@keyframes hero-pulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(200,160,96,0);}
+  50%{box-shadow:0 0 0 8px rgba(200,160,96,.14);}
+}
+
+.closing{
+  font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:500;
+  font-size:1.65rem;line-height:1.3;color:var(--gold3);
+  margin:14px 0 0;min-height:3.9em;
+  opacity:0;transform:translateY(6px);
+  transition:opacity 300ms,transform 300ms;
+}
+.hero.on .closing{opacity:1;transform:none;transition:opacity 500ms ease-out 1.7s,transform 500ms ease-out 1.7s;}
+
+/* ═══ SEÇÕES — resto da página é quieto, sem fade-and-slide-up ═══ */
+.sec2{padding:0;margin-top:96px;}
+
+/* ── Seção história: faixa de prova (tiles) ── */
+.historia-prova{display:flex;flex-direction:column;gap:12px;}
+.historia-prova-item{
+  display:flex;gap:16px;align-items:flex-start;
+  background:var(--card);border:1px solid var(--b2);border-radius:14px;padding:18px;
+}
+.historia-prova-item svg{flex-shrink:0;margin-top:2px;}
+.historia-prova-item .mono.lbl{color:var(--gold2);letter-spacing:.12em;margin-bottom:4px;}
+
+/* ponte pro Momentum: filete—lockup—filete, depois a frase de destaque */
+.historia-bridge{display:flex;align-items:center;gap:14px;margin:44px 0 18px;}
+.historia-bridge i{flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--b3));font-style:normal;}
+.historia-bridge i:last-child{background:linear-gradient(270deg,transparent,var(--b3));}
+.historia-bridge-lockup{font-size:1.6rem;letter-spacing:.14em;}
+
+/* frase de destaque da ponte */
+.hist-destaque{
+  font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:500;
+  font-size:clamp(1.65rem,7.4vw,1.95rem);line-height:1.25;color:var(--gold3);margin:0 0 26px;
+}
+/* transição (h3) — classe própria, não compartilha mais .hist-destaque */
+.hist-transicao{
+  font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:500;
+  font-size:clamp(1.5rem,6.6vw,1.75rem);line-height:1.25;color:var(--text);margin:44px 0 20px;
+}
+
+/* ── Cards (3 dimensões + régua) — molde único ── */
+.hist-cards{display:flex;flex-direction:column;gap:16px;}
+.hist-card{
+  position:relative;overflow:hidden;border:1px solid var(--b2);border-radius:16px;padding:24px 20px 22px;
+  background:linear-gradient(var(--dimd),var(--dimd)),linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,0) 45%),var(--card);
+}
+.hist-card::before{content:'';position:absolute;left:0;right:0;top:0;height:3px;background:var(--dim);}
+.hist-card[data-dim="n"]{--dim:var(--dim-n);--dimd:rgba(150,144,220,.10);}
+.hist-card[data-dim="m"]{--dim:var(--dim-m);--dimd:rgba(160,120,64,.12);}
+.hist-card[data-dim="met"]{--dim:var(--dim-met);--dimd:rgba(106,160,80,.10);}
+.hist-card[data-dim="regua"]{--dim:var(--gold);--dimd:rgba(200,160,96,.08);}
+
+/* 1. linha da etiqueta */
+.hist-tag-row{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.hist-tag-pip{width:10px;height:10px;border-radius:50%;background:var(--dim);flex-shrink:0;}
+.hist-tag{font-size:.875rem;letter-spacing:.16em;text-transform:uppercase;color:var(--text);font-weight:500;}
+.hist-blks{margin-left:auto;display:flex;gap:3px;}
+.hist-blks i{display:block;width:26px;height:12px;border-radius:1px;background:var(--dim);}
+
+/* 2. pergunta */
+.hist-q{
+  font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:500;
+  font-size:clamp(1.9rem,8.6vw,2.2rem);line-height:1.12;color:var(--text);margin:0 0 20px;
+}
+
+/* 3. mini-visual, caixa própria */
+.hist-visual{background:rgba(0,0,0,.2);border:1px solid var(--b);border-radius:12px;padding:16px 14px;margin:0 0 20px;}
+
+/* 4. "Da sua ficha" + pílula(s) */
+.hist-ficha-wrap{margin-bottom:22px;}
+.hist-ficha-line{
+  display:inline-block;font-size:.875rem;letter-spacing:.03em;color:var(--text);
+  border:1px solid var(--b3);border-radius:10px;padding:8px 12px;background:rgba(255,255,255,.03);
+  margin:0 0 8px;
+}
+.hist-ficha-wrap .hist-ficha-line:last-child{margin-bottom:0;}
+
+/* 5. a história, em dois parágrafos; frase-chave sem itálico, em --gold3 */
+.hist-story{margin-bottom:16px;}
+.hist-story em{font-style:normal;color:var(--gold3);}
+.hist-story + .hist-story{margin-top:0;}
+
+/* 6. faixa "No Momentum" */
+.hist-momentum-box{background:var(--dimd);border-left:3px solid var(--dim);border-radius:0 10px 10px 0;padding:12px 16px;margin-top:22px;}
+.hist-momentum-box .mono.lbl{color:var(--dim);margin-bottom:4px;}
+
+/* ═══ MINI-VISUAIS DA SEÇÃO HISTÓRIA — todos ilustrativos ═══ */
+
+/* Neural — fileira de repetições (interativo) */
+.vis-serie-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+.vis-serie-tab{
+  flex:1;min-height:48px;border-radius:10px;border:1px solid var(--b2);background:rgba(255,255,255,.03);
+  font-family:'IBM Plex Mono',monospace;font-size:.875rem;letter-spacing:.04em;
+  color:var(--text2);cursor:pointer;transition:border-color 200ms ease,color 200ms ease,background-color 200ms ease;
+}
+.vis-serie-tab[aria-checked="true"]{border-color:var(--dim-n);color:var(--text);background:rgba(150,144,220,.14);}
+.vis-reps-row{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:4px;margin-bottom:16px;}
+.vis-rep-dot{
+  width:100%;aspect-ratio:1;border-radius:50%;box-sizing:border-box;
+  background:transparent;border:2px dashed var(--dim-n);
+  transform:scale(0);opacity:0;
+  transition:transform 220ms cubic-bezier(.34,1.56,.64,1),opacity 200ms ease;
+  transition-delay:var(--rd,0ms);
+}
+.vis-rep-dot.done{border:2px solid var(--dim-n);background:var(--dim-n);box-shadow:0 0 8px rgba(150,144,220,.35);}
+.vis-rep-dot.show{transform:scale(1);opacity:1;}
+.vis-neural-line{font-size:.9375rem;letter-spacing:.02em;color:var(--text);margin-bottom:4px;}
+.vis-neural-line b{font-weight:500;color:var(--dim-n);}
+.vis-neural-alvo{color:var(--text2);}
+
+/* Mecânica — blocos de volume (estático) */
+.vis-mec-axis{color:var(--text2);margin-bottom:8px;}
+.vis-mec-chart{display:flex;align-items:flex-end;gap:10px;margin-bottom:8px;}
+.vis-mec-col{flex:var(--reps);min-width:0;overflow-wrap:break-word;}
+.vis-mec-bar{
+  position:relative;width:100%;height:72px;border-radius:4px;
+  background:linear-gradient(180deg,var(--dim-m),var(--copper));
+  display:flex;align-items:center;justify-content:center;
+}
+/* selo escuro translúcido atrás do numeral: garante contraste alto em
+   qualquer ponto do degradê (medido: 9.3–10.7:1), já que o texto claro
+   direto sobre --dim-m/--copper caía a ~3:1 em parte da barra. */
+.vis-mec-bar-badge{
+  background:rgba(0,0,0,.6);border-radius:6px;padding:4px 10px;
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+}
+.vis-mec-bar b{font-family:'Bebas Neue',sans-serif;font-weight:400;font-size:1.75rem;line-height:1;color:var(--text);}
+.vis-mec-bar span{font-family:'IBM Plex Mono',monospace;font-size:.875rem;color:var(--text2);}
+.vis-mec-axis-x{color:var(--text2);margin-bottom:16px;}
+.vis-mec-sum{display:flex;gap:2px;height:18px;border-radius:3px;overflow:hidden;margin-bottom:6px;}
+.vis-mec-sum i{display:block;background:var(--dim-m);}
+.vis-mec-sum-label{color:var(--text2);margin-bottom:12px;}
+.vis-mec-legend{color:var(--text2);}
+
+/* Metabólica — linha de tempo série/descanso (estático) */
+.vis-met-row-labels{height:18px;margin-bottom:4px;}
+.vis-met-sec-label{color:var(--text2);text-align:center;line-height:18px;}
+.vis-met-row{display:flex;gap:3px;align-items:center;height:34px;margin-bottom:12px;}
+.vis-met-serie{height:28px;background:var(--dim-met);border-radius:2px;}
+.vis-met-descanso{height:28px;border:1px dashed var(--copper2);border-radius:2px;position:relative;box-sizing:border-box;}
+.vis-met-tick{position:absolute;top:-6px;bottom:-6px;width:0;border-left:1px dashed var(--gold2);}
+.vis-met-ficha-key{display:flex;align-items:center;gap:6px;color:var(--gold2);margin-bottom:10px;}
+.vis-met-ficha-swatch{width:14px;height:0;border-top:1px dashed var(--gold2);display:inline-block;}
+.vis-met-legend{color:var(--text2);}
+
+/* Régua — dois treinos, mesmo peso (estático) */
+.vis-regua{display:flex;gap:20px;margin-top:4px;}
+.vis-regua-col{flex:1;min-width:0;overflow-wrap:break-word;}
+.vis-regua-title{color:var(--text2);letter-spacing:.08em;margin-bottom:10px;}
+.vis-regua-peso{height:14px;background:var(--text3);border-radius:2px;margin-bottom:4px;}
+.vis-regua-peso-lbl{color:var(--text2);margin-bottom:16px;}
+.vis-regua-meter{display:flex;gap:2px;margin-bottom:8px;}
+.vis-regua-blk{flex:1;height:22px;background:var(--b2);border-radius:1px;}
+.vis-regua-blk.on{background:var(--gold);}
+.vis-regua-count{font-size:.9375rem;color:var(--text2);overflow-wrap:break-word;}
+.vis-regua-legend{color:var(--text2);margin-top:16px;}
+
+/* ── Seção 2: a mesma terça-feira ── */
+.legend2{margin-bottom:24px;}
+.mode-switch{display:flex;gap:8px;margin-bottom:24px;}
+.mode-btn{
+  flex:1;min-height:48px;border-radius:10px;border:1px solid var(--b2);background:rgba(255,255,255,.03);
+  font-family:'IBM Plex Mono',monospace;font-size:.875rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--text2);cursor:pointer;transition:border-color 200ms ease,color 200ms ease,background-color 200ms ease;
+}
+.mode-btn[aria-pressed="true"]{border-color:var(--gold);color:var(--gold2);background:rgba(200,160,96,.12);}
+.mode-panel{transition:opacity 100ms ease;}
+.mode-panel.fading{opacity:0;}
+.steps{list-style:none;counter-reset:step;display:flex;flex-direction:column;gap:12px;margin-bottom:24px;}
+.steps li{
+  counter-increment:step;
+  display:flex;gap:16px;align-items:center;
+  background:var(--card);border:1px solid var(--b2);border-radius:14px;padding:16px;
+  font-family:'Cormorant Garamond',serif;font-style:normal;font-weight:600;
+  font-size:clamp(1.25rem,5.4vw,1.3125rem);line-height:1.55;color:var(--text);max-width:none;
+}
+.steps li::before{
+  content:counter(step);flex-shrink:0;
+  font-family:'Bebas Neue',sans-serif;font-weight:400;font-size:2rem;line-height:1;color:var(--gold);
+}
+/* diferenciação dos modos: planilha neutra, momentum tingida + filete */
+.steps.mode-planilha li{color:var(--text2);}
+.steps.mode-momentum li{
+  background:linear-gradient(rgba(200,160,96,.08),rgba(200,160,96,.08)),var(--card);
+  border-left:3px solid var(--gold);
+}
+.pse-note{
+  border-left:3px solid var(--gold);background:rgba(200,160,96,.08);border-radius:0 10px 10px 0;
+  padding:12px 16px;margin-top:24px;
+}
+
+/* ── Seção 4: anatomia de uma série ── */
+.exemplo-badge{
+  display:inline-block;font-size:.875rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--text2);border:1px solid var(--b2);border-radius:2px;padding:2px 8px;margin-bottom:16px;
+}
+.serie-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+.inp-chip{
+  min-width:66px;min-height:48px;padding:8px 10px;border-radius:8px;
+  background:var(--card);border:1px solid var(--b2);cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  font:inherit;color:inherit;transition:border-color 200ms ease,background-color 200ms ease,box-shadow 200ms ease;
+}
+.inp-chip .v{font-family:'Bebas Neue',sans-serif;font-size:2rem;line-height:1;color:var(--gold2);letter-spacing:.02em;}
+.inp-chip .l{
+  font-family:'IBM Plex Mono',monospace;font-size:.875rem;text-transform:uppercase;
+  letter-spacing:.06em;color:var(--text2);max-width:8em;text-align:center;line-height:1.3;
+}
+.inp-chip.hot{border-color:var(--gold);background:rgba(200,160,96,.12);box-shadow:0 0 12px rgba(200,160,96,.18);}
+.inp-chip.hot .v{color:var(--gold3);}
+
+.serie-origin{
+  border-left:3px solid var(--gold);background:rgba(200,160,96,.08);border-radius:0 10px 10px 0;
+  padding:12px 16px;margin-bottom:16px;color:var(--gold2);
+  font-size:.875rem;letter-spacing:.03em;transition:opacity 200ms ease;
+}
+.serie-origin.empty{color:var(--text2);}
+
+.serie-targets{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;}
+.tgt-chip{
+  min-height:48px;padding:8px 16px;border-radius:8px;background:var(--card);
+  border:1px solid var(--b2);display:flex;align-items:center;gap:8px;cursor:pointer;
+  font:inherit;color:inherit;transition:border-color 200ms ease,background-color 200ms ease;
+}
+.tgt-chip .name{font-family:'IBM Plex Mono',monospace;font-size:.875rem;text-transform:uppercase;letter-spacing:.1em;color:var(--text2);}
+.tgt-chip[data-dim="n"].hot{border-color:var(--dim-n);background:var(--dim-n-d);}
+.tgt-chip[data-dim="m"].hot{border-color:var(--dim-m);background:var(--dim-m-d);}
+.tgt-chip[data-dim="met"].hot{border-color:var(--dim-met);background:var(--dim-met-d);}
+.note-aquecimento{margin-top:20px;}
+
+/* ── Seção 5: convite — tela cheia, mesmo tratamento do hero ── */
+.convite{
+  position:relative;margin:96px -20px 0;padding:56px 20px calc(48px + env(safe-area-inset-bottom));
+  min-height:100vh;min-height:100svh;
+  display:flex;flex-direction:column;justify-content:center;
+  overflow:hidden;border-top:1px solid var(--b);
+}
+.convite-glow{
+  position:absolute;left:50%;top:44%;width:150%;aspect-ratio:1;transform:translate(-50%,-50%);
+  pointer-events:none;z-index:0;
+  background:radial-gradient(circle,rgba(200,160,96,.20) 0%,rgba(200,160,96,.06) 36%,transparent 66%);
+  opacity:.4;transition:opacity 900ms ease;
+}
+.convite.on .convite-glow{opacity:1;}
+.convite > *:not(.convite-glow){position:relative;z-index:1;}
+.convite-line{
+  font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:500;
+  font-size:clamp(2.2rem,10.4vw,2.75rem);line-height:1.15;margin:0;
+}
+.convite-line.l1{color:var(--text);}
+.convite-line.l3-wrap{position:relative;color:var(--text3);}
+.convite-line.l3-wrap .l3-over{
+  position:absolute;inset:0;color:var(--text);
+  clip-path:inset(0 100% 0 0);
+  transition:clip-path 600ms cubic-bezier(.22,1,.36,1);
+}
+.convite.on .l3-wrap .l3-over{clip-path:inset(0 0 0 0);}
+.convite-toggle-row{display:flex;justify-content:center;margin:32px 0;}
+.convite-sw-hit{display:flex;align-items:center;gap:14px;min-height:56px;cursor:pointer;padding:8px 10px;border-radius:10px;}
+.convite-sw{
+  width:68px;height:38px;border-radius:19px;flex-shrink:0;position:relative;
+  background:var(--card);border:1.5px solid var(--gold);
+  transition:background-color 300ms ease,border-color 300ms ease,box-shadow 300ms ease;
+  animation:invitepulse 2.4s ease-in-out infinite;
+}
+.convite-sw[aria-checked="true"]{background:var(--copper);border-color:var(--copper2);animation:none;}
+.convite-sw::after{
+  content:'';position:absolute;top:3.5px;left:3.5px;width:28px;height:28px;border-radius:50%;
+  background:var(--gold2);transition:transform 300ms cubic-bezier(.65,0,.35,1);
+}
+.convite-sw[aria-checked="true"]::after{transform:translateX(30px);}
+@keyframes invitepulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(200,160,96,0);}
+  50%{box-shadow:0 0 0 8px rgba(200,160,96,.14);}
+}
+.convite-sw-lbl{
+  font-family:'IBM Plex Mono',monospace;font-size:.9375rem;font-weight:500;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--gold2);
+}
+.convite-lockup{
+  font-family:'Bebas Neue',sans-serif;letter-spacing:.06em;line-height:1;
+  font-size:clamp(2rem,9vw,2.4rem);color:var(--gold3);text-align:center;
+  margin-top:34px;opacity:0;transform:translateY(6px);
+  transition:opacity 500ms,transform 500ms;
+}
+.convite.on .convite-lockup{opacity:1;transform:none;transition-delay:.35s;}
+.signature{
+  margin-top:44px;font-family:'IBM Plex Mono',monospace;font-size:.875rem;letter-spacing:.04em;
+  color:var(--text2);text-align:center;
+}
+
+@media (prefers-reduced-motion: reduce){
+  .head,.lockup .plus,.closing,.hero-glow,.sw::after,.sw,
+  .mode-panel,.convite-line,.convite-sw::after,.convite-sw,
+  .convite-lockup,.convite-glow,
+  .fio-legend,.fio-dot,.fb,.fio-dimlegend,.fio-row.future::before,
+  .vis-rep-dot,.vis-serie-tab,.hint{transition-duration:150ms!important;}
+  .convite-sw,.sw{animation:none!important;}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ═══════════ 0 · HERO ═══════════ -->
+<section class="hero" id="hero" aria-label="Raquel e Momentum">
+  <div class="hero-glow" id="glow"></div>
+
+  <div class="lockup">
+    <span>RAQUEL</span><span class="plus" id="plus">+ MOMENTUM</span>
+  </div>
+
+  <div class="head-stack">
+    <h1 class="head in" id="head1">Dois anos de constância.</h1>
+    <h1 class="head pre" id="head2" aria-hidden="true">Agora, cada treino fala.</h1>
+  </div>
+
+  <div class="rule"></div>
+
+  <div class="fio-legend-wrap">
+    <p class="fio-legend show" id="fio-legend-a">Cada ponto é um treino que você fez.</p>
+    <p class="fio-legend" id="fio-legend-b" aria-hidden="true">Cada ponto agora mostra como o treino foi.</p>
+  </div>
+
+  <div class="fio" id="fio" role="img" aria-label="Ilustração: um ponto para cada treino, em fio contínuo."></div>
+
+  <p class="mono fio-note">Ilustração: a quantidade de pontos e os níveis são exemplos.</p>
+
+  <div class="fio-dimlegend" id="fio-dimlegend" aria-hidden="true">
+    <span class="fio-dl-item"><i class="fio-dl-swatch" data-dim="n"></i>proximidade da falha</span>
+    <span class="fio-dl-item"><i class="fio-dl-swatch" data-dim="m"></i>carga</span>
+    <span class="fio-dl-item"><i class="fio-dl-swatch" data-dim="met"></i>descanso</span>
+  </div>
+
+  <div class="toggle-row">
+    <span class="sw-hit" id="sw-hit" role="switch" aria-checked="false" tabindex="0" aria-label="Ativar Momentum">
+      <span class="sw" id="sw"></span>
+      <span class="sw-lbl">+ Momentum</span>
+    </span>
+    <span class="mono hint">toque para ver</span>
+  </div>
+
+  <p class="closing" id="closing">A constância já é sua. Agora ela ganha outros significados.</p>
+</section>
+
+<!-- ═══════════ 1 · HISTÓRIA (unifica "o que você construiu" + dimensões) ═══════════ -->
+<section class="sec2" id="sec-historia">
+  <div class="eyebrow"><b>01</b>A sua história<i></i></div>
+  <h2 class="sec-title">Seu comprometimento com o treino construiu uma bela história de dedicação e evolução.</h2>
+
+  <div class="historia-prova">
+    <div class="historia-prova-item">
+      <div><div class="mono lbl">Aderência</div><p class="body-txt">Você executou o que foi prescrito.</p></div>
+    </div>
+    <div class="historia-prova-item">
+      <div><div class="mono lbl">Esforço percebido (PSE, de 0 a 10)</div><p class="body-txt">Você relatou com fidelidade.</p></div>
+    </div>
+  </div>
+
+  <div class="historia-bridge"><i></i><div class="historia-bridge-lockup bebas">MOMENTUM</div><i></i></div>
+  <p class="hist-destaque">O Momentum quer te acompanhar novamente em uma outra bela história, cheia de outros significados.</p>
+
+  <p class="body-txt historia-apresentacao">O Momentum é onde cada série do seu treino é registrada e ganha significado: quanto peso, quão perto da falha, como foi o descanso.</p>
+
+  <h3 class="hist-transicao">Cada exercício conta uma história dentro do seu treino.</h3>
+
+  <div class="hist-cards" id="hist-cards"></div>
+</section>
+
+<!-- ═══════════ 2 · A MESMA TERÇA-FEIRA, DUAS REALIDADES ═══════════ -->
+<section class="sec2" id="sec-terca">
+  <div class="eyebrow"><b>02</b>O mesmo treino<i></i></div>
+  <h2 class="sec-title">Mesmo treino. Duas formas de viver ele.</h2>
+  <p class="mono legend2">Exemplo do seu último treino registrado: Treino B, rosca direta.</p>
+
+  <div class="mode-switch" role="group" aria-label="Modo de visualização">
+    <button type="button" class="mode-btn" data-mode="planilha" aria-pressed="true">Planilha</button>
+    <button type="button" class="mode-btn" data-mode="momentum" aria-pressed="false">Momentum</button>
+  </div>
+
+  <div class="mode-panel" id="mode-panel">
+    <ol class="steps" id="steps-list"></ol>
+  </div>
+
+  <p class="body-txt pse-note">PSE 9 quer dizer "ainda dava pra fazer mais ~1 repetição". É isso que "evitar a falha" significa na prática.</p>
+</section>
+
+<!-- ═══════════ 3 · ANATOMIA DE UMA SÉRIE ═══════════ -->
+<section class="sec2" id="sec-anatomia">
+  <div class="eyebrow"><b>03</b>Por dentro de uma série<i></i></div>
+  <h2 class="sec-title">Cada número tem origem. Veja uma série por dentro.</h2>
+  <p class="mono legend2">Prescrição do seu último treino registrado: Treino D, elevação pélvica na máquina (4 × PSE 9–10, 90–120s). Valores da série abaixo: ilustrativos.</p>
+  <span class="exemplo-badge">exemplo</span>
+
+  <div class="serie-chips" id="serie-chips"></div>
+  <div class="serie-origin mono empty" id="serie-origin" aria-live="polite">toque em um número ou em uma dimensão</div>
+  <div class="serie-targets" id="serie-targets"></div>
+
+  <p class="body-txt">Cada número que você vê tem origem: o que você fez, como sentiu, quanto sobrou.</p>
+  <p class="mono note-aquecimento">O aquecimento fica registrado, mas não entra no cálculo de carga.</p>
+</section>
+
+<!-- ═══════════ 4 · CONVITE ═══════════ -->
+<section class="convite" id="convite" aria-label="Convite">
+  <div class="convite-glow" id="cv-glow"></div>
+
+  <p class="convite-line l1">Nós construímos juntos os seus avanços,</p>
+
+  <div class="convite-toggle-row">
+    <span class="convite-sw-hit" id="cv-sw-hit" role="switch" aria-checked="false" tabindex="0"
+          aria-label="Nós construímos juntos os seus avanços, e podemos construir ainda mais daqui pra frente.">
+      <span class="convite-sw" id="cv-sw"></span>
+      <span class="convite-sw-lbl">+ Momentum</span>
+    </span>
+  </div>
+
+  <p class="convite-line l3-wrap">
+    e podemos construir ainda mais daqui pra frente.
+    <span class="l3-over" aria-hidden="true">e podemos construir ainda mais daqui pra frente.</span>
+  </p>
+
+  <div class="convite-lockup" id="cv-lockup">RAQUEL + MOMENTUM</div>
+
+  <p class="signature">João Pedro · Personal Trainer · CREF 207171-G/SP</p>
+</section>
+
+</div>
+
+<script>
+'use strict';
+const RM = matchMedia('(prefers-reduced-motion: reduce)');
+const $ = s => document.querySelector(s);
+
+const CUES = { head:0, plus:150, head2:250, legend:400, sweep:400, dimlegend:1300, glow:1300, future:1500, closing:1700 };
+const TOTAL = 2400;
+const CUES_BACK = { closing:0, future:140, glow:280, dimlegend:280, sweep:910, legend:910, head2:1020, plus:1090, head:1200 };
+
+const el = {
+  hero:$('#hero'), plus:$('#plus'), h1:$('#head1'), h2:$('#head2'),
+  legendA:$('#fio-legend-a'), legendB:$('#fio-legend-b'),
+  fio:$('#fio'), dimlegend:$('#fio-dimlegend'),
+  glow:$('#glow'), closing:$('#closing'), swHit:$('#sw-hit'), sw:$('#sw'),
+};
+const setD = (node,ms) => node && node.style.setProperty('--d', (RM.matches?0:ms)+'ms');
+
+/* ═══════════════════════════════════════════════════════════
+   FIO DE CONSTÂNCIA — geração dos pontos
+   PRNG com semente fixa: mesmo resultado em todo carregamento.
+   Gancho opcional de dados reais: preencha LACUNAS com os índices
+   (0–111) de treinos que não aconteceram — viram ponto "sem treino",
+   nunca viram mini-barras no estado 2. Vazio por padrão.
+   ═══════════════════════════════════════════════════════════ */
+const LACUNAS = [];
+const FIO_TOTAL = 112, FIO_FUTURE = 6;
+/* medido dentro de buildFio(), não aqui: window.innerWidth logo após o
+   parse do <script> pode não refletir ainda o viewport final. */
+let FIO_COLS = 14;
+
+let _seed = 915240;
+function _rand(){
+  _seed |= 0; _seed = _seed + 0x6D2B79F5 | 0;
+  let t = Math.imul(_seed ^ _seed >>> 15, 1 | _seed);
+  t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+  return ((t ^ t >>> 14) >>> 0) / 4294967296;
+}
+function _nivel(){
+  const r = _rand();
+  return r < 0.25 ? 1 : (r < 0.65 ? 2 : 3);
+}
+/* ~25% nível 1, ~40% nível 2, ~35% nível 3 — ilustrativo, sem valor numérico real */
+const FIO_DATA = Array.from({ length: FIO_TOTAL }, (_, i) => ({
+  gap: LACUNAS.includes(i),
+  n: _nivel(), m: _nivel(), met: _nivel(),
+}));
+
+function buildFio(){
+  FIO_COLS = window.innerWidth < 360 ? 12 : 14;
+  const rows = Math.ceil(FIO_TOTAL / FIO_COLS);
+  let html = '';
+  for (let r = 0; r < rows; r++){
+    const start = r * FIO_COLS;
+    const cells = Math.min(FIO_COLS, FIO_TOTAL - start);
+    html += '<div class="fio-row" style="--n:' + FIO_COLS + ';--cells:' + cells + '">';
+    for (let c = 0; c < cells; c++){
+      const i = start + c;
+      const d = FIO_DATA[i];
+      html += d.gap
+        ? '<span class="fio-cell gap" data-i="' + i + '"><b class="fio-dot gap"></b></span>'
+        : '<span class="fio-cell" data-i="' + i + '">' +
+            '<b class="fio-dot"></b>' +
+            '<span class="fio-bars">' +
+              '<i class="fb fb-n" style="--lvl:' + d.n + '"></i>' +
+              '<i class="fb fb-m" style="--lvl:' + d.m + '"></i>' +
+              '<i class="fb fb-t" style="--lvl:' + d.met + '"></i>' +
+            '</span>' +
+          '</span>';
+    }
+    html += '</div>';
+  }
+  html += '<div class="fio-row future" id="fio-future-row" style="--n:' + FIO_COLS + ';--cells:' + FIO_FUTURE + '">';
+  for (let i = 0; i < FIO_FUTURE; i++){
+    html += '<span class="fio-cell future-cell"><b class="fio-dot dashed"></b></span>';
+  }
+  html += '</div>';
+  el.fio.innerHTML = html;
+}
+buildFio();
+
+/* bônus de robustez: se o viewport cruzar o breakpoint de 360px depois
+   da carga (rotação de tela, por exemplo), reconstrói o fio e reaplica
+   o estado atual do toggle. */
+let _fioResizeT = null;
+window.addEventListener('resize', () => {
+  clearTimeout(_fioResizeT);
+  _fioResizeT = setTimeout(() => {
+    const next = window.innerWidth < 360 ? 12 : 14;
+    if (next === FIO_COLS) return;
+    buildFio();
+    render(on);
+  }, 150);
+});
+
+let on = false, animating = false;
+
+/* varredura: ponto encolhe, as três mini-barras crescem para o nível
+   sorteado daquele treino. Mecânica entra +40ms, Metabólica +80ms
+   depois da Neural. Pontos "sem treino" (LACUNAS) nunca animam. */
+function sweepFio(target, d){
+  const cells = [...el.fio.querySelectorAll('.fio-cell:not(.future-cell)')];
+  cells.forEach((cell, i) => {
+    if (cell.classList.contains('gap')) return;
+    const delay = target ? (d.sweep + i*9) : (d.sweep + (FIO_TOTAL - 1 - i)*6);
+    const dot = cell.querySelector('.fio-dot');
+    setD(dot, delay);
+    dot.style.transform = target ? 'scale(0)' : 'scale(1)';
+    cell.querySelectorAll('.fb').forEach((b, bi) => {
+      const extra = bi === 0 ? 0 : (bi === 1 ? 40 : 80); // Neural, Mecânica, Metabólica
+      setD(b, delay + extra);
+      b.style.transform = target ? 'scaleX(calc(var(--lvl) / 3))' : 'scaleX(0)';
+    });
+  });
+}
+
+/* linha futura: fio tracejado + 6 pontos, 80ms entre eles */
+function sweepFuture(target, d){
+  const row = document.getElementById('fio-future-row');
+  setD(row, d.future);
+  row.classList.toggle('show', target);
+  const dots = [...row.querySelectorAll('.fio-dot')];
+  dots.forEach((dot, i) => {
+    const delay = target ? (d.future + i*80) : (d.future + (FIO_FUTURE - 1 - i)*80);
+    setD(dot, delay);
+  });
+}
+
+function render(target){
+  const d = target ? CUES : CUES_BACK;
+
+  el.hero.classList.toggle('on', target);
+
+  setD(el.plus, d.plus);
+  el.plus.style.clipPath = target ? 'inset(0 0 0 0)' : 'inset(0 100% 0 0)';
+
+  setD(el.h1, d.head);
+  el.h1.className = 'head ' + (target ? 'out' : 'in');
+  setD(el.h2, d.head2);
+  el.h2.className = 'head ' + (target ? 'in' : 'pre');
+  el.h1.setAttribute('aria-hidden', String(target));
+  el.h2.setAttribute('aria-hidden', String(!target));
+
+  setD(el.legendA, d.legend);
+  setD(el.legendB, d.legend);
+  el.legendA.classList.toggle('show', !target);
+  el.legendB.classList.toggle('show', target);
+  el.legendA.setAttribute('aria-hidden', String(target));
+  el.legendB.setAttribute('aria-hidden', String(!target));
+
+  sweepFio(target, d);
+  sweepFuture(target, d);
+
+  setD(el.dimlegend, d.dimlegend);
+  el.dimlegend.classList.toggle('show', target);
+
+  // opacidade do glow: controlada por CSS puro agora (.hero.on .hero-glow),
+  // não mais via JS — decisão da direção visual, ver relatório do checkpoint 1.
+
+  setD(el.closing, d.closing);
+  el.closing.classList.toggle('show', target);
+
+  el.fio.setAttribute('aria-label', target
+    ? 'Ilustração: cada treino agora mostra a proximidade da falha, a carga e o descanso.'
+    : 'Ilustração: um ponto para cada treino, em fio contínuo.');
+
+  el.swHit.setAttribute('aria-checked', String(target));
+  el.sw.setAttribute('aria-checked', String(target));
+}
+
+function toggle(){
+  if (animating) return;
+  on = !on;
+  el.hero.classList.add('touched'); // único acréscimo de JS da direção visual — para o pulso do toggle
+  if (navigator.vibrate) { try{ navigator.vibrate(10); }catch(e){} }
+  animating = true;
+  render(on);
+  setTimeout(() => { animating = false; }, RM.matches ? 160 : (TOTAL + 100));
+}
+el.swHit.addEventListener('click', toggle);
+el.swHit.addEventListener('keydown', e => {
+  if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggle(); }
+});
+
+/* carga inicial: os pontos do estado 1 aparecem em scale 0→1 — única
+   animação automática da página. Substitui o boot() antigo. */
+function bootFio(){
+  const cells = [...el.fio.querySelectorAll('.fio-cell:not(.future-cell)')];
+  cells.forEach((cell, i) => {
+    const dot = cell.querySelector('.fio-dot');
+    dot.style.transform = 'scale(0)';
+    setD(dot, RM.matches ? 0 : 300 + i*8);
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      dot.style.transform = 'scale(1)';
+    }));
+  });
+}
+setTimeout(bootFio, RM.matches ? 0 : 420);
+
+/* ═══════════════════════════════════════════════════════════
+   SEÇÃO 1 — história (unifica "o que você construiu" + dimensões)
+   Os quatro cards (3 dimensões + régua) ficam sempre abertos —
+   sem expandir/recolher. Mini-visuais (checkpoint 2) entram em
+   #hist-visual-<key>, populados à parte.
+   ═══════════════════════════════════════════════════════════ */
+const HISTORIA = [
+  { key:'n', q:'Quão perto da falha você chegou?', tag:'NEURAL',
+    ficha:'Leg Press 45° · 3 × 8–12 · PSE 8–9 · 60s',
+    story:[
+      'O Leg Press permite usar cargas muito altas, bem acima do que seria possível em outros exercícios de perna. Carga absoluta elevada exige que o sistema nervoso recrute mais unidades motoras, as de alto limiar, e coordene de uma vez uma grande massa muscular (quadríceps e glúteos).',
+      '<em>Isso é trabalho neural.</em> As repetições em reserva (quantas ainda sobravam) e o esforço percebido mostram o quanto você chegou perto do limite em cada série.',
+    ],
+    momentum:'Cada série mostra o quão perto da falha foi.' },
+  { key:'m', q:'Quanto peso, quantas vezes, quantas séries?', tag:'MECÂNICA',
+    ficha:['Agachamento (máquina) 3 × 10–12', 'Elevação pélvica 4 × PSE 9–10', 'Rosca direta 3 × PSE 9'],
+    story:[
+      'São exercícios na faixa clássica de hipertrofia, perto da falha. <em>Aqui mora a tensão mecânica</em>: carga × repetições × séries, o principal estímulo pro músculo crescer.',
+      'O objetivo do seu bloco (mais volume, mais exercícios) é mais tensão mecânica acumulada por semana.',
+    ],
+    momentum:'O volume de cada exercício e da semana, somado automaticamente.' },
+  { key:'met', q:'Como foi o descanso e o tempo sob tensão?', tag:'METABÓLICA',
+    ficha:'Remada alta (rest-pause) 3 × 15 · Elevação lateral 3 × 10–15 · 60s',
+    story:[
+      'Aqui o foco é o ritmo da série. Descanso curto, repetições altas e o rest-pause (uma pausa de poucos segundos pra completar as 15) mantêm o músculo sob tensão por mais tempo e acumulam metabólitos, a famosa queimação.',
+      '<em>Isso é o estímulo metabólico.</em>',
+    ],
+    momentum:'O descanso real entre séries e o tempo sob tensão.' },
+];
+const REGUA = {
+  title:'O esforço percebido é a sua régua.',
+  story:'O mesmo peso pode custar esforços diferentes dependendo do dia, do sono, da fase do treino. Você diz quanto custou (de 0 a 10, o PSE), e o Momentum compara o que foi feito com o esforço que custou. Assim a sua evolução é medida contra o seu próprio histórico, e não contra a de outra pessoa.',
+};
+
+function renderHistoriaCards(){
+  const dimHtml = HISTORIA.map(d => {
+    const fichaHtml = Array.isArray(d.ficha)
+      ? d.ficha.map(f => '<div class="mono hist-ficha-line">' + f + '</div>').join('')
+      : '<div class="mono hist-ficha-line">' + d.ficha + '</div>';
+    const storyHtml = d.story.map(p => '<p class="body-txt hist-story">' + p + '</p>').join('');
+    return '<div class="hist-card" data-dim="' + d.key + '">' +
+        '<div class="hist-tag-row">' +
+          '<span class="hist-tag-pip"></span>' +
+          '<span class="mono hist-tag">' + d.tag + '</span>' +
+          '<span class="hist-blks" aria-hidden="true"><i></i><i></i><i></i></span>' +
+        '</div>' +
+        '<p class="hist-q">' + d.q + '</p>' +
+        '<div class="hist-visual" id="hist-visual-' + d.key + '"></div>' +
+        '<div class="mono lbl">Da sua ficha</div>' +
+        '<div class="hist-ficha-wrap">' + fichaHtml + '</div>' +
+        storyHtml +
+        '<div class="hist-momentum-box">' +
+          '<div class="mono lbl">No Momentum</div>' +
+          '<p class="body-txt hist-momentum">' + d.momentum + '</p>' +
+        '</div>' +
+      '</div>';
+  }).join('');
+
+  const reguaHtml =
+    '<div class="hist-card" data-dim="regua">' +
+      '<p class="hist-q">' + REGUA.title + '</p>' +
+      '<p class="body-txt">' + REGUA.story + '</p>' +
+      '<div class="hist-visual" id="hist-visual-regua"></div>' +
+    '</div>';
+
+  document.getElementById('hist-cards').innerHTML = dimHtml + reguaHtml;
+}
+renderHistoriaCards();
+
+/* ═══════════════════════════════════════════════════════════
+   MINI-VISUAIS DA SEÇÃO HISTÓRIA — todos ilustrativos, com
+   .exemplo-badge. Nenhum número real da Raquel aparece.
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Neural: fileira de repetições (interativo) ── */
+const NEURAL_SLOTS = 12;
+const NEURAL_SERIES = [
+  { feitas:9,  reserva:3, esforco:7, status:'abaixo do esforço-alvo',  icon:'◐' },
+  { feitas:10, reserva:2, esforco:8, status:'dentro do esforço-alvo',  icon:'●' },
+  { feitas:11, reserva:1, esforco:9, status:'dentro do esforço-alvo',  icon:'●' },
+];
+
+function renderNeuralVisual(){
+  const el = document.getElementById('hist-visual-n');
+  el.innerHTML =
+    '<span class="exemplo-badge">exemplo</span>' +
+    '<div class="vis-serie-tabs" role="radiogroup" aria-label="Escolher série de exemplo">' +
+      [0,1,2].map(i =>
+        '<button type="button" class="vis-serie-tab" role="radio" aria-checked="' + (i===0) + '" data-i="' + i + '">Série ' + (i+1) + '</button>'
+      ).join('') +
+    '</div>' +
+    '<div class="vis-reps-row" id="vis-reps-row" aria-hidden="true"></div>' +
+    '<p class="mono vis-neural-line" id="vis-neural-line" aria-live="polite"></p>' +
+    '<p class="mono vis-neural-alvo">alvo da ficha: esforço 8–9</p>';
+
+  document.querySelectorAll('.vis-serie-tab').forEach(btn => btn.addEventListener('click', () => {
+    document.querySelectorAll('.vis-serie-tab').forEach(b => b.setAttribute('aria-checked', String(b === btn)));
+    paintNeuralSerie(+btn.dataset.i, true);
+  }));
+  paintNeuralSerie(0, false);
+}
+
+function paintNeuralSerie(idx, animate){
+  const s = NEURAL_SERIES[idx];
+  const row = document.getElementById('vis-reps-row');
+  row.innerHTML = Array.from({ length: NEURAL_SLOTS }, (_, i) =>
+    '<i class="vis-rep-dot' + (i < s.feitas ? ' done' : '') + '"></i>'
+  ).join('');
+  [...row.querySelectorAll('.vis-rep-dot')].forEach((dot, i) => {
+    if (!animate || RM.matches){ dot.classList.add('show'); return; }
+    dot.style.setProperty('--rd', (i * 20) + 'ms');
+    requestAnimationFrame(() => requestAnimationFrame(() => dot.classList.add('show')));
+  });
+  document.getElementById('vis-neural-line').innerHTML =
+    '<b>' + s.reserva + (s.reserva === 1 ? ' repetição em reserva' : ' repetições em reserva') + '</b>' +
+    ' · esforço percebido ' + s.esforco + '<br>' + s.icon + ' ' + s.status;
+}
+renderNeuralVisual();
+
+/* ── Mecânica: blocos de volume (estático) ── */
+const MEC_SERIES = [ { n:1, reps:12 }, { n:2, reps:11 }, { n:3, reps:10 } ];
+
+function renderMecVisual(){
+  const el = document.getElementById('hist-visual-m');
+  el.innerHTML =
+    '<span class="exemplo-badge">exemplo</span>' +
+    '<p class="mono vis-mec-axis">carga ↑ (mesma nas três séries)</p>' +
+    '<div class="vis-mec-chart" role="img" aria-label="Ilustração: três blocos de volume, um por série, com largura proporcional a 12, 11 e 10 repetições e a mesma altura de carga.">' +
+      MEC_SERIES.map(s =>
+        '<div class="vis-mec-col" style="--reps:' + s.reps + '">' +
+          '<div class="vis-mec-bar"><span class="vis-mec-bar-badge"><b>' + s.reps + '</b><span class="mono">reps</span></span></div>' +
+        '</div>'
+      ).join('') +
+    '</div>' +
+    '<p class="mono vis-mec-axis-x">repetições →</p>' +
+    '<div class="vis-mec-sum" aria-hidden="true">' +
+      MEC_SERIES.map(s => '<i style="flex:' + s.reps + '"></i>').join('') +
+    '</div>' +
+    '<p class="mono vis-mec-sum-label">volume do exercício</p>' +
+    '<p class="mono vis-mec-legend">Mesma carga nas três séries: o volume do exercício é a soma das áreas.</p>';
+}
+renderMecVisual();
+
+/* ── Metabólica: linha de tempo série/descanso (estático) ── */
+const MET_PAIRS = [ { n:1, descSec:58 }, { n:2, descSec:74 }, { n:3, descSec:61 } ];
+const MET_SERIE_FLEX = 18, MET_FICHA_SEC = 60;
+
+function renderMetVisual(){
+  const el = document.getElementById('hist-visual-met');
+  let row = '', labels = '';
+  MET_PAIRS.forEach(p => {
+    row += '<div class="vis-met-serie" style="flex:' + MET_SERIE_FLEX + '"></div>';
+    const tickPct = Math.min(MET_FICHA_SEC / p.descSec * 100, 97).toFixed(1);
+    row += '<div class="vis-met-descanso" style="flex:' + p.descSec + '"><i class="vis-met-tick" style="left:' + tickPct + '%"></i></div>';
+    labels += '<div style="flex:' + MET_SERIE_FLEX + '"></div>';
+    labels += '<div class="mono vis-met-sec-label" style="flex:' + p.descSec + '">' + p.descSec + ' s</div>';
+  });
+  el.innerHTML =
+    '<span class="exemplo-badge">exemplo</span>' +
+    '<div class="vis-met-row vis-met-row-labels">' + labels + '</div>' +
+    '<div class="vis-met-row" role="img" aria-label="Ilustração: três pares de série e descanso. Descansos reais de 58, 74 e 61 segundos comparados à marca de 60 segundos da ficha.">' + row + '</div>' +
+    '<div class="vis-met-ficha-key"><i class="vis-met-ficha-swatch"></i><span class="mono">ficha: 60 s</span></div>' +
+    '<p class="mono vis-met-legend">Descanso real de cada intervalo comparado ao da ficha.</p>';
+}
+renderMetVisual();
+
+/* ── Régua: dois treinos, mesmo peso (estático) ── */
+const REGUA_VIS = [ { label:'Treino 1', esforco:7 }, { label:'Treino 2', esforco:9 } ];
+
+function renderReguaVisual(){
+  const el = document.getElementById('hist-visual-regua');
+  const cols = REGUA_VIS.map(t => {
+    const blocks = Array.from({ length:10 }, (_, i) =>
+      '<span class="vis-regua-blk' + (i < t.esforco ? ' on' : '') + '"></span>'
+    ).join('');
+    return '<div class="vis-regua-col">' +
+      '<div class="mono vis-regua-title">' + t.label + '</div>' +
+      '<div class="vis-regua-peso"></div>' +
+      '<div class="mono vis-regua-peso-lbl">mesmo peso</div>' +
+      '<div class="vis-regua-meter">' + blocks + '</div>' +
+      '<div class="mono vis-regua-count">esforço percebido ' + t.esforco + '/10</div>' +
+    '</div>';
+  }).join('');
+  el.innerHTML =
+    '<span class="exemplo-badge">exemplo</span>' +
+    '<div class="vis-regua" role="img" aria-label="Ilustração: dois treinos com o mesmo peso. Treino 1 com esforço percebido 7 de 10, Treino 2 com esforço percebido 9 de 10.">' + cols + '</div>' +
+    '<p class="mono vis-regua-legend">Mesmo peso, esforços diferentes: duas histórias.</p>';
+}
+renderReguaVisual();
+
+/* ═══════════════════════════════════════════════════════════
+   SEÇÃO 2 — a mesma terça-feira, duas realidades
+   ═══════════════════════════════════════════════════════════ */
+const STEPS = {
+  planilha: {
+    items: [
+      'A ficha em PDF: "Rosca direta (barra) · 3 × PSE 9 · 90s · evitar chegar na falha".',
+      'Você treina e faz a série até chegar no PSE 9. As reps são o resultado, não a instrução.',
+      'Depois manda no WhatsApp: "consegui umas 10, 9, 8, tava pesado" (exemplo ilustrativo).',
+      'Eu leio, respondo e ajusto à mão.',
+    ],
+  },
+  momentum: {
+    items: [
+      'A prescrição mostra o alvo: 3 séries · PSE 9 · 90s.',
+      'Você registra cada série (carga, reps e como foi o esforço).',
+      'O sistema compara o executado com o alvo, série a série.',
+      'A leitura volta pra você, no contexto do seu histórico.',
+    ],
+  },
+};
+
+let mode = 'planilha';
+function renderMode(){
+  const data = STEPS[mode];
+  const list = document.getElementById('steps-list');
+  list.innerHTML = data.items.map(t => '<li>' + t + '</li>').join('');
+  list.classList.toggle('mode-planilha', mode === 'planilha');
+  list.classList.toggle('mode-momentum', mode === 'momentum');
+}
+function setMode(next){
+  if (next === mode) return;
+  document.querySelectorAll('.mode-btn').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.mode === next)));
+  const panel = document.getElementById('mode-panel');
+  if (RM.matches){ mode = next; renderMode(); return; }
+  panel.classList.add('fading');
+  setTimeout(() => {
+    mode = next;
+    renderMode();
+    panel.classList.remove('fading');
+  }, 100);
+}
+document.querySelectorAll('.mode-btn').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
+renderMode();
+
+/* ═══════════════════════════════════════════════════════════
+   SEÇÃO 3 — anatomia de uma série
+   ═══════════════════════════════════════════════════════════ */
+const INPUTS = [
+  { key:'carga', label:'carga', value:'50 kg' },
+  { key:'reps', label:'reps', value:'10' },
+  { key:'rir', label:'repetições em reserva', value:'1' },
+  { key:'descanso', label:'descanso', value:'90s' },
+  { key:'pse', label:'PSE', value:'9' },
+];
+const TARGETS = [
+  { key:'n', name:'Neural' }, { key:'m', name:'Mecânica' }, { key:'met', name:'Metabólica' },
+];
+/* input → dimensão(ões) que alimenta */
+const LIGA = { carga:['m'], reps:['m'], rir:['n'], descanso:['met'], pse:['n','m','met'] };
+/* dimensão → input(s) que a definem (PSE calibra as 3, mostrado ao tocar o próprio PSE) */
+const REV  = { n:['rir'], m:['carga','reps'], met:['descanso'] };
+const ORIGIN = {
+  carga:'vem de carga × reps × séries', reps:'vem de carga × reps × séries',
+  rir:'vem de quantas repetições ainda sobravam',
+  descanso:'vem do intervalo entre séries',
+  pse:'é a régua que calibra as dimensões',
+};
+
+function renderSerie(){
+  document.getElementById('serie-chips').innerHTML = INPUTS.map(i =>
+    '<button type="button" class="inp-chip" data-key="' + i.key + '">' +
+      '<span class="v">' + i.value + '</span><span class="l">' + i.label + '</span>' +
+    '</button>'
+  ).join('');
+  document.getElementById('serie-targets').innerHTML = TARGETS.map(t =>
+    '<button type="button" class="tgt-chip" data-dim="' + t.key + '">' +
+      '<span class="bar" data-dim="' + t.key + '"><i class="blk"></i><i class="blk"></i><i class="blk"></i></span>' +
+      '<span class="name">' + t.name + '</span>' +
+    '</button>'
+  ).join('');
+
+  let ativo = null;
+  const origin = document.getElementById('serie-origin');
+  function aplicar(){
+    const chips = document.querySelectorAll('.inp-chip');
+    const tgts  = document.querySelectorAll('.tgt-chip');
+    if (!ativo){
+      chips.forEach(c => c.classList.remove('hot'));
+      tgts.forEach(t => t.classList.remove('hot'));
+      origin.textContent = 'toque em um número ou em uma dimensão';
+      origin.classList.add('empty');
+      return;
+    }
+    origin.classList.remove('empty');
+    if (ativo.type === 'inp'){
+      chips.forEach(c => c.classList.toggle('hot', c.dataset.key === ativo.key));
+      const dims = LIGA[ativo.key];
+      tgts.forEach(t => t.classList.toggle('hot', dims.includes(t.dataset.dim)));
+      origin.textContent = ORIGIN[ativo.key];
+    } else {
+      tgts.forEach(t => t.classList.toggle('hot', t.dataset.dim === ativo.key));
+      const inputs = REV[ativo.key] || [];
+      chips.forEach(c => c.classList.toggle('hot', inputs.includes(c.dataset.key)));
+      origin.textContent = inputs.length ? ORIGIN[inputs[0]] : '';
+    }
+  }
+  document.querySelectorAll('.inp-chip').forEach(c => c.addEventListener('click', () => {
+    const k = c.dataset.key;
+    ativo = (ativo && ativo.type === 'inp' && ativo.key === k) ? null : { type:'inp', key:k };
+    aplicar();
+  }));
+  document.querySelectorAll('.tgt-chip').forEach(t => t.addEventListener('click', () => {
+    const k = t.dataset.dim;
+    ativo = (ativo && ativo.type === 'dim' && ativo.key === k) ? null : { type:'dim', key:k };
+    aplicar();
+  }));
+}
+renderSerie();
+
+/* ═══════════════════════════════════════════════════════════
+   SEÇÃO 4 — convite (eco do toggle do hero)
+   ═══════════════════════════════════════════════════════════ */
+(function(){
+  const sec = document.getElementById('convite');
+  const swHit = document.getElementById('cv-sw-hit');
+  const sw = document.getElementById('cv-sw');
+  const lockup = document.getElementById('cv-lockup');
+  const glow = document.getElementById('cv-glow');
+  let onInvite = false, animating = false;
+
+  function render(target){
+    sec.classList.toggle('on', target);
+    swHit.setAttribute('aria-checked', String(target));
+    sw.setAttribute('aria-checked', String(target));
+    lockup.classList.toggle('show', target);
+    glow.style.opacity = target ? .9 : .42;
+  }
+  function toggle(){
+    if (animating) return;
+    onInvite = !onInvite;
+    if (navigator.vibrate) { try{ navigator.vibrate(10); }catch(e){} }
+    animating = true;
+    render(onInvite);
+    setTimeout(() => { animating = false; }, RM.matches ? 160 : 700);
+  }
+  swHit.addEventListener('click', toggle);
+  swHit.addEventListener('keydown', e => {
+    if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggle(); }
+  });
+})();
+</script>
+</body>
+</html>
