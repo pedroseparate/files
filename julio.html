@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f5f0e6">
+<title>Momentum · Júlio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600;1,700&family=IBM+Plex+Mono:wght@400&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+  /* Tokens do design system (tema claro).
+     Dourado só como preenchimento (contraste baixo sobre claro);
+     números-chave e destaques em cobre. */
+  :root{
+    --page:#f5f0e6; --page2:#ede6d2; --page3:#e4dbc4;
+    --ink:#100e0a; --ink2:rgba(16,14,10,.70);
+    --gold:#c8a060; --gold2:#ddb870;
+    --copper:#8a6030; --copper2:#a07840;
+    --line:rgba(26,20,10,.26);      /* divisórias */
+    --edge:rgba(16,14,10,.55);      /* contorno de botões e controles */
+    --nav:76px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    background:var(--page);color:var(--ink);
+    font-family:'Cormorant Garamond',serif;font-weight:600;font-size:22px;line-height:1.4;
+    font-variant-numeric:lining-nums;-webkit-font-smoothing:antialiased;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:calc(var(--nav) + env(safe-area-inset-bottom,0px) + 20px);
+  }
+  .wrap{max-width:480px;margin:0 auto;padding:0 22px}
+  h1,h2,h3{font-weight:600;line-height:1.1;color:var(--ink)}
+  h2{font-size:clamp(30px,8.6vw,36px);margin-bottom:14px}
+  h3{font-size:26px;margin-bottom:4px}
+  p{max-width:34em}
+  p + p{margin-top:14px}
+  .soft{color:var(--ink2)}
+  :focus-visible{outline:3px solid var(--copper);outline-offset:3px}
+  [hidden]{display:none!important}
+
+  .btn{display:flex;align-items:center;justify-content:center;width:100%;min-height:76px;border:2px solid var(--ink);cursor:pointer;
+    background:var(--gold);border-color:var(--gold);color:var(--ink);
+    font-family:'Bebas Neue',sans-serif;font-size:38px;letter-spacing:.06em;text-decoration:none}
+  .btn:active{background:var(--gold2);border-color:var(--gold2)}
+  .btn.sec{background:transparent;border-color:var(--edge);color:var(--ink)}
+  .btn.sec:active{background:var(--page3)}
+  .linkbtn{background:none;border:0;color:var(--ink2);font-family:inherit;font-weight:600;font-size:20px;text-decoration:underline;min-height:52px;cursor:pointer;display:block;width:100%;text-align:left}
+
+  /* ---------- início ---------- */
+  .top{padding:22px 0 0}
+  .brand{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:.08em;color:var(--copper)}
+  .view{display:none}
+  .view.on{display:block}
+  .hi{font-style:italic;font-weight:600;font-size:30px;margin-top:8px}
+  .hero{margin-top:30px}
+  .hero .lab{color:var(--ink2)}
+  .hero h1{font-size:clamp(42px,12vw,52px);font-style:italic;font-weight:600;margin:6px 0 6px;letter-spacing:-.01em}
+  .hero .go{margin-top:24px}
+  .hero .linkbtn{margin-top:6px}
+  .evo{margin-top:46px}
+  .evo h2{margin-bottom:6px}
+  .marco{padding:16px 0 18px;border-top:1px solid var(--line)}
+  .marco b{display:block;font-size:25px;font-weight:700;line-height:1.15}
+  .marco .val{font-family:'Bebas Neue',sans-serif;font-weight:400;font-size:54px;line-height:1.05;color:var(--copper);margin-top:2px}
+  .marco .val small{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:20px;color:var(--ink2);margin-left:6px}
+  .marco .pend{display:block;font-style:italic;color:var(--copper);margin-top:2px}
+  .marco .como{display:block;color:var(--ink2);font-size:20px;margin-top:2px}
+  .seguranca{margin-top:30px;padding-top:18px;border-top:1px solid var(--line);color:var(--ink2);font-size:20px}
+
+  /* ---------- exercícios ---------- */
+  .page-h{margin-top:22px}
+  .ex-list{margin-top:26px}
+  .ex{margin-bottom:38px}
+  .ex .img{position:relative;display:block;width:100%;padding:0;border:0;cursor:zoom-in;background:var(--page3);aspect-ratio:16/10;overflow:hidden}
+  .ex .img.sem{display:flex;align-items:center;justify-content:center;cursor:default;color:var(--ink2);font-size:20px}
+  .foto{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(1) contrast(1.04);mix-blend-mode:multiply}
+  .zoom{position:absolute;right:10px;bottom:10px;padding:5px 10px;background:var(--page);color:var(--ink);border:1px solid var(--edge);font-family:'IBM Plex Mono',monospace;font-weight:400;font-size:13px}
+  .ex h3{margin-top:14px}
+  .ex .how{color:var(--ink2);font-size:21px;margin-top:6px}
+  .ex .cad{margin-top:10px;color:var(--copper);font-weight:700;font-size:21px}
+
+  /* ---------- plano ---------- */
+  .regra{margin:26px 0 8px;padding:6px 0 6px 18px;border-left:4px solid var(--copper)}
+  .regra b{display:block;font-family:'Bebas Neue',sans-serif;font-weight:400;font-size:clamp(46px,13vw,58px);line-height:1;color:var(--copper);letter-spacing:.01em}
+  .regra b small{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:22px;color:var(--ink2);margin-left:8px;letter-spacing:0}
+  details{margin-top:18px;border-top:1px solid var(--line)}
+  details:last-of-type{border-bottom:1px solid var(--line)}
+  summary{list-style:none;cursor:pointer;min-height:56px;display:flex;align-items:center;justify-content:space-between;gap:16px;font-weight:700;font-size:22px;padding:10px 0}
+  summary::-webkit-details-marker{display:none}
+  summary::after{content:'+';font-size:30px;color:var(--copper);flex:none;line-height:1}
+  details[open] summary::after{content:'−'}
+  details .more{padding:0 0 20px;color:var(--ink2)}
+  .aviso{margin-top:38px;padding-top:18px;border-top:1px solid var(--line);color:var(--ink2);font-size:21px}
+  .aviso strong{color:var(--ink);font-weight:700}
+
+  /* ---------- navegação ---------- */
+  nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--page);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+  nav .in{max-width:480px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr)}
+  nav button{min-height:var(--nav);background:none;border:0;border-top:4px solid transparent;margin-top:-1px;cursor:pointer;color:var(--ink2);font-family:inherit;font-weight:600;font-size:22px}
+  nav button[aria-current="page"]{color:var(--copper);font-weight:700;border-top-color:var(--copper);background:var(--page2)}
+
+  /* ---------- imagem ampliada ---------- */
+  dialog{margin:auto;width:min(94vw,520px);max-height:92vh;overflow:auto;border:1px solid var(--edge);background:var(--page);color:var(--ink);padding:0}
+  dialog::backdrop{background:rgba(16,14,10,.7)}
+  dialog img{display:block;width:100%;height:auto}
+  dialog .cap{padding:20px 22px 24px}
+  dialog .cap h3{margin-bottom:8px}
+  dialog .alerta{margin-top:14px;padding:12px 14px;border-left:4px solid var(--copper);background:var(--page2);font-weight:700}
+  dialog .fechar{position:sticky;top:0;float:right;margin:10px;min-width:52px;min-height:52px;padding:0 16px;background:var(--page);color:var(--ink);border:2px solid var(--edge);font-family:inherit;font-weight:700;font-size:20px;cursor:pointer;z-index:2}
+
+  /* ---------- treino em execução ---------- */
+  #exec{position:fixed;inset:0;z-index:50;background:var(--page);display:none;flex-direction:column}
+  #exec.on{display:flex}
+  #exec .in{max-width:480px;margin:0 auto;padding:0 22px;width:100%}
+  .x-top{flex:none;padding-top:calc(env(safe-area-inset-top,0px) + 8px)}
+  .x-top .linha{display:flex;justify-content:space-between;align-items:center;min-height:56px;gap:12px}
+  .x-top .lab{color:var(--ink2);font-size:22px}
+  .sair{min-height:52px;padding:0 20px;border:2px solid var(--edge);background:none;color:var(--ink);font-family:inherit;font-weight:700;font-size:21px;cursor:pointer}
+  .prog{height:6px;background:var(--page3);margin:6px 0 4px}
+  .prog i{display:block;height:100%;background:var(--copper)}
+  .x-main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  .x-main .in{min-height:100%;display:flex;flex-direction:column;padding-top:12px;padding-bottom:14px}
+  .x-bar{flex:none;padding:12px 0 calc(env(safe-area-inset-bottom,0px) + 16px);background:var(--page);border-top:1px solid var(--line)}
+  .x-bar .in{display:grid;gap:12px}
+  .q{font-size:clamp(34px,9.5vw,42px);font-weight:600;line-height:1.12;margin:4px 0 22px}
+  .lead{font-size:26px}
+  .exnome{font-size:clamp(32px,9vw,40px);font-weight:600;line-height:1.08}
+  .exnome.mini{font-size:clamp(28px,8vw,34px)}
+  .thumb{display:block;width:100%;height:116px;margin:10px 0 10px;padding:0;border:0;background:var(--page3);position:relative;overflow:hidden;cursor:zoom-in;flex:none}
+  .series{display:flex;align-items:center;gap:10px;margin:2px 0}
+  .series i{width:24px;height:24px;border-radius:50%;border:3px solid var(--copper)}
+  .series i.ok{background:var(--copper);opacity:.45}
+  .series i.now{background:var(--copper)}
+  .series em{font-style:normal;font-size:28px;font-weight:700;margin-left:6px}
+  .nums{display:grid;grid-template-columns:1fr 1fr;margin:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);flex:none}
+  .nums > div{padding:10px 0 12px}
+  .nums > div + div{padding-left:18px;border-left:1px solid var(--line)}
+  .nums b{display:block;font-family:'Bebas Neue',sans-serif;font-weight:400;font-size:60px;line-height:1;color:var(--copper)}
+  .nums b.txt{font-size:32px;line-height:1.05;padding:12px 0 6px;color:var(--ink)}
+  .nums span{color:var(--ink2);font-size:21px;line-height:1.2;display:block}
+  .nota{margin:8px 0;padding:10px 14px;border-left:4px solid var(--copper);background:var(--page2);font-weight:700}
+  .regra-ex{margin-top:6px;font-size:22px}
+  .dor-ends{display:flex;justify-content:space-between;color:var(--ink2);font-size:21px;margin-bottom:10px}
+  .dor-grid{flex:1;max-height:560px;display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:minmax(80px,1fr);gap:12px}
+  .dor-grid button{background:transparent;border:2px solid var(--edge);color:var(--ink);cursor:pointer;font-family:'Bebas Neue',sans-serif;font-size:52px}
+  .dor-grid button:active{background:var(--gold);border-color:var(--gold)}
+  .passos{list-style:none;counter-reset:p;display:grid;gap:18px;padding:0}
+  .passos li{counter-increment:p;display:grid;grid-template-columns:50px 1fr;gap:8px;align-items:start;font-size:24px;line-height:1.3}
+  .passos li::before{content:counter(p);font-family:'Bebas Neue',sans-serif;font-size:50px;line-height:1;color:var(--copper)}
+  .say{text-align:center;font-size:34px;margin-top:20px}
+  .big{font-family:'Bebas Neue',sans-serif;font-size:min(52vw,230px);line-height:.95;color:var(--copper);text-align:center;margin-top:8px}
+  .sub{text-align:center;color:var(--ink2);margin-top:4px}
+  .rest-num{font-family:'Bebas Neue',sans-serif;font-size:min(38vw,160px);line-height:1;color:var(--copper);text-align:center;margin:18px 0 6px}
+  .rest-lbl{text-align:center;font-size:32px}
+  .prox{margin-top:30px;padding-top:16px;border-top:1px solid var(--line)}
+  .prox span{display:block;color:var(--ink2);font-size:21px}
+  .prox b{display:block;font-size:30px;font-weight:700;line-height:1.1;margin-top:2px}
+  .centro{text-align:center}
+  .opts{display:grid;gap:14px}
+  .espaco{flex:1}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="top"><span class="brand">MOMENTUM</span></div>
+
+  <!-- INÍCIO -->
+  <main class="view on" id="v-inicio">
+    <p class="hi" id="ola"></p>
+    <section class="hero" aria-labelledby="heroT">
+      <p class="lab">Treino de hoje</p>
+      <h1 id="heroT">Fortalecimento de joelho</h1>
+      <p class="soft" id="heroMeta"></p>
+      <button class="btn go" id="go" type="button">Iniciar treino</button>
+      <button class="linkbtn" id="recomecar" type="button" hidden>Recomeçar do zero</button>
+    </section>
+    <section class="evo" aria-labelledby="evoT">
+      <h2 id="evoT">Sua evolução</h2>
+      <div id="marcos"></div>
+    </section>
+    <p class="seguranca">Se sentir dor diferente do habitual, travamento ou a sensação de que o joelho falseia, pare e avise o João.</p>
+  </main>
+
+  <!-- EXERCÍCIOS -->
+  <main class="view" id="v-exercicios">
+    <h2 class="page-h">Cada exercício tem um porquê</h2>
+    <p class="soft">A lista do seu treino, com a função de cada um. Toque na imagem para ampliar.</p>
+    <div class="ex-list" id="exList"></div>
+  </main>
+
+  <!-- PLANO -->
+  <main class="view" id="v-plano">
+    <h2 class="page-h">Músculo é a sua reserva</h2>
+    <p>O treino não trata a artrose. O que ele faz é manter fortes e ativos os músculos que protegem e movem o joelho: coxa, glúteo e quadril.</p>
+    <p>Quanto mais preparado você chega à cirurgia, mais tranquila costuma ser a recuperação depois dela. É isso que vamos construir ao longo do próximo ano.</p>
+    <details>
+      <summary>Por que isso importa</summary>
+      <div class="more">O quadríceps e o glúteo absorvem parte do impacto que, sem eles, iria direto para a articulação. Como o seu joelho tem um desalinhamento (varo), esses músculos têm um papel ainda mais importante.</div>
+    </details>
+
+    <h2 style="margin-top:46px">Controlar o movimento é o mais importante</h2>
+    <div class="regra" role="group" aria-label="Regra de cadência: 2 segundos para subir e 2 segundos para descer">
+      <b>2 s <small>para subir</small></b>
+      <b>2 s <small>para descer</small></b>
+    </div>
+    <p style="margin-top:14px">Em todos os exercícios. Não importa o peso: importa o controle. Se o movimento acelerar, diminua o ritmo ou pare a série.</p>
+    <details>
+      <summary>Por que a descida devagar</summary>
+      <div class="more">Na fase em que o músculo “freia” o movimento (a descida), ele trabalha de forma mais controlada e treina a estabilidade. É exatamente o que você usa ao descer uma escada. Descer rápido tira esse benefício e piora a técnica.</div>
+    </details>
+    <details>
+      <summary>Sobre a dor</summary>
+      <div class="more">Uma dor leve durante o treino (até 3 em 10) é aceitável, desde que não piore no dia seguinte. Se piorar, avise: ajustamos o peso ou a amplitude do movimento.</div>
+    </details>
+
+    <p class="aviso"><strong>Importante.</strong> Este plano complementa a orientação do seu ortopedista. Se sentir dor diferente do habitual, travamento ou a sensação de que o joelho falseia, pare o exercício e avise.</p>
+  </main>
+</div>
+
+<nav aria-label="Navegação principal">
+  <div class="in">
+    <button type="button" data-view="inicio" aria-current="page">Início</button>
+    <button type="button" data-view="exercicios">Exercícios</button>
+    <button type="button" data-view="plano">Seu plano</button>
+  </div>
+</nav>
+
+<div id="exec" role="dialog" aria-modal="true" aria-label="Treino em execução"></div>
+
+<dialog id="dlg" aria-labelledby="dlgTitulo">
+  <button class="fechar" id="dlgFechar" type="button" aria-label="Fechar imagem">Fechar</button>
+  <img id="dlgImg" alt="">
+  <div class="cap">
+    <h3 id="dlgTitulo"></h3>
+    <p id="dlgComo"></p>
+    <p class="alerta" id="dlgAlerta" hidden></p>
+  </div>
+</dialog>
+
+<script>
+/* ============================================================
+   JULIO_DATA — único lugar para editar.
+   null = ainda não medido. Para ligar ao Firebase no futuro,
+   troque só a origem deste objeto.
+   ============================================================ */
+const JULIO_DATA = {
+  nome: "Júlio",
+  // Prescrição do treino atual: séries, repetições e carga de cada exercício.
+  // Para o próximo treino, edite series / reps / carga abaixo.
+  marcos: {
+    dor:     { valor: null, escala: "de 0 a 10" },        // ex.: 4
+    cadeira: { valor: null, unidade: "vezes em 30 s" },   // ex.: 9
+    cargas:  { valor: null }                              // ex.: "Registradas no 1º treino"
+  },
+  exercicios: [
+    { id: "afundo", nome: "Afundo com apoio",
+      porque: "Treina a descida de degraus e o controle do joelho.",
+      como: "Mãos apoiadas no Smith, pé da frente sobre a anilha. Desça só até onde o joelho se mantém alinhado.",
+      series: 2, reps: 8, repsUn: "por lado",
+      usaCarga: false, carga: null, cargaUn: "",
+      cadencia: true, isometrico: false,
+      destaque: "Coloque a anilha embaixo do pé da frente, deixando o tornozelo para fora.",
+      img: "https://i.ytimg.com/vi/t4PxnYqsojI/oar2.jpg?sqp=-oaymwEYCJUDENAFSFqQAgHyq4qpAwcIARUAAIhC&rs=AOn4CLAqX2Y2KTRZ9eLjia9oVdahUHzbug&usqp=CCk" },
+    { id: "flexao", nome: "Flexão com pés no step",
+      porque: "Força de braços, peito e tronco para levantar e se apoiar.",
+      como: "Cotovelos próximos do corpo. Vá só até onde o ombro estiver confortável.",
+      series: 3, reps: 8, repsUn: "repetições",
+      usaCarga: false, carga: null, cargaUn: "",
+      cadencia: true, isometrico: false,
+      img: "https://cdn-life.dailyburn.com/life/wp-content/uploads/2013/09/10053728/Elevated-Push-Ups.jpeg" },
+    { id: "ponte", nome: "Ponte",
+      porque: "Fortalece o glúteo com pouco esforço no joelho.",
+      como: "Calcanhares no step. Suba o quadril e desça com controle.",
+      series: 3, reps: 15, repsUn: "repetições",
+      usaCarga: false, carga: null, cargaUn: "",
+      cadencia: true, isometrico: false,
+      img: "https://calisthenics.com/wp-content/uploads/2024/10/feet-elevated-glute-bridge.webp" },
+    { id: "remada", nome: "Remada sentada",
+      porque: "Postura e força das costas para o dia a dia.",
+      como: "Pegada neutra, cotovelos junto ao corpo.",
+      series: 3, reps: 10, repsUn: "repetições",
+      usaCarga: true, carga: null, cargaUn: "kg",
+      cadencia: true, isometrico: false,
+      img: "https://www.wikihow.com/images/thumb/2/2d/Do-a-Seated-Cable-Row-Step-4-Version-3.jpg/v4-460px-Do-a-Seated-Cable-Row-Step-4-Version-3.jpg" },
+    { id: "supino", nome: "Supino inclinado",
+      porque: "Força de braços e peito para empurrar e se apoiar.",
+      como: "Halteres com as palmas de frente uma para a outra, cotovelos próximos do corpo.",
+      series: 3, reps: 10, repsUn: "repetições",
+      usaCarga: true, carga: 5, cargaUn: "kg em cada mão",
+      cadencia: true, isometrico: false,
+      img: "https://www.puregym.com/media/shtduovg/incline-dumbbell-bench-press.jpg?quality=80" },
+    { id: "extensora", nome: "Cadeira extensora (parada)",
+      porque: "Mantém a força da coxa sem desgastar a articulação.",
+      como: "Joelho dobrado a 60°, sempre no mesmo ângulo. Segure o tempo indicado, sem balançar.",
+      series: 3, reps: 30, repsUn: "segundos segurando",
+      usaCarga: true, carga: 25, cargaUn: "kg",
+      cadencia: false, isometrico: true,
+      img: "https://i.ytimg.com/vi/7A8sZqkqI6s/maxresdefault.jpg" },
+    { id: "adutora", nome: "Cadeira adutora",
+      porque: "Dá estabilidade ao joelho e ao quadril.",
+      como: "Feche as pernas com controle e volte devagar.",
+      series: 3, reps: 15, repsUn: "repetições",
+      usaCarga: true, carga: 15, cargaUn: "kg",
+      cadencia: true, isometrico: false,
+      img: "https://treinomestre.com.br/wp-content/uploads/2017/04/cadeira-adutora.jpg" },
+    { id: "abdutora", nome: "Cadeira abdutora",
+      porque: "Ajuda o alinhamento do joelho e a firmeza do quadril.",
+      como: "Abra as pernas com controle e volte devagar.",
+      series: 3, reps: 15, repsUn: "repetições",
+      usaCarga: true, carga: 30, cargaUn: "kg",
+      cadencia: true, isometrico: false,
+      img: "https://meutreinador.com/wp-content/uploads/2024/04/Cadeira-Abdutora.webp" }
+  ]
+};
+
+
+
+/* ---------- util ---------- */
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const $ = id => document.getElementById(id);
+const EXS = JULIO_DATA.exercicios;
+
+$('ola').textContent = 'Olá, ' + JULIO_DATA.nome;
+$('heroMeta').textContent = EXS.length + ' exercícios';
+
+/* ---------- lista de exercícios ---------- */
+$('exList').innerHTML = EXS.map((e, i) => `
+  <article class="ex">
+    ${e.img
+      ? `<button class="img" type="button" data-i="${i}" aria-label="Ampliar imagem: ${esc(e.nome)}">
+           <img class="foto" src="${esc(e.img)}" alt="${esc(e.nome)}" loading="lazy" referrerpolicy="no-referrer">
+           <span class="zoom">ampliar</span></button>`
+      : `<div class="img sem">imagem em breve</div>`}
+    <h3>${esc(e.nome)}</h3>
+    <p>${esc(e.porque)}</p>
+    <p class="how">${esc(e.como)}</p>
+    ${e.cadencia ? `<p class="cad">2 segundos subindo, 2 segundos descendo</p>` : ``}
+  </article>`).join('');
+
+document.querySelectorAll('.ex .img img').forEach(im => {
+  im.addEventListener('error', () => {
+    im.closest('.img').replaceWith(Object.assign(document.createElement('div'), { className:'img sem', textContent:'imagem em breve' }));
+  });
+});
+
+const dlg = $('dlg');
+function abrirImagem(e){
+  $('dlgImg').src = e.img; $('dlgImg').alt = e.nome;
+  $('dlgTitulo').textContent = e.nome; $('dlgComo').textContent = e.como;
+  const al = $('dlgAlerta'); al.hidden = !e.destaque; al.textContent = e.destaque || '';
+  dlg.showModal();
+}
+$('exList').addEventListener('click', ev => {
+  const b = ev.target.closest('button.img'); if (!b) return;
+  abrirImagem(EXS[+b.dataset.i]);
+});
+$('dlgFechar').addEventListener('click', () => dlg.close());
+dlg.addEventListener('click', ev => { if (ev.target === dlg) dlg.close(); });
+
+/* ---------- marcos ---------- */
+const M = JULIO_DATA.marcos;
+const ponto = (valor, extra, pendente) => (valor !== null && valor !== undefined && valor !== '')
+  ? `<div class="val">${esc(valor)}${extra ? `<small>${esc(extra)}</small>` : ''}</div>`
+  : `<span class="pend">${pendente}</span>`;
+$('marcos').innerHTML = `
+  <div class="marco"><b>Dor nos joelhos</b>${ponto(M.dor.valor, M.dor.escala, 'Vai ser a sua primeira resposta')}<span class="como">Nota de 0 a 10, antes de cada treino</span></div>
+  <div class="marco"><b>Levantar da cadeira</b>${ponto(M.cadeira.valor, M.cadeira.unidade, 'Vamos medir no próximo treino presencial')}<span class="como">Quantas vezes em 30 segundos</span></div>
+  <div class="marco"><b>Cargas do treino</b>${ponto(M.cargas.valor, '', 'Registradas no primeiro treino')}<span class="como">Peso e repetições de cada exercício</span></div>`;
+
+/* ============================================================
+   TREINO EM EXECUÇÃO
+   Tudo fica salvo só neste aparelho (localStorage).
+   estado    -> onde ele parou (retoma se fechar sem querer)
+   histórico -> um registro por treino concluído
+   ============================================================ */
+const LS_E = 'momentum-julio:estado', LS_H = 'momentum-julio:historico';
+const DESCANSO_S = 60;      // descanso padrão
+const DOR_AVISO  = 4;       // nota a partir da qual aparece o aviso antes do treino
+const store = {
+  get(k){ try { return JSON.parse(localStorage.getItem(k)); } catch(e){ return null; } },
+  set(k,v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} },
+  del(k){ try { localStorage.removeItem(k); } catch(e){} }
+};
+let S = null, tick = null, wake = null;
+const execEl = $('exec');
+
+function novoEstado(){
+  return { screen:'dor', ex:0, set:1, dor:null, resp:[], cur:{}, hold:null, restUntil:null, restNext:null, esforco:null, inicio:Date.now() };
+}
+function salvar(){ store.set(LS_E, S); }
+
+function atualizaHome(){
+  const e = store.get(LS_E);
+  const emAndamento = e && e.screen !== 'fim';
+  $('go').textContent = emAndamento ? 'Continuar treino' : 'Iniciar treino';
+  $('recomecar').hidden = !emAndamento;
+}
+$('go').addEventListener('click', () => {
+  const e = store.get(LS_E);
+  S = (e && e.screen !== 'fim') ? e : novoEstado();
+  abrirExec();
+});
+$('recomecar').addEventListener('click', () => {
+  if (confirm('Recomeçar o treino do zero?')) { store.del(LS_E); atualizaHome(); }
+});
+
+async function pedirTela(){
+  try { if ('wakeLock' in navigator) wake = await navigator.wakeLock.request('screen'); } catch(e){}
+}
+document.addEventListener('visibilitychange', () => { if (execEl.classList.contains('on') && document.visibilityState === 'visible') pedirTela(); });
+
+function abrirExec(){ execEl.classList.add('on'); pedirTela(); render(); }
+function fecharExec(){
+  execEl.classList.remove('on');
+  clearInterval(tick);
+  try { if (wake) wake.release(); } catch(e){}
+  wake = null;
+  if (S && S.screen === 'fim') store.del(LS_E);
+  atualizaHome();
+  window.scrollTo(0,0);
+}
+
+function topoHTML(){
+  const total = EXS.length, sc = S.screen;
+  const dentro = ['intro','ex','carga','cargaDir','reps'].includes(sc);
+  let label = 'Treino de hoje', pct = 0;
+  if (dentro) {
+    label = 'Exercício ' + (S.ex+1) + ' de ' + total;
+    pct = (S.ex + (['carga','cargaDir','reps'].includes(sc) ? 1 : 0)) / total * 100;
+  } else if (sc === 'descanso') { label = 'Descanso'; pct = S.restNext.ex / total * 100; }
+  else if (sc === 'esforco' || sc === 'fim') pct = 100;
+  return `<div class="x-top"><div class="in">
+      <div class="linha"><span class="lab">${label}</span><button class="sair" type="button" data-act="sair">Sair</button></div>
+      <div class="prog" aria-hidden="true"><i style="width:${Math.round(pct)}%"></i></div></div></div>`;
+}
+
+function render(){
+  clearInterval(tick);
+  const e = EXS[S.ex];
+  let main = '', bar = '';
+
+  if (S.screen === 'dor') {
+    main = `<h2 class="q">De 0 a 10, como estão os seus joelhos hoje?</h2>
+      <div class="dor-ends"><span>0 = sem dor</span><span>10 = pior dor</span></div>
+      <div class="dor-grid">${Array.from({length:11},(_,i)=>`<button type="button" data-act="dor" data-v="${i}" aria-label="Nota ${i}">${i}</button>`).join('')}</div>`;
+  }
+
+  else if (S.screen === 'dorAviso') {
+    main = `<h2 class="q">Sua nota foi ${S.dor}.</h2><p class="lead">Avise o João antes de começar.</p>`;
+    bar = `<button class="btn" type="button" data-act="dorOk">Entendi, começar</button>
+           <button class="btn sec" type="button" data-act="dorMudar">Mudar a nota</button>`;
+  }
+
+  else if (S.screen === 'intro') {
+    main = `<p class="soft">Antes de começar</p>
+      <h2 class="q">${esc(e.nome)}: como funciona</h2>
+      <ol class="passos">
+        <li>Sente e deixe o joelho dobrado no ângulo combinado (60°).</li>
+        <li>Toque em “Começar contagem”. Você tem 3 segundos para se posicionar.</li>
+        <li>Quando o tempo de ${e.reps} segundos começar, segure sem balançar e respire normalmente.</li>
+        <li>Quando aparecer “Pronto”, solte a perna e toque em “Terminei a série”.</li>
+      </ol>`;
+    bar = `<button class="btn" type="button" data-act="entendi">Entendi</button>`;
+  }
+
+  else if (S.screen === 'ex') {
+    const dots = Array.from({length:e.series},(_,i)=>`<i class="${i+1<S.set?'ok':i+1===S.set?'now':''}"></i>`).join('');
+    const serieHTML = `<div class="series" aria-label="Série ${S.set} de ${e.series}">${dots}<em>Série ${S.set} de ${e.series}</em></div>`;
+    const f = e.isometrico && S.hold ? S.hold.fase : null;
+    if (f === 'prep' || f === 'hold') {
+      main = `<h2 class="exnome mini">${esc(e.nome)}</h2>
+        ${serieHTML}
+        <p class="say" id="holdLbl"></p>
+        <div class="big" id="holdNum" role="timer"></div>
+        <p class="sub">segundos${e.carga != null ? ' · ' + esc(e.carga) + ' ' + esc(e.cargaUn) : ''}</p>`;
+      bar = `<button class="btn sec" type="button" data-act="holdreset">Parar e recomeçar</button>`;
+    } else {
+      const cargaBox = e.usaCarga
+        ? (e.carga != null ? `<b>${esc(e.carga)}</b><span>${esc(e.cargaUn)}</span>` : `<b class="txt">a combinar</b><span>com o João</span>`)
+        : `<b class="txt">peso do corpo</b><span>sem carga extra</span>`;
+      main = `<h2 class="exnome">${esc(e.nome)}</h2>
+        <button class="thumb" type="button" data-act="img" aria-label="Ampliar imagem"><img class="foto" src="${esc(e.img)}" alt="${esc(e.nome)}" referrerpolicy="no-referrer"><span class="zoom">ampliar</span></button>
+        ${serieHTML}
+        <div class="nums"><div><b>${e.reps}</b><span>${esc(e.repsUn)}</span></div><div>${cargaBox}</div></div>
+        ${e.destaque ? `<p class="nota">${esc(e.destaque)}</p>` : ''}
+        <p class="regra-ex">${e.isometrico ? 'Segure sem balançar.' : '2 segundos subindo, 2 segundos descendo.'}</p>
+        <p class="regra-ex soft" style="margin-top:2px">Não segure a respiração.</p>`;
+      if (e.isometrico && f === 'done') {
+        main = main.replace('<div class="nums">', '<p class="say" style="margin:0 0 6px">Pronto. Pode soltar.</p><div class="nums">');
+        bar = `<button class="btn" type="button" data-act="serie">Terminei a série</button>`;
+      } else if (e.isometrico) {
+        bar = `<button class="btn" type="button" data-act="holdstart">Começar contagem</button>`;
+      } else {
+        bar = `<button class="btn" type="button" data-act="serie">Terminei a série</button>`;
+      }
+    }
+  }
+
+  else if (S.screen === 'carga') {
+    main = `<p class="soft">${esc(e.nome)}</p><h2 class="q">Você trocou a carga?</h2>`;
+    bar = `<button class="btn sec" type="button" data-act="carga" data-v="1">Sim</button><button class="btn sec" type="button" data-act="carga" data-v="0">Não</button>`;
+  }
+
+  else if (S.screen === 'cargaDir') {
+    main = `<p class="soft">${esc(e.nome)}</p><h2 class="q">Foi com mais ou menos carga?</h2>`;
+    bar = `<button class="btn sec" type="button" data-act="dir" data-v="mais">Mais carga</button><button class="btn sec" type="button" data-act="dir" data-v="menos">Menos carga</button>`;
+  }
+
+  else if (S.screen === 'reps') {
+    main = `<p class="soft">${esc(e.nome)}</p><h2 class="q">Você fez as repetições propostas?</h2>`;
+    bar = `<button class="btn sec" type="button" data-act="reps" data-v="1">Sim</button><button class="btn sec" type="button" data-act="reps" data-v="0">Não</button>`;
+  }
+
+  else if (S.screen === 'descanso') {
+    const nx = S.restNext, ne = EXS[nx.ex];
+    const prox = nx.ex === S.ex
+      ? `<span>A seguir</span><b>Série ${nx.set} de ${ne.series}</b>`
+      : `<span>Próximo exercício</span><b>${esc(ne.nome)}</b>`;
+    main = `<p class="rest-lbl" id="restLbl">Descanse. Respire.</p>
+      <div class="rest-num" id="restNum" role="timer">1:00</div>
+      <div class="prox">${prox}</div>`;
+    bar = `<button class="btn sec" type="button" id="restBtn" data-act="seguir">Pular</button>`;
+  }
+
+  else if (S.screen === 'esforco') {
+    main = `<h2 class="q">Como foi o treino de hoje?</h2>
+      <div class="opts">
+        <button class="btn sec" type="button" data-act="esforco" data-v="leve">Leve</button>
+        <button class="btn sec" type="button" data-act="esforco" data-v="médio">Médio</button>
+        <button class="btn sec" type="button" data-act="esforco" data-v="pesado">Pesado</button>
+        <button class="btn sec" type="button" data-act="esforco" data-v="muito pesado">Muito pesado</button>
+      </div>`;
+  }
+
+  else if (S.screen === 'fim') {
+    main = `<div class="espaco"></div>
+      <div class="centro"><h2 class="q" style="margin-bottom:10px">Treino concluído.</h2>
+        <p style="margin:0 auto">Bom trabalho, ${esc(JULIO_DATA.nome)}.</p>
+        <p class="soft" style="margin:6px auto 0">${S.resp.length} exercícios registrados</p></div>
+      <div class="espaco"></div>`;
+    bar = `<button class="btn" type="button" data-act="sair">Voltar ao início</button>`;
+  }
+
+  execEl.innerHTML = topoHTML()
+    + `<div class="x-main"><div class="in">${main}</div></div>`
+    + (bar ? `<div class="x-bar"><div class="in">${bar}</div></div>` : '');
+  const xm = execEl.querySelector('.x-main'); if (xm) xm.scrollTop = 0;
+
+  if (S.screen === 'descanso') {
+    const num = $('restNum'), btn = $('restBtn'), lbl = $('restLbl');
+    const atualiza = () => {
+      const falta = Math.max(0, Math.ceil((S.restUntil - Date.now()) / 1000));
+      if (falta > 0) { num.textContent = Math.floor(falta/60) + ':' + String(falta%60).padStart(2,'0'); }
+      else {
+        num.textContent = 'Pronto';
+        lbl.textContent = 'Descanso terminado.';
+        btn.textContent = 'Continuar'; btn.classList.remove('sec');
+        clearInterval(tick);
+        try { navigator.vibrate && navigator.vibrate([200,100,200]); } catch(err){}
+      }
+    };
+    atualiza();
+    tick = setInterval(atualiza, 250);
+  }
+
+  if (S.screen === 'ex' && e.isometrico && S.hold && (S.hold.fase === 'prep' || S.hold.fase === 'hold')) {
+    const num = $('holdNum'), lbl = $('holdLbl');
+    const atualizaHold = () => {
+      const falta = Math.ceil((S.hold.ate - Date.now()) / 1000);
+      if (falta > 0) {
+        num.textContent = falta;
+        lbl.textContent = S.hold.fase === 'prep' ? 'Posicione a perna' : 'Segure. Respire.';
+        return;
+      }
+      clearInterval(tick);
+      try { navigator.vibrate && navigator.vibrate(S.hold.fase === 'prep' ? 150 : [200,100,200]); } catch(err){}
+      if (S.hold.fase === 'prep') S.hold = { fase:'hold', ate: Date.now() + e.reps*1000 };
+      else S.hold = { fase:'done' };
+      salvar(); render();
+    };
+    atualizaHold();
+    tick = setInterval(atualizaHold, 250);
+  }
+}
+
+function irExercicio(){
+  const e = EXS[S.ex];
+  S.hold = null;
+  S.screen = (e.isometrico && S.set === 1) ? 'intro' : 'ex';
+}
+function descansar(next){
+  S.hold = null;
+  S.screen = 'descanso'; S.restUntil = Date.now() + DESCANSO_S*1000; S.restNext = next;
+}
+function concluirExercicio(){
+  const e = EXS[S.ex];
+  S.resp.push({ id:e.id, nome:e.nome, trocouCarga: e.usaCarga ? !!S.cur.trocou : null, cargaDirecao: S.cur.dir || null, fezRepeticoes: !!S.cur.fez });
+  S.cur = {};
+  if (S.ex === EXS.length - 1) S.screen = 'esforco';
+  else descansar({ ex:S.ex+1, set:1 });
+}
+function salvarHistorico(){
+  const h = store.get(LS_H) || [];
+  h.push({ data:new Date().toISOString(), duracaoMin: Math.round((Date.now()-S.inicio)/60000), dor:S.dor, esforco:S.esforco, exercicios:S.resp });
+  store.set(LS_H, h);
+}
+
+execEl.addEventListener('click', ev => {
+  const b = ev.target.closest('[data-act]'); if (!b || !S) return;
+  const act = b.dataset.act, v = b.dataset.v;
+  if (act === 'sair') { fecharExec(); return; }
+  if (act === 'img') { abrirImagem(EXS[S.ex]); return; }
+  const e = EXS[S.ex];
+  if (act === 'dor')        { S.dor = +v; if (S.dor >= DOR_AVISO) S.screen = 'dorAviso'; else irExercicio(); }
+  else if (act === 'dorOk')    { irExercicio(); }
+  else if (act === 'dorMudar') { S.dor = null; S.screen = 'dor'; }
+  else if (act === 'entendi')  { S.screen = 'ex'; }
+  else if (act === 'holdstart'){ S.hold = { fase:'prep', ate: Date.now() + 3000 }; }
+  else if (act === 'holdreset'){ S.hold = null; }
+  else if (act === 'serie') {
+    if (S.set < e.series) descansar({ ex:S.ex, set:S.set+1 });
+    else S.screen = e.usaCarga ? 'carga' : 'reps';
+  }
+  else if (act === 'carga') { S.cur.trocou = v === '1'; S.screen = S.cur.trocou ? 'cargaDir' : 'reps'; }
+  else if (act === 'dir')   { S.cur.dir = v; S.screen = 'reps'; }
+  else if (act === 'reps')  { S.cur.fez = v === '1'; concluirExercicio(); }
+  else if (act === 'seguir'){ S.ex = S.restNext.ex; S.set = S.restNext.set; S.restUntil = null; irExercicio(); }
+  else if (act === 'esforco'){ S.esforco = v; salvarHistorico(); S.screen = 'fim'; }
+  salvar(); render();
+});
+
+/* ---------- navegação entre telas ---------- */
+function showView(id){
+  document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === 'v-' + id));
+  document.querySelectorAll('nav button').forEach(b => {
+    if (b.dataset.view === id) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current');
+  });
+  window.scrollTo(0, 0);
+  try { history.replaceState(null, '', '#' + id); } catch(e){}
+}
+document.querySelectorAll('nav button').forEach(b => b.addEventListener('click', () => showView(b.dataset.view)));
+const h = location.hash.slice(1);
+if (['inicio','exercicios','plano'].includes(h)) showView(h);
+
+atualizaHome();
+</script>
+</body>
+</html>
