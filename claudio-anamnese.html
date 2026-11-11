@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Momentum, anamnese de hipercifose e hérnia lombar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F2EADB; --paper:#FBF6EC; --ink:#22302F; --muted:#6B6A5F; --line:#D9CDB6;
+  --bar:#1E4D55; --bar-ink:#F6EFE0; --accent:#A85F34; --gold:#B8912F;
+  --on:#1E4D55; --on-ink:#F6EFE0;
+  --red:#A8322B; --red-bg:#F6DDD7; --red-ink:#7C1F19;
+  --amber-bg:#F4E4B8; --amber-ink:#5C4510;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1A1C; --paper:#16262A; --ink:#EDE5D4; --muted:#A39F8F; --line:#2D4146;
+    --bar:#0B2A30; --bar-ink:#F6EFE0; --accent:#E0A06F; --gold:#D9B65A;
+    --on:#2E7580; --on-ink:#F6EFE0;
+    --red:#E58A80; --red-bg:#3A1B19; --red-ink:#F2C2BB;
+    --amber-bg:#3A3016; --amber-ink:#EBD493;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1A1C; --paper:#16262A; --ink:#EDE5D4; --muted:#A39F8F; --line:#2D4146;
+  --bar:#0B2A30; --bar-ink:#F6EFE0; --accent:#E0A06F; --gold:#D9B65A;
+  --on:#2E7580; --on-ink:#F6EFE0;
+  --red:#E58A80; --red-bg:#3A1B19; --red-ink:#F2C2BB;
+  --amber-bg:#3A3016; --amber-ink:#EBD493;
+  color-scheme:dark;
+}
+[hidden]{display:none!important}
+*,*::before,*::after{box-sizing:inherit}
+html{background:var(--bg);scroll-padding-top:calc(env(safe-area-inset-top,0px) + 70px);-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:500 19px/1.45 "Cormorant Garamond",Georgia,"Times New Roman",serif;min-height:100%}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bar);z-index:30}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:25;background:var(--bar);color:var(--bar-ink);display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 16px;min-height:56px}
+.mark{font:600 28px/1 "Cormorant Garamond",Georgia,serif;letter-spacing:.01em}
+.bar nav{display:flex;gap:8px}
+.bb{background:transparent;border:1.5px solid color-mix(in srgb,var(--bar-ink) 55%,transparent);color:var(--bar-ink);border-radius:2px;min-height:40px;padding:0 14px;font:500 14px "IBM Plex Mono",ui-monospace,monospace}
+.bb:active{background:color-mix(in srgb,var(--bar-ink) 15%,transparent)}
+
+.alerts{position:sticky;top:calc(env(safe-area-inset-top,0px) + 56px);z-index:20}
+.al{padding:10px 16px;font:500 13.5px/1.4 "IBM Plex Mono",ui-monospace,monospace;border-left:5px solid}
+.al.red{background:var(--red-bg);color:var(--red-ink);border-color:var(--red)}
+.al.amber{background:var(--amber-bg);color:var(--amber-ink);border-color:var(--gold)}
+
+main{max-width:720px;margin:0 auto;padding:0 16px 48px}
+.hero{padding:28px 0 18px}
+.hero h1{margin:0;font:600 clamp(40px,11vw,56px)/1 "Cormorant Garamond",Georgia,serif;letter-spacing:-.01em}
+.hero .sub{margin:6px 0 20px;font:italic 500 22px/1.2 "Cormorant Garamond",Georgia,serif;color:var(--accent)}
+#name{width:100%;border:0;border-bottom:2px solid var(--accent);background:transparent;color:var(--ink);padding:6px 0;font:italic 600 30px/1.2 "Cormorant Garamond",Georgia,serif;border-radius:0}
+#name::placeholder{color:var(--muted);opacity:.7}
+.status{margin:10px 0 0;font:400 12.5px/1.4 "IBM Plex Mono",ui-monospace,monospace;color:var(--muted)}
+
+details.sec{background:var(--paper);border:1px solid var(--line);border-left:3px solid var(--line);border-radius:2px;margin:0 0 10px}
+details.sec[open]{border-left-color:var(--accent)}
+details.sec.has-red{border-left-color:var(--red)}
+details.sec.has-amber{border-left-color:var(--gold)}
+details.sec>summary{list-style:none;display:flex;align-items:center;gap:10px;padding:14px 14px;min-height:56px;cursor:pointer}
+details.sec>summary::-webkit-details-marker{display:none}
+details.sec>summary::after{content:"";width:9px;height:9px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);margin:-4px 4px 0 0;flex:none}
+details.sec[open]>summary::after{transform:rotate(-135deg);margin-top:4px}
+.st{flex:1;font:600 23px/1.15 "Cormorant Garamond",Georgia,serif}
+.ct{font:400 12px "IBM Plex Mono",ui-monospace,monospace;color:var(--muted);white-space:nowrap}
+.body{padding:2px 14px 18px}
+.body h3{margin:22px 0 4px;font:700 21px/1.2 "Cormorant Garamond",Georgia,serif;color:var(--accent)}
+.note{margin:10px 0;padding:8px 12px;border-left:2px solid var(--gold);color:var(--muted);font:italic 500 18px/1.4 "Cormorant Garamond",Georgia,serif}
+
+.f{padding:12px 0;border-bottom:1px solid var(--line)}
+.f:last-child{border-bottom:0}
+.l,.f>label.l{display:block;font:600 19px/1.25 "Cormorant Garamond",Georgia,serif;margin:0 0 2px}
+.hint{display:block;margin:0 0 2px;font:italic 500 16px/1.3 "Cormorant Garamond",Georgia,serif;color:var(--muted)}
+input[type=text],input[type=number],input[type=date],select,textarea{width:100%;display:block;min-height:44px;border:0;border-bottom:1.5px solid var(--line);border-radius:0;background:transparent;color:var(--ink);padding:9px 2px;font:400 16px/1.4 "IBM Plex Mono",ui-monospace,monospace;-webkit-appearance:none;appearance:none}
+select{background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 14px) 52%,calc(100% - 9px) 52%;background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:28px}
+select option{color:#22302F;background:#FBF6EC}
+textarea{resize:none;overflow:hidden;min-height:68px}
+input:focus,select:focus,textarea:focus{outline:none;border-bottom-color:var(--accent);box-shadow:0 1.5px 0 var(--accent)}
+input::placeholder,textarea::placeholder{color:var(--muted);opacity:.65}
+.inw{display:flex;align-items:center;gap:8px}
+.inw .u{font:400 13px "IBM Plex Mono",ui-monospace,monospace;color:var(--muted)}
+.obs{margin-top:2px;font-size:14px!important}
+.imcv{font:500 22px "IBM Plex Mono",ui-monospace,monospace;padding:6px 2px}
+
+.chk{display:flex;align-items:flex-start;gap:12px;min-height:44px;padding:6px 0;cursor:pointer;font:600 19px/1.3 "Cormorant Garamond",Georgia,serif}
+.chk input{width:24px;height:24px;margin:2px 0 0;flex:none;accent-color:var(--on)}
+
+.seg{display:flex;gap:8px;margin-top:6px}
+.yb,.ob{min-height:44px;border:1.5px solid var(--line);background:transparent;border-radius:2px;padding:0 20px;font:500 15px "IBM Plex Mono",ui-monospace,monospace}
+.yb{flex:1}
+.yb[aria-pressed=true],.ob[aria-pressed=true]{background:var(--on);border-color:var(--on);color:var(--on-ink)}
+.yb.sim.fl-urg[aria-pressed=true]{background:var(--red);border-color:var(--red);color:#fff}
+.yb.sim.fl-att[aria-pressed=true],.yb.sim.fl-parq[aria-pressed=true]{background:var(--gold);border-color:var(--gold);color:#1B1B14}
+.radios{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.ob{text-align:left;padding:10px 14px;line-height:1.35;font-size:14.5px}
+
+.row{border:1px solid var(--line);border-radius:2px;padding:10px 12px 6px;margin:10px 0}
+.rl{font:700 19px/1.25 "Cormorant Garamond",Georgia,serif;margin-bottom:2px}
+.cells{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:2px 14px}
+.cell{padding-bottom:4px}
+.cl{display:block;font:italic 500 16px/1.3 "Cormorant Garamond",Georgia,serif;color:var(--muted);margin-top:4px}
+.btn{min-height:44px;padding:0 16px;border:1.5px solid var(--on);background:var(--on);color:var(--on-ink);border-radius:2px;font:500 14px "IBM Plex Mono",ui-monospace,monospace}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.sm{min-height:36px;font-size:12.5px;margin:2px 0 6px}
+.btn.danger{background:var(--red);border-color:var(--red);color:#fff}
+.rep>.btn{margin-top:6px}
+
+canvas.sig{display:block;width:100%;height:160px;background:#FBF6EC;border:1.5px dashed var(--muted);border-radius:2px;touch-action:none;margin:8px 0}
+
+.scrim{position:fixed;inset:0;z-index:50;background:rgba(10,18,20,.55);display:flex;align-items:flex-end;justify-content:center}
+.sheet{width:100%;max-width:720px;max-height:88vh;overflow:auto;background:var(--paper);color:var(--ink);border-radius:6px 6px 0 0;padding:16px 16px calc(20px + env(safe-area-inset-bottom,0px))}
+.sheet-h{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+.sheet-h h2{margin:0;font:600 26px/1.1 "Cormorant Garamond",Georgia,serif}
+.sheet p{margin:8px 0;font-size:17px;color:var(--muted)}
+.srow{display:flex;gap:8px;align-items:stretch;margin:8px 0}
+.sopen{flex:1;display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:2px;border:1.5px solid var(--line);background:transparent;border-radius:2px;padding:8px 12px;min-height:56px}
+.srow.on .sopen{border-color:var(--accent)}
+.sn{font:700 20px/1.2 "Cormorant Garamond",Georgia,serif}
+.sd{font:400 12px "IBM Plex Mono",ui-monospace,monospace;color:var(--muted)}
+.sheet textarea{min-height:140px;max-height:260px;overflow:auto;resize:vertical;border:1.5px solid var(--line);padding:10px;font-size:13px;margin:8px 0}
+.sheet details{margin-top:14px;border-top:1px solid var(--line);padding-top:10px}
+.sheet summary{font:700 20px "Cormorant Garamond",Georgia,serif;cursor:pointer;min-height:44px;display:flex;align-items:center}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:2px;font:500 13.5px "IBM Plex Mono",ui-monospace,monospace;max-width:90vw}
+.foot{margin:24px 0 0;font:italic 500 17px/1.4 "Cormorant Garamond",Georgia,serif;color:var(--muted)}
+</style>
+</head>
+<body>
+<header class="bar">
+  <span class="mark">Momentum</span>
+  <nav>
+    <button type="button" class="bb" id="bStudents">Alunos</button>
+    <button type="button" class="bb" id="bSummary">Resumo</button>
+  </nav>
+</header>
+<div class="alerts" id="alerts" aria-live="polite"></div>
+<main>
+  <section class="hero">
+    <h1>Anamnese</h1>
+    <p class="sub">Hipercifose e hérnia lombar</p>
+    <input type="text" id="name" placeholder="Nome do aluno" autocomplete="off" aria-label="Nome do aluno">
+    <p class="status" id="status">Os dados ficam só neste aparelho.</p>
+  </section>
+  <div id="form"></div>
+  <p class="foot">Os campos salvam sozinhos neste navegador. Use Alunos para trocar de ficha e fazer backup.</p>
+</main>
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script>
+(function(){
+'use strict';
+
+/* ---------- utilidades ---------- */
+var LS_KEY='momentum.anamnese.v1';
+function $(s,r){return (r||document).querySelector(s);}
+function el(tag,attrs){
+  var e=document.createElement(tag);
+  attrs=attrs||{};
+  Object.keys(attrs).forEach(function(k){
+    var v=attrs[k];
+    if(k==='class')e.className=v;
+    else if(k==='text')e.textContent=v;
+    else if(k.indexOf('on')===0)e.addEventListener(k.slice(2),v);
+    else if(v===true)e.setAttribute(k,'');
+    else if(v!==false&&v!=null)e.setAttribute(k,v);
+  });
+  for(var i=2;i<arguments.length;i++){
+    var kids=[].concat(arguments[i]);
+    for(var j=0;j<kids.length;j++){
+      var c=kids[j];
+      if(c==null||c===false)continue;
+      e.append(c.nodeType?c:document.createTextNode(c));
+    }
+  }
+  return e;
+}
+function slug(s){return String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40);}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function today(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function brDate(iso){var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(iso||'');return m?m[3]+'/'+m[2]+'/'+m[1]:iso;}
+
+/* ---------- esquema da ficha ---------- */
+var tx=function(l,o){return Object.assign({t:'text',l:l},o);};
+var ar=function(l,o){return Object.assign({t:'area',l:l},o);};
+var nu=function(l,u,o){return Object.assign({t:'num',l:l,u:u},o);};
+var dt=function(l,o){return Object.assign({t:'date',l:l},o);};
+var sc=function(l,o){return Object.assign({t:'scale',l:l},o);};
+var se=function(l,opts,o){return Object.assign({t:'sel',l:l,opts:opts},o);};
+var yn=function(l,o){return Object.assign({t:'yn',l:l},o);};
+var ck=function(l,o){return Object.assign({t:'check',l:l},o);};
+
+var S=[];
+function sec(id,title,blocks){S.push({id:id,title:title,blocks:blocks});}
+
+var colsTeste=[{c:'Resultado'},{c:'Qualidade do movimento'},{c:'Dor antes',t:'scale'},{c:'Dor depois',t:'scale'}];
+
+sec('s1','Identificação e objetivos',[
+ {f:[dt('Data da avaliação',{def:'today'}),dt('Data de nascimento'),tx('Sexo ou gênero'),tx('Telefone e e-mail'),tx('Contato de emergência (nome, parentesco, telefone)'),tx('Profissão e carga horária semanal'),ar('Médico responsável (nome, especialidade, CRM, contato)'),tx('Fisioterapeuta ou outro profissional que acompanha'),nu('Peso','kg'),nu('Altura','cm'),{t:'imc',l:'IMC'}]},
+ {h:'Objetivos e expectativas',f:[ar('Principal objetivo com o treino (reduzir dor, melhorar postura, ganhar força, voltar a uma atividade, estética, saúde geral)'),ar('O que espera do acompanhamento'),ar('Atividade que evita hoje por dor ou medo de piorar'),ar('Como seria um bom resultado em 3 meses'),tx('Dias por semana e minutos por sessão disponíveis'),tx('Local de treino e equipamentos disponíveis'),sc('Confiança no próprio corpo para treinar')]}
+]);
+
+sec('s2','Laudo médico',[
+ {n:'Anote cada item direto do documento. O que estiver ausente vira pergunta para o médico.'},
+ {f:[dt('Data do exame de imagem'),dt('Data do laudo'),se('Tipo de exame',['Raio-X','Ressonância magnética','Tomografia','Outro']),tx('Hérnia: nível(is) acometido(s)',{ph:'ex.: L4-L5, L5-S1'}),se('Hérnia: tipo',['Protrusão','Extrusão','Sequestro','Não informado']),se('Hérnia: direção',['Central','Paramediana direita','Paramediana esquerda','Foraminal','Extraforaminal','Não informado']),yn('Compressão de raiz nervosa ou do saco dural descrita',{obs:1}),ar('Outras alterações (estenose, espondilolistese, degeneração discal, artrose facetária)'),nu('Hipercifose: ângulo de Cobb','graus'),se('Hipercifose: tipo',['Postural','De Scheuermann','Osteoporótica','Outra','Não informado']),yn('Fraturas, cunhamento vertebral ou osteopenia/osteoporose descritos',{obs:1}),tx('Diagnóstico clínico e CID'),se('Fase',['Aguda','Subaguda','Crônica']),tx('Indicação cirúrgica ou cirurgia já realizada'),yn('Liberação expressa para exercício físico'),dt('Data da liberação'),ar('Restrições descritas (cargas, flexão de tronco, impacto, rotação, posições)'),ar('Medicamentos prescritos'),ar('Orientações de fisioterapia, RPG, pilates ou outras terapias'),dt('Retorno médico agendado')]},
+ {h:'Perguntas para levar ao médico',f:[ar('Há restrição de flexão de tronco, rotação ou carga axial? Qual limite?',{ph:'Resposta do médico'}),ar('Posso trabalhar com cargas externas (agachamento, terra, remada)? Em qual faixa?',{ph:'Resposta do médico'}),ar('Existe contraindicação a exercícios de impacto (corrida, saltos)?',{ph:'Resposta do médico'}),ar('Quais sinais durante o treino devem interromper a sessão e gerar contato com o médico?',{ph:'Resposta do médico'}),ar('A hipercifose precisa de reavaliação radiográfica periódica? Em qual intervalo?',{ph:'Resposta do médico'}),ar('É necessário atestado de liberação atualizado antes de progredir a intensidade?',{ph:'Resposta do médico'})]}
+]);
+
+sec('s3','Condição e dor',[
+ {n:'O objetivo é entender o comportamento da dor diante de movimento, carga e posição, que orienta a escolha dos exercícios.'},
+ {h:'História',f:[ar('Quando surgiram os primeiros sintomas? Houve evento desencadeante (esforço, queda, acidente, trabalho)?'),ar('Quando e como veio o diagnóstico da hérnia? E o da hipercifose?'),ar('A curva da coluna mudou nos últimos anos?'),ar('Crises anteriores: quantas, duração e o que resolveu'),se('Momento atual',['Em crise','Em melhora','Estável'])]},
+ {h:'Caracterização da dor',f:[tx('Localização (aponte no corpo)'),sc('Dor atual em repouso'),sc('Dor média na última semana'),sc('Pior dor na última semana'),tx('Tipo (pontada, queimação, peso, choque, formigamento, dormência)'),tx('Irradiação (nádega, coxa, perna, pé; lado)'),se('Frequência',['Constante','Intermitente','Só em certas situações']),tx('Horário em que piora'),nu('Rigidez matinal','min'),tx('Piora com (flexão de tronco, sentar, ficar em pé, caminhar, tosse ou espirro, dirigir, carregar peso)'),tx('Melhora com (repouso, caminhar, deitar, alongar, calor, medicação)'),tx('Posição de maior alívio'),yn('Dor interfere no sono ou acorda o aluno'),ar('Limitações nas atividades diárias (calçar sapato, levantar do sofá, pegar objeto no chão)')]},
+ {h:'Impacto funcional',f:[nu('Caminha sem dor por','min'),nu('Tempo máximo sentado sem trocar de posição','min'),nu('Tempo máximo em pé parado','min'),tx('Dor ao subir escadas, agachar ou levantar da cadeira'),sc('Medo de movimento ou de piorar')]}
+]);
+
+sec('s4','Sinais de alerta',[
+ {n:'Qualquer “sim” em urgência interrompe a avaliação e exige encaminhamento médico antes de qualquer treino. Pergunte um a um, sem sugerir a resposta.'},
+ {h:'Urgência: encaminhar no mesmo dia',f:[
+  yn('Perda ou alteração de controle da urina ou das fezes (retenção, incontinência, necessidade de forçar)',{flag:'urg',obs:0}),
+  yn('Dormência na região entre as pernas, genitais ou ânus (“anestesia em sela”)',{flag:'urg'}),
+  yn('Fraqueza que piora rápido em uma ou nas duas pernas',{flag:'urg'}),
+  yn('Dormência ou formigamento que está se espalhando ou agravando',{flag:'urg'}),
+  yn('Dor lombar intensa nova, diferente das crises habituais, após queda ou trauma',{flag:'urg'}),
+  yn('Febre, calafrios ou mal-estar junto com dor na coluna',{flag:'urg'})]},
+ {h:'Atenção: informar o médico antes de iniciar o treino',f:[
+  yn('Dor que não alivia em nenhuma posição ou que piora de noite, em repouso',{flag:'att'}),
+  yn('Perda de peso sem explicação nos últimos meses',{flag:'att'}),
+  yn('Histórico de câncer',{flag:'att'}),
+  yn('Uso prolongado de corticoide ou diagnóstico de osteoporose',{flag:'att'}),
+  yn('Fraqueza para levantar o pé (“pé caído”) ou tropeços frequentes',{flag:'att'}),
+  yn('Formigamento ou perda de sensibilidade em perna ou pé',{flag:'att'}),
+  yn('Dor com tosse, espirro ou esforço para evacuar que irradia para a perna',{flag:'att'}),
+  yn('Dor no tórax ou entre as escápulas, com falta de ar ou palpitação',{flag:'att'}),
+  yn('Dor ou sensibilidade pontual e intensa sobre uma vértebra',{flag:'att'})]},
+ {h:'Sintomas neurológicos já presentes',f:[ar('Formigamento, dormência ou queimação: onde, desde quando, constante ou intermitente'),ar('Fraqueza em perna ou pé: lado e situações em que aparece'),tx('Avaliação neurológica ou eletroneuromiografia: resultado'),ar('Algum sintoma mudou desde a data do laudo?')]},
+ {n:'A triagem identifica quando encaminhar. Testes neurológicos de provocação (elevação da perna estendida, Slump) pertencem à avaliação médica ou fisioterapêutica e não devem ser forçados no treino.'}
+]);
+
+sec('s5','Saúde geral e PAR-Q+',[
+ {h:'PAR-Q+ (resumido)',f:[
+  yn('Algum médico já disse que você tem problema cardíaco ou pressão alta?',{flag:'parq'}),
+  yn('Sente dor no peito em repouso, nas atividades diárias ou ao se exercitar?',{flag:'parq'}),
+  yn('Perde o equilíbrio por tontura ou já perdeu a consciência nos últimos 12 meses?',{flag:'parq'}),
+  yn('Tem outra condição crônica diagnosticada (diabetes, asma, doença renal, etc.)?',{flag:'parq'}),
+  yn('Usa medicamento prescrito para uma condição crônica?',{flag:'parq'}),
+  yn('Tem ou teve nos últimos 12 meses problema ósseo, articular ou muscular que pioraria com mais atividade?',{flag:'parq'}),
+  yn('Algum médico já disse que você só deve fazer atividade física com supervisão médica?',{flag:'parq'})]},
+ {n:'Qualquer “sim” pede liberação médica específica antes de intensificar o treino, além do laudo da coluna.'},
+ {h:'Saúde geral',f:[tx('Pressão arterial em repouso e histórico de hipertensão'),tx('Diabetes, tireoide, doença reumática, osteoporose ou osteopenia, doença respiratória'),tx('Gestação ou possibilidade (se aplicável)'),tx('Alergias relevantes para o treino'),yn('Tontura, desmaio, palpitação ou falta de ar em esforço')]},
+ {r:'Medicamentos e suplementos',cols:[{c:'Nome'},{c:'Dose e frequência'},{c:'Para quê'},{c:'Início'}],n:3,add:'Adicionar medicamento'},
+ {n:'Observe analgésicos, anti-inflamatórios, relaxantes musculares e corticoides: podem mascarar a dor durante o treino e reduzir o alerta do corpo.'},
+ {h:'Cirurgias, fraturas e outros históricos',f:[ar('Cirurgias anteriores (coluna ou outras), data e resultado'),ar('Fraturas, entorses ou lesões em ombro, quadril, joelho e tornozelo'),tx('Escoliose, dor cervical ou torácica, cefaleia frequente'),tx('Histórico familiar de problemas de coluna ou osteoporose'),tx('Uso de colete, palmilha, órtese ou outro dispositivo')]}
+]);
+
+sec('s6','Tratamentos e equipe',[
+ {g:'Tratamentos anteriores',cols:[{c:'Já fez?',t:'sel',opts:['Sim','Não']},{c:'Período'},{c:'Resultado percebido'}],rows:['Fisioterapia convencional','RPG ou reeducação postural','Pilates','Quiropraxia ou osteopatia','Acupuntura','Infiltração ou bloqueio','Musculação ou treino funcional anterior','Outro']},
+ {h:'Acompanhamento atual',f:[tx('Fisioterapia hoje: frequência, profissional e contato'),tx('Médicos que acompanham e data do próximo retorno'),tx('Acompanhamento psicológico ou nutricional relevante'),yn('Aluno autoriza contato com médico e fisioterapeuta sobre o plano de treino')]},
+ {h:'Percepção do aluno',f:[ar('O que já ajudou de verdade, mesmo por pouco tempo'),ar('O que piorou os sintomas'),ar('Orientação de outro profissional que ficou confusa ou contraditória')]}
+]);
+
+sec('s7','Atividade física',[
+ {h:'Nível atual',f:[tx('Atividade física hoje: qual, vezes por semana, tempo'),tx('Tempo parado, se estiver sedentário'),tx('Parou de treinar por causa da coluna? Quando?'),tx('Caminhada diária (passos ou minutos)'),sc('Percepção de condicionamento')]},
+ {h:'Experiência de treino',f:[ar('Esportes praticados ao longo da vida e nível'),ar('Experiência com musculação: tempo, frequência, exercícios que domina'),ar('Exercícios em que se sente seguro'),ar('Exercícios que evita ou que já provocaram dor na coluna'),ar('Piora dos sintomas depois de algum treino específico'),ar('Já treinou com cargas altas (agachamento, terra, desenvolvimento)? A técnica foi acompanhada?')]},
+ {h:'Preferências',f:[ar('Atividades que gosta e quer incluir'),ar('Atividades que não gosta'),se('Prefere treinar',['Sozinho','Em dupla','Em grupo'])]}
+]);
+
+sec('s8','Rotina e hábitos',[
+ {n:'Na hipercifose e na hérnia lombar, as horas fora do treino pesam tanto quanto a sessão: postura sustentada e sono costumam explicar boa parte da dor.'},
+ {h:'Ocupação e ergonomia',f:[ar('Profissão e principais posturas (sentado, em pé, dirigindo, carregando peso, curvado)'),nu('Horas por dia sentado','h'),tx('Frequência de pausas para levantar'),ar('Trabalho com computador: altura do monitor, cadeira, apoio lombar, notebook'),tx('Celular: tempo diário e postura'),tx('Deslocamento: tempo diário e meio de transporte'),ar('Esforços repetitivos ou levantamento de cargas no trabalho ou em casa')]},
+ {h:'Sono',f:[nu('Horas de sono por noite','h'),sc('Qualidade do sono'),se('Posição em que dorme',['De barriga para cima','De lado','De bruços','Varia']),tx('Colchão e travesseiro, tempo de uso'),yn('Acorda com dor ou rigidez',{obs:1})]},
+ {h:'Hábitos',f:[ar('Alimentação: refeições por dia, hidratação, proteína'),se('Tabagismo (cigarro, vape)',['Não','Sim','Já fumou']),tx('Consumo de álcool e frequência'),sc('Nível de estresse percebido'),ar('Fontes de estresse e humor relacionado à dor (registre só o que o aluno relatar)'),tx('Mudança de peso nos últimos 12 meses'),tx('Tempo livre para exercícios domiciliares')]}
+]);
+
+sec('s9','Avaliação postural',[
+ {n:'A postura é descrita, não diagnosticada. Use fotos padronizadas (mesma distância, fio de prumo ou grade, tronco visível) para comparar nas reavaliações.'},
+ {h:'Vista lateral (fio de prumo)',f:[se('Cabeça',['Alinhada','Anteriorizada'],{obs:1}),se('Ombros e escápulas',['Neutros','Protraídos','Escápulas aladas','Escápulas abduzidas'],{obs:1}),se('Curva torácica',['Normal','Aumentada','Retificada'],{obs:1}),se('Curva lombar',['Normal','Hiperlordose','Retificada'],{obs:1}),se('Pelve',['Neutra','Anteversão','Retroversão'],{obs:1}),se('Tórax',['Neutro','Afundado','Projetado','Costelas inferiores abertas'],{obs:1}),se('Joelhos',['Neutros','Recurvatum','Flexão'],{obs:1})]},
+ {h:'Vista anterior e posterior',f:[tx('Altura dos ombros e das cristas ilíacas'),tx('Alinhamento da cabeça e da linha das espinhas'),tx('Assimetria de escápulas ou do contorno do tronco'),tx('Pés (valgo, varo, pronação)')]},
+ {h:'Medidas simples de acompanhamento',f:[nu('Distância occipito-parede','cm',{hint:'Calcanhares, glúteos e escápulas na parede; meça da nuca à parede, sem forçar o queixo.'}),nu('Distância tragus-parede','cm',{hint:'Mesma posição; meça do tragus da orelha à parede.'}),nu('Altura em pé','cm'),nu('Altura deitado','cm',{hint:'Redução progressiva de altura pode indicar perda de estatura vertebral.'}),nu('Curva torácica por inclinômetro ou flexicurva','graus',{hint:'Use sempre o mesmo método. Não substitui o ângulo de Cobb do laudo.'})]},
+ {h:'Flexibilidade da curva',f:[se('Ao estender o tórax ativamente, a curva reduz?',['Sim: provável componente postural e móvel','Não: pode haver componente estrutural; reforça seguir o laudo']),yn('A curva se mantém deitado de bruços ou de barriga para cima'),tx('A dor muda quando o tronco é corrigido ativamente?')]},
+ {h:'Observação em pé e em movimento',f:[tx('Transferência de peso e assimetrias ao levantar da cadeira'),tx('Fôlego ou dor ao manter o tórax estendido por 30 segundos'),tx('Mantém a postura corrigida sem esforço ou compensa com a lombar?')]}
+]);
+
+sec('s10','Mobilidade e flexibilidade',[
+ {n:'Movimentos ativos, interrompidos no primeiro sintoma. Anote onde a dor ou o formigamento aparece, nunca force a amplitude e pare se o sintoma descer para a perna. Repita 5 vezes só se o primeiro foi sem sintomas. Flexão profunda, com carga ou sobrepressão fica para o profissional que dá o diagnóstico.'},
+ {g:'Coluna',cols:[{c:'Amplitude'},{c:'Sintoma (local)'},{c:'Dor',t:'scale'}],rows:['Extensão torácica sentado, mãos atrás da cabeça','Rotação torácica sentada, direita','Rotação torácica sentada, esquerda','Livro aberto deitado de lado, direita','Livro aberto deitado de lado, esquerda','Flexão de tronco em pé (só amplitude espontânea)','Extensão lombar em pé','Inclinação lateral em pé, direita','Inclinação lateral em pé, esquerda']},
+ {g:'Quadril, ombro e tornozelo',cols:[{c:'Direita'},{c:'Esquerda'},{c:'Sintoma e observação'}],rows:['Flexão de quadril (deitado, joelho ao peito)','Extensão de quadril (teste de Thomas)','Rotação interna de quadril (sentado)','Rotação externa de quadril (sentado)','Extensão ativa do joelho a 90° de flexão de quadril (isquiotibiais)','Elevação do braço junto à parede','Comprimento de peitoral (deitado, braço em abdução)','Dorsiflexão de tornozelo (joelho à parede, cm)']},
+ {h:'Preferência direcional',f:[se('Movimento que mais alivia a dor',['Flexão','Extensão','Rotação','Nenhum']),se('Movimento que mais reproduz a dor',['Flexão','Extensão','Rotação','Nenhum']),tx('Posição em que se sente melhor ao fim do dia')]}
+]);
+
+sec('s11','Força e testes funcionais',[
+ {n:'Aplique apenas se a triagem não teve sinal de alerta e o laudo permite exercício. Registre a dor antes e depois de cada teste e interrompa no primeiro sintoma neurológico.'},
+ {h:'Condições para aplicar',f:[ck('Sem nenhum “sim” na tabela de urgência'),ck('Liberação médica anotada na seção do laudo'),ck('Dor em repouso hoje de 0 a 4'),ck('Aquecimento leve de 5 a 8 minutos, sem alongar a coluna de forma passiva')]},
+ {g:'Resistência e estabilidade do tronco',cols:colsTeste,rows:['Prancha frontal (tempo até perder o alinhamento)','Prancha lateral, direita','Prancha lateral, esquerda','Extensores do tronco, Biering-Sørensen (só se indolor)','Bird dog: tempo de manutenção','Ponte de glúteos: tempo de manutenção','Ponte unipodal, direita','Ponte unipodal, esquerda'],note:'Diferença acima de 10 a 15 por cento entre direito e esquerdo merece atenção no plano.'},
+ {g:'Força e padrões de movimento',cols:colsTeste,rows:['Dobradiça de quadril com bastão','Agachamento com peso corporal','Levantar da cadeira em 30 segundos (repetições)','Levantar objeto leve do chão','Remada em elástico ou polia (RPE)','Y, T e W em prono (tempo)','Elevação de braços na parede','Apoio de braços na parede ou no banco','Preensão manual com dinamômetro (kg)']},
+ {g:'Equilíbrio e marcha',cols:[{c:'Resultado'},{c:'Observação'}],rows:['Apoio unipodal direito (s, máx. 30)','Apoio unipodal esquerdo (s, máx. 30)','Marcha de 20 passos','Subir e descer um degrau']},
+ {h:'Registro do esforço',f:[sc('Percepção de esforço ao final da bateria'),tx('Dor logo após e 24 horas depois (perguntar na sessão seguinte)'),ar('Movimentos que o aluno recusou ou evitou por medo')]}
+]);
+
+sec('s12','Respiração e condicionamento',[
+ {n:'A hipercifose reduz a mobilidade do tórax e pode limitar a respiração e o condicionamento. Observe antes de prescrever cardio.'},
+ {h:'Padrão respiratório (deitado e depois sentado)',f:[se('Padrão predominante',['Abdominal','Torácico alto','Misto']),se('Expansão das costelas inferiores',['Presente','Reduzida','Ausente']),yn('Uso exagerado de pescoço e ombros ao respirar'),nu('Frequência respiratória em repouso','rpm'),yn('Falta de ar em atividades leves (escada, caminhada rápida)'),yn('Dor ou aperto torácico ao inspirar fundo')]},
+ {h:'Sinais vitais em repouso',f:[nu('Frequência cardíaca','bpm'),tx('Pressão arterial (mmHg)',{ph:'ex.: 120/80'}),nu('Saturação de oxigênio','%')]},
+ {h:'Caminhada de 6 minutos',f:[nu('Distância','m'),nu('Frequência cardíaca ao final','bpm'),sc('Percepção de esforço ao final'),nu('Recuperação da FC em 1 minuto','bpm'),ar('Sintomas durante o teste')]},
+ {n:'Pressão acima de 160 por 100 mmHg em repouso, dor no peito ou falta de ar desproporcional: interrompa e encaminhe antes de seguir.'}
+]);
+
+sec('s13','Síntese e plano inicial',[
+ {n:'A decisão de começar a treinar depende de três coisas: ausência de sinais de alerta, liberação médica documentada e dor controlada.'},
+ {h:'Decisão ao final da avaliação',f:[{t:'radio',l:'Decisão',opts:['Pode iniciar o treino conforme o plano','Pode iniciar com restrições específicas','Aguardar liberação médica ou esclarecimento do laudo antes de treinar','Encaminhar com urgência (sinal de alerta presente)']}]},
+ {g:'Síntese dos achados',cols:[{c:'Relevância',t:'sel',opts:['Alta','Média','Baixa']},{c:'Achado principal'}],rows:['Dor: padrão, intensidade e gatilhos','Limitação de mobilidade (torácica, quadril, ombro)','Déficit de força ou resistência (core, extensores torácicos, glúteos, escapulares)','Padrão de movimento com compensação','Fatores de rotina que agravam','Condicionamento cardiorrespiratório']},
+ {r:'Restrições do laudo e da avaliação',cols:[{c:'Restrição'},{c:'Origem (laudo, médico, avaliação)'},{c:'Revisar em'}],n:3,add:'Adicionar restrição'},
+ {h:'Encaminhamentos',f:[ck('Médico responsável'),ck('Fisioterapeuta'),ck('Nutricionista'),ck('Psicólogo, se houver sofrimento ou medo importante'),tx('Outro encaminhamento')]},
+ {h:'Plano inicial de treino',f:[tx('Frequência semanal e duração da sessão'),ar('Prioridades das primeiras 4 a 6 semanas'),ar('Exercícios a evitar até nova avaliação ou liberação'),ar('Exercícios domiciliares e pausas ao longo do dia'),ar('Critério para progredir (dor, qualidade do movimento, resposta em 24 horas)'),ar('Critério para regredir ou interromper')]},
+ {g:'Indicadores de reavaliação (repetir na semana 4 a 6)',cols:[{c:'Valor inicial'},{c:'Meta'}],rows:['Dor média na semana (0 a 10)','Distância occipito-parede (cm)','Prancha frontal e lateral (s)','Levantar da cadeira em 30 s','Tempo sentado sem dor (min)','Caminhada de 6 minutos (m)']},
+ {f:[dt('Próxima reavaliação')]}
+]);
+
+sec('s14','Termo de ciência',[
+ {n:'Declaro que as informações prestadas nesta anamnese são verdadeiras e completas, e que informei ao profissional qualquer alteração de saúde que ocorra durante o acompanhamento.'},
+ {n:'Estou ciente de que esta avaliação é de natureza física e funcional, conduzida por profissional de Educação Física, e não substitui consulta, diagnóstico ou tratamento médico ou fisioterapêutico. Comprometo-me a interromper o exercício e procurar atendimento médico diante de dor intensa, formigamento, perda de força, alteração urinária ou intestinal, ou qualquer sintoma novo.'},
+ {f:[ck('Autorizo o contato do profissional com meu médico e meu fisioterapeuta para alinhar o plano de treino.'),ck('Autorizo o registro de fotos e vídeos de avaliação postural para acompanhamento, de uso restrito ao meu prontuário.'),ck('Autorizo o tratamento dos meus dados pessoais e de saúde, que são dados sensíveis, para fins exclusivos de avaliação e acompanhamento do treino, conforme a Lei Geral de Proteção de Dados (Lei 13.709/2018).'),tx('Local e data'),{t:'sign',l:'Assinatura do aluno'},tx('Profissional (nome e CREF)',{def:'João Pedro, CREF 207271-G/SP'})]}
+]);
+
+/* ---------- chaves estáveis ---------- */
+var used={};
+function uk(base){var k=base,i=2;while(used[k]){k=base+'-'+(i++);}used[k]=1;return k;}
+var flags=[];
+S.forEach(function(s){
+  s.blocks.forEach(function(b){
+    if(b.f)b.f.forEach(function(f){f.k=uk(s.id+'.'+slug(f.l));if(f.flag)flags.push({k:f.k,flag:f.flag,sec:s.id});});
+    if(b.g){b.rows=b.rows.map(function(l){var r={l:l,cells:[]};b.cols.forEach(function(c){r.cells.push({k:uk(s.id+'.'+slug(l)+'.'+slug(c.c))});});return r;});}
+    if(b.r){b.k=uk(s.id+'.'+slug(b.r));}
+  });
+});
+var K={peso:'s1.peso',altura:'s1.altura'};
+
+/* ---------- armazenamento ---------- */
+function loadStore(){
+  try{var raw=localStorage.getItem(LS_KEY);if(raw){var s=JSON.parse(raw);if(s&&s.students&&typeof s.students==='object')return s;}}catch(e){}
+  return {v:1,active:null,students:{}};
+}
+var store=loadStore();
+var saveTimer=null;
+function newStudent(){
+  var s={id:uid(),name:'',created:Date.now(),updated:Date.now(),data:{}};
+  S.forEach(function(sc_){sc_.blocks.forEach(function(b){if(b.f)b.f.forEach(function(f){if(f.def)s.data[f.k]=(f.def==='today'?today():f.def);});});});
+  return s;
+}
+function cur(){return store.students[store.active];}
+function persist(){
+  try{localStorage.setItem(LS_KEY,JSON.stringify(store));var d=new Date();setStatus('Salvo neste aparelho às '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'));}
+  catch(e){setStatus('Não foi possível salvar neste navegador. Copie um backup em Alunos.');}
+}
+function schedule(){cur().updated=Date.now();clearTimeout(saveTimer);saveTimer=setTimeout(persist,350);}
+function setStatus(t){$('#status').textContent=t;}
+function toast(t){var n=$('#toast');n.textContent=t;n.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(function(){n.hidden=true;},2200);}
+
+/* ---------- controles ---------- */
+function inner(c){return c.matches&&c.matches('input,select,textarea')?c:c.querySelector('input,select,textarea');}
+function control(sp){
+  var v=cur().data[sp.k],c;
+  if(sp.t==='area'){c=el('textarea',{rows:2,placeholder:sp.ph||''});c.value=v||'';}
+  else if(sp.t==='scale'||sp.t==='sel'){
+    c=el('select');c.append(el('option',{value:'',text:'—'}));
+    var o=sp.t==='scale'?['0','1','2','3','4','5','6','7','8','9','10']:sp.opts;
+    o.forEach(function(x){c.append(el('option',{value:x,text:x}));});
+    c.value=v||'';
+  }else{
+    var type=sp.t==='num'?'number':(sp.t==='date'?'date':'text');
+    c=el('input',{type:type,placeholder:sp.ph||'',autocomplete:'off'});
+    if(sp.t==='num'){c.setAttribute('inputmode','decimal');c.setAttribute('step','any');}
+    c.value=v||'';
+  }
+  c.id=sp.id;c.dataset.k=sp.k;
+  if(sp.u)return el('div',{class:'inw'},c,el('span',{class:'u',text:sp.u}));
+  return c;
+}
+function fieldEl(f){
+  var d=cur().data,v=d[f.k];
+  var w=el('div',{class:'f'});
+  if(f.t==='check'){
+    var id='i_'+f.k;
+    var cb=el('input',{type:'checkbox',id:id});cb.checked=!!v;cb.dataset.k=f.k;
+    w.append(el('label',{class:'chk',for:id},cb,el('span',{text:f.l})));
+    return w;
+  }
+  if(f.t==='yn'){
+    w.append(el('div',{class:'l',text:f.l}));
+    var seg=el('div',{class:'seg',role:'group','aria-label':f.l});
+    [['sim','Sim'],['nao','Não']].forEach(function(p){
+      seg.append(el('button',{type:'button','data-yn':p[0],'data-k':f.k,class:'yb '+p[0]+(f.flag?' fl-'+f.flag:''),'aria-pressed':String(v===p[0]),text:p[1]}));
+    });
+    w.append(seg);
+    var ob=el('input',{type:'text',class:'obs',placeholder:'Observação',autocomplete:'off','aria-label':'Observação: '+f.l});
+    ob.dataset.k=f.k+'.obs';ob.value=d[f.k+'.obs']||'';
+    if(f.obs===1)ob.classList.add('keep');
+    ob.hidden=!(v==='sim'||f.obs===1);
+    ob.dataset.obsfor=f.k;
+    w.append(ob);
+    return w;
+  }
+  if(f.t==='radio'){
+    w.append(el('div',{class:'l',text:f.l}));
+    var g=el('div',{class:'radios',role:'radiogroup','aria-label':f.l});
+    f.opts.forEach(function(o){g.append(el('button',{type:'button','data-radio':o,'data-k':f.k,class:'ob','aria-pressed':String(v===o),text:o}));});
+    w.append(g);return w;
+  }
+  if(f.t==='imc'){
+    w.append(el('div',{class:'l',text:'IMC'}),el('div',{class:'imcv',id:'imc',text:'—'}));
+    return w;
+  }
+  if(f.t==='sign'){
+    w.append(el('div',{class:'l',text:f.l}),el('canvas',{class:'sig','data-sig':f.k,'aria-label':'Área de assinatura'}),el('button',{type:'button',class:'btn ghost sm','data-sigclear':f.k,text:'Limpar assinatura'}));
+    return w;
+  }
+  var id2='i_'+f.k;
+  w.append(el('label',{class:'l',for:id2,text:f.l}));
+  if(f.hint)w.append(el('span',{class:'hint',text:f.hint}));
+  w.append(control({t:f.t,k:f.k,opts:f.opts,u:f.u,ph:f.ph,id:id2}));
+  if(f.obs){
+    var o2=el('input',{type:'text',class:'obs',placeholder:'Observação',autocomplete:'off','aria-label':'Observação: '+f.l});
+    o2.dataset.k=f.k+'.obs';o2.value=d[f.k+'.obs']||'';w.append(o2);
+  }
+  return w;
+}
+function gridEl(b){
+  var box=el('div',{class:'grid'});
+  b.rows.forEach(function(r){
+    var card=el('div',{class:'row'});
+    card.append(el('div',{class:'rl',text:r.l}));
+    var cells=el('div',{class:'cells'});
+    r.cells.forEach(function(ce,ci){
+      var col=b.cols[ci],id='i_'+ce.k;
+      cells.append(el('div',{class:'cell'},el('label',{class:'cl',for:id,text:col.c}),control({t:col.t||'text',k:ce.k,opts:col.opts,id:id})));
+    });
+    card.append(cells);box.append(card);
+  });
+  return box;
+}
+function repEl(b){
+  var box=el('div',{class:'rep'});
+  function draw(){
+    box.textContent='';
+    var d=cur().data;
+    if(!Array.isArray(d[b.k])){d[b.k]=[];for(var n=0;n<b.n;n++)d[b.k].push({});}
+    d[b.k].forEach(function(row,i){
+      var card=el('div',{class:'row'}),cells=el('div',{class:'cells'});
+      b.cols.forEach(function(col,ci){
+        var id='r_'+b.k+'_'+i+'_'+ci;
+        var inp=el('input',{type:'text',id:id,autocomplete:'off'});
+        inp.value=row[ci]||'';inp.dataset.rk=b.k;inp.dataset.r=i;inp.dataset.c=ci;
+        cells.append(el('div',{class:'cell'},el('label',{class:'cl',for:id,text:col.c}),inp));
+      });
+      card.append(cells,el('button',{type:'button',class:'btn ghost sm','data-del':b.k,'data-r':i,text:'Remover linha'}));
+      box.append(card);
+    });
+    box.append(el('button',{type:'button',class:'btn ghost','data-add':b.k,text:b.add}));
+  }
+  box._draw=draw;draw();return box;
+}
+
+/* ---------- renderização ---------- */
+var openIds={s1:1};
+var form=$('#form');
+function grow(t){t.style.height='auto';t.style.height=Math.max(t.scrollHeight,68)+'px';}
+function growAll(root){root.querySelectorAll('textarea').forEach(grow);}
+
+function render(){
+  var st=cur();
+  $('#name').value=st.name||'';
+  form.textContent='';
+  S.forEach(function(s,i){
+    var d=el('details',{class:'sec',id:'sec-'+s.id});
+    if(openIds[s.id])d.open=true;
+    d.append(el('summary',{},el('span',{class:'st',text:(i+1)+'. '+s.title}),el('span',{class:'ct','data-ct':s.id})));
+    var body=el('div',{class:'body'});
+    s.blocks.forEach(function(b){
+      if(b.n&&!b.r)body.append(el('p',{class:'note',text:b.n}));
+      if(b.h)body.append(el('h3',{text:b.h}));
+      if(b.f)b.f.forEach(function(f){body.append(fieldEl(f));});
+      if(b.g){body.append(el('h3',{text:b.g}),gridEl(b));if(b.note)body.append(el('p',{class:'note',text:b.note}));}
+      if(b.r){body.append(el('h3',{text:b.r}),repEl(b));}
+    });
+    d.append(body);
+    d.addEventListener('toggle',function(){
+      if(d.open){openIds[s.id]=1;growAll(d);setupSigs(d);}else{delete openIds[s.id];}
+    });
+    form.append(d);
+    if(d.open){growAll(d);setupSigs(d);}
+  });
+  imc();counts();alerts();
+}
+
+function counts(){
+  var d=cur().data;
+  S.forEach(function(s){
+    var n=0,p=s.id+'.';
+    Object.keys(d).forEach(function(k){
+      if(k.indexOf(p)!==0)return;
+      var v=d[k];
+      if(Array.isArray(v)){v.forEach(function(r){Object.keys(r).forEach(function(c){if(r[c])n++;});});}
+      else if(v)n++;
+    });
+    var e=document.querySelector('[data-ct="'+s.id+'"]');
+    if(e)e.textContent=n?(n+(n===1?' campo':' campos')):'';
+  });
+}
+function alerts(){
+  var d=cur().data,box=$('#alerts');box.textContent='';
+  function cnt(fl){return flags.filter(function(f){return f.flag===fl&&d[f.k]==='sim';}).length;}
+  var u=cnt('urg'),a=cnt('att'),p=cnt('parq');
+  if(u)box.append(el('div',{class:'al red',role:'alert',text:'Sinal de urgência marcado ('+u+'). Interrompa a avaliação e encaminhe ao médico hoje, antes de qualquer treino.'}));
+  if(a)box.append(el('div',{class:'al amber',text:'Sinal de atenção marcado ('+a+'). Informe o médico antes de iniciar o treino.'}));
+  if(p)box.append(el('div',{class:'al amber',text:'PAR-Q+ com resposta “sim” ('+p+'). Peça liberação médica específica antes de intensificar o treino.'}));
+  S.forEach(function(s){var e=document.getElementById('sec-'+s.id);if(e){e.classList.remove('has-red','has-amber');}});
+  flags.forEach(function(f){
+    if(d[f.k]!=='sim')return;
+    var e=document.getElementById('sec-'+f.sec);if(!e)return;
+    if(f.flag==='urg')e.classList.add('has-red');else if(!e.classList.contains('has-red'))e.classList.add('has-amber');
+  });
+}
+function computeImc(d){
+  var p=parseFloat(String(d[K.peso]||'').replace(',','.')),a=parseFloat(String(d[K.altura]||'').replace(',','.'))/100;
+  return (p>0&&a>0)?(p/(a*a)).toFixed(1).replace('.',','):'';
+}
+function imc(){var o=document.getElementById('imc');if(o)o.textContent=computeImc(cur().data)||'—';}
+
+/* ---------- edição ---------- */
+function setVal(k,v){
+  var d=cur().data;
+  if(v===''||v===false||v==null)delete d[k];else d[k]=v;
+  schedule();counts();alerts();
+  if(k===K.peso||k===K.altura)imc();
+}
+function onField(e){
+  var t=e.target;
+  if(!/^(INPUT|SELECT|TEXTAREA)$/.test(t.tagName))return;
+  if(t.dataset.k){setVal(t.dataset.k,t.type==='checkbox'?t.checked:t.value);}
+  else if(t.dataset.rk){
+    var rows=cur().data[t.dataset.rk];
+    if(rows&&rows[+t.dataset.r]){rows[+t.dataset.r][t.dataset.c]=t.value;schedule();counts();}
+  }
+  if(t.tagName==='TEXTAREA')grow(t);
+}
+form.addEventListener('input',onField);
+form.addEventListener('change',onField);
+form.addEventListener('click',function(e){
+  var yb=e.target.closest('[data-yn]');
+  if(yb){
+    var k=yb.dataset.k,val=yb.dataset.yn,d=cur().data,nv=d[k]===val?'':val;
+    setVal(k,nv);
+    yb.parentNode.querySelectorAll('[data-yn]').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.yn===nv));});
+    var ob=yb.closest('.f').querySelector('[data-obsfor]');
+    if(ob){ob.hidden=!(nv==='sim'||ob.classList.contains('keep'));}
+    return;
+  }
+  var rb=e.target.closest('[data-radio]');
+  if(rb){
+    var k2=rb.dataset.k,v2=rb.dataset.radio,nv2=cur().data[k2]===v2?'':v2;
+    setVal(k2,nv2);
+    rb.parentNode.querySelectorAll('[data-radio]').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.radio===nv2));});
+    return;
+  }
+  var add=e.target.closest('[data-add]');
+  if(add){var rows=cur().data[add.dataset.add];rows.push({});add.closest('.rep')._draw();schedule();return;}
+  var del=e.target.closest('[data-del]');
+  if(del){var rr=cur().data[del.dataset.del];rr.splice(+del.dataset.r,1);if(!rr.length)rr.push({});del.closest('.rep')._draw();schedule();counts();return;}
+  var sg=e.target.closest('[data-sigclear]');
+  if(sg){
+    var c=sg.parentNode.querySelector('canvas.sig'),g=c.getContext('2d');
+    g.save();g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,c.width,c.height);g.restore();
+    setVal(sg.dataset.sigclear,'');
+  }
+});
+$('#name').addEventListener('input',function(e){cur().name=e.target.value;schedule();});
+
+/* ---------- assinatura ---------- */
+function setupSigs(root){root.querySelectorAll('canvas.sig').forEach(setupSig);}
+function setupSig(c){
+  var k=c.dataset.sig,w=c.clientWidth,H=160;
+  if(!w)return;
+  var dpr=Math.min(window.devicePixelRatio||1,2);
+  c.width=Math.round(w*dpr);c.height=Math.round(H*dpr);
+  var g=c.getContext('2d');
+  g.scale(dpr,dpr);g.lineWidth=2.2;g.lineCap='round';g.lineJoin='round';g.strokeStyle='#1E2A30';
+  var saved=cur().data[k];
+  if(saved){var img=new Image();img.onload=function(){c.getContext('2d').drawImage(img,0,0,w,H);};img.src=saved;}
+  if(c.dataset.bound)return;
+  c.dataset.bound='1';
+  var drawing=false,last=null;
+  function pos(e){var r=c.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top};}
+  c.addEventListener('pointerdown',function(e){drawing=true;last=pos(e);c.setPointerCapture(e.pointerId);e.preventDefault();});
+  c.addEventListener('pointermove',function(e){
+    if(!drawing)return;
+    var p=pos(e),x=c.getContext('2d');
+    x.beginPath();x.moveTo(last.x,last.y);x.lineTo(p.x,p.y);x.stroke();last=p;e.preventDefault();
+  });
+  function end(){if(!drawing)return;drawing=false;setVal(k,c.toDataURL('image/png'));}
+  c.addEventListener('pointerup',end);
+  c.addEventListener('pointercancel',end);
+}
+var rz;window.addEventListener('resize',function(){clearTimeout(rz);rz=setTimeout(function(){document.querySelectorAll('details.sec[open]').forEach(function(d){growAll(d);setupSigs(d);});},200);});
+
+/* ---------- janelas ---------- */
+var scrim=null;
+function closeSheet(){if(scrim){scrim.remove();scrim=null;}}
+function openSheet(title,content){
+  closeSheet();
+  var sheet=el('div',{class:'sheet',role:'dialog','aria-modal':'true','aria-label':title,tabindex:'-1'},
+    el('div',{class:'sheet-h'},el('h2',{text:title}),el('button',{type:'button',class:'btn ghost sm',text:'Fechar',onclick:closeSheet})),content);
+  scrim=el('div',{class:'scrim',onclick:function(e){if(e.target===scrim)closeSheet();}},sheet);
+  document.body.append(scrim);sheet.focus();
+}
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeSheet();});
+function copyFrom(ta){
+  var text=ta.value;
+  function fb(){ta.focus();ta.select();try{document.execCommand('copy');toast('Copiado');}catch(err){toast('Selecione o texto e copie manualmente');}}
+  try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(function(){toast('Copiado');},fb);}else fb();}catch(err){fb();}
+}
+var dl=null;
+try{if(window.claude&&window.claude.use){window.claude.use('downloads').then(function(n){dl=n;},function(){});}}catch(e){}
+function saveFile(name,data){
+  if(!dl){toast('Salvar arquivo não está disponível aqui. Use Copiar.');return;}
+  dl.save({filename:name,data:data}).then(function(){toast('Arquivo salvo');},function(err){if(err&&err.code!=='declined')toast('Não foi possível salvar o arquivo');});
+}
+
+/* ---------- resumo em texto ---------- */
+function fieldLine(f,d){
+  var v=d[f.k],obs=d[f.k+'.obs'];
+  if(f.t==='sign')return v?f.l+': assinada':'';
+  if(f.t==='check')return v?'[x] '+f.l:'';
+  if(f.t==='imc'){var m=computeImc(d);return m?'IMC: '+m:'';}
+  if(!v)return obs?f.l+': '+obs:'';
+  var val=f.t==='yn'?(v==='sim'?'Sim':'Não'):(f.t==='date'?brDate(v):v);
+  if(f.u)val+=' '+f.u;
+  if(obs)val+=' ('+obs+')';
+  return f.l+': '+val;
+}
+function buildSummary(){
+  var st=cur(),d=st.data,L=[];
+  L.push('Anamnese: hipercifose e hérnia lombar');
+  L.push('Aluno: '+(st.name||'sem nome'));L.push('');
+  S.forEach(function(s,i){
+    var out=[];
+    s.blocks.forEach(function(b){
+      if(b.f)b.f.forEach(function(f){var l=fieldLine(f,d);if(l)out.push(l);});
+      if(b.g)b.rows.forEach(function(r){
+        var parts=[];r.cells.forEach(function(ce,ci){if(d[ce.k])parts.push(b.cols[ci].c+': '+d[ce.k]);});
+        if(parts.length)out.push(r.l+' | '+parts.join('; '));
+      });
+      if(b.r)(d[b.k]||[]).forEach(function(row){
+        var parts=[];b.cols.forEach(function(c,ci){if(row[ci])parts.push(c.c+': '+row[ci]);});
+        if(parts.length)out.push(b.r+' | '+parts.join('; '));
+      });
+    });
+    if(out.length){L.push((i+1)+'. '+s.title);Array.prototype.push.apply(L,out);L.push('');}
+  });
+  return L.join('\n').trim();
+}
+$('#bSummary').addEventListener('click',function(){
+  var ta=el('textarea',{readonly:true,'aria-label':'Resumo em texto'});ta.value=buildSummary();
+  var acts=el('div',{class:'actions'},el('button',{type:'button',class:'btn',text:'Copiar resumo',onclick:function(){copyFrom(ta);}}));
+  if(dl)acts.append(el('button',{type:'button',class:'btn ghost',text:'Salvar como .txt',onclick:function(){saveFile('anamnese-'+(slug(cur().name)||'aluno')+'.txt',ta.value);}}));
+  openSheet('Resumo',el('div',{},el('p',{text:'Texto com só os campos preenchidos, pronto para colar em mensagem ou prontuário.'}),ta,acts));
+});
+
+/* ---------- alunos e backup ---------- */
+function switchTo(id){store.active=id;persist();render();window.scrollTo(0,0);}
+function fmt(ts){try{return new Date(ts).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'});}catch(e){return '';}}
+function openStudents(){
+  var wrap=el('div',{});
+  var list=el('div',{});
+  function drawList(){
+    list.textContent='';
+    Object.keys(store.students).map(function(k){return store.students[k];}).sort(function(a,b){return b.updated-a.updated;}).forEach(function(s){
+      var del=el('button',{type:'button',class:'btn ghost sm',text:'Apagar'});
+      var armed=false,tm=null;
+      del.addEventListener('click',function(){
+        if(!armed){armed=true;del.textContent='Confirmar';del.classList.add('danger');tm=setTimeout(function(){armed=false;del.textContent='Apagar';del.classList.remove('danger');},4000);return;}
+        clearTimeout(tm);
+        delete store.students[s.id];
+        var ids=Object.keys(store.students);
+        if(!ids.length){var n=newStudent();store.students[n.id]=n;store.active=n.id;}
+        else if(store.active===s.id){store.active=ids[0];}
+        persist();render();drawList();toast('Ficha apagada');
+      });
+      list.append(el('div',{class:'srow'+(s.id===store.active?' on':'')},
+        el('button',{type:'button',class:'sopen',onclick:function(){switchTo(s.id);closeSheet();}},el('span',{class:'sn',text:s.name||'Aluno sem nome'}),el('span',{class:'sd',text:'Alterado em '+fmt(s.updated)})),del));
+    });
+  }
+  drawList();
+  var novo=el('button',{type:'button',class:'btn',text:'Nova ficha de aluno',onclick:function(){var n=newStudent();store.students[n.id]=n;switchTo(n.id);closeSheet();}});
+  var bk=el('details',{});
+  bk.append(el('summary',{text:'Backup e restauração'}));
+  var out=el('textarea',{readonly:true,'aria-label':'Backup em texto'});
+  var inn=el('textarea',{placeholder:'Cole aqui um backup para restaurar','aria-label':'Colar backup'});
+  bk.addEventListener('toggle',function(){if(bk.open)out.value=JSON.stringify(store);});
+  bk.append(
+    el('p',{text:'O navegador pode apagar os dados do site. Copie o backup e guarde onde só você tem acesso, já que a ficha contém dados de saúde.'}),
+    out,
+    el('div',{class:'actions'},el('button',{type:'button',class:'btn',text:'Copiar backup',onclick:function(){out.value=JSON.stringify(store);copyFrom(out);}})),
+    inn,
+    el('div',{class:'actions'},el('button',{type:'button',class:'btn ghost',text:'Restaurar do backup',onclick:function(){
+      try{
+        var imp=JSON.parse(inn.value),n=0;
+        if(!imp||!imp.students||typeof imp.students!=='object')throw new Error('x');
+        Object.keys(imp.students).forEach(function(id){
+          var s=imp.students[id];
+          if(!s||typeof s.data!=='object'||!s.data)return;
+          s.id=id;s.updated=s.updated||Date.now();
+          if(!store.students[id]||(store.students[id].updated||0)<s.updated){store.students[id]=s;n++;}
+        });
+        persist();render();drawList();toast(n+(n===1?' ficha restaurada':' fichas restauradas'));
+      }catch(err){toast('Backup inválido. Cole o texto completo.');}
+    }}))
+  );
+  wrap.append(list,el('div',{class:'actions'},novo),bk);
+  openSheet('Alunos',wrap);
+}
+$('#bStudents').addEventListener('click',openStudents);
+
+/* ---------- início ---------- */
+(function boot(){
+  var ids=Object.keys(store.students);
+  if(!ids.length){var s=newStudent();store.students[s.id]=s;store.active=s.id;persist();}
+  else if(!store.students[store.active]){store.active=ids[0];}
+  render();
+})();
+})();
+</script>
+</body>
+</html>
