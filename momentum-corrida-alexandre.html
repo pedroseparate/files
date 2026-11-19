@@ -116,6 +116,28 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;
 .zb-int{background:rgba(224,112,64,.10);color:var(--zone-int);border:1px solid rgba(224,112,64,.22);}
 .zb-misto{background:rgba(138,96,48,.10);color:var(--copper2);border:1px solid rgba(138,96,48,.2);}
 
+/* ── ESCOLHA DE AMBIENTE / LISTA ── */
+.amb-head{padding:26px 20px 18px;}
+.amb-q{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;
+  font-size:34px;line-height:1;color:var(--gold);margin-bottom:10px;}
+.amb-sub{font-size:9px;color:var(--ink3);line-height:1.7;max-width:300px;}
+.amb-cards{padding:0 20px;display:flex;flex-direction:column;gap:12px;}
+.amb-card{display:flex;align-items:center;gap:16px;padding:20px 18px;background:var(--bg2);
+  border:1px solid var(--b2);border-radius:6px;cursor:pointer;transition:border-color .15s,background .15s;}
+.amb-card:hover{border-color:var(--b3);background:var(--bg3);}
+.amb-ico{font-size:28px;color:var(--copper2);flex-shrink:0;}
+.amb-t{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;
+  font-size:24px;color:var(--gold);line-height:1.1;margin-bottom:4px;}
+.amb-d{font-size:8px;color:var(--ink2);line-height:1.65;}
+.amb-seg{display:flex;margin:14px 20px 12px;border:1px solid var(--b2);border-radius:3px;overflow:hidden;flex-shrink:0;}
+.amb-seg button{flex:1;padding:10px 0;background:transparent;border:none;font-family:'IBM Plex Mono',monospace;
+  font-size:9px;text-transform:uppercase;letter-spacing:.16em;color:var(--ink3);cursor:pointer;}
+.amb-seg button.on{background:rgba(138,96,48,.18);color:var(--gold);}
+.trn-count{padding:14px 20px 4px;}
+.trn-count-txt{font-size:8px;color:var(--ink3);margin-top:6px;}
+.trn-cap{font-size:8px;color:var(--ink3);line-height:1.6;padding:2px 20px 10px;}
+.zone-legend{flex-wrap:wrap;gap:6px 12px;}
+
 /* ── ONBOARDING ── */
 .ob-screen{display:flex;flex-direction:column;height:100%;}
 .ob-skip{position:absolute;top:16px;right:20px;font-size:8px;text-transform:uppercase;
@@ -364,21 +386,21 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;
 
     <div class="hero-cards">
       <!-- Card: Treinos -->
-      <div class="hnc" onclick="nav('s-treinos')">
+      <div class="hnc" onclick="nav('s-ambiente')">
         <div class="hnc-top">
           <i class="hnc-ico ti ti-run"></i>
           <div>
             <div class="hnc-label">Treinos</div>
-            <div class="hnc-title">Treino A · Moderado<br>35min contínuo</div>
-            <div class="hnc-sub">Primeira sessão do bloco · 8,5–9km/h</div>
+            <div class="hnc-title">Esteira ou rua?</div>
+            <div class="hnc-sub">7 treinos de esteira · 3 de rua · escolha onde vai correr hoje</div>
           </div>
         </div>
         <div class="prog-row">
-          <div class="prog-bar"><div class="prog-fill" style="width:0%"></div></div>
-          <div class="prog-txt">0 de 9 sessões</div>
+          <div class="prog-bar"><div class="prog-fill" id="home-bar" style="width:0%"></div></div>
+          <div class="prog-txt" id="home-count">0 de 10 treinos</div>
         </div>
         <div class="hnc-bottom">
-          <div class="hnc-stat">Semana 1 · <strong>a começar</strong></div>
+          <div class="hnc-stat">Ondulação curto / longo · <strong>a começar</strong></div>
           <i class="ti ti-chevron-right" style="font-size:14px;color:var(--ink3);"></i>
         </div>
       </div>
@@ -405,121 +427,56 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;
 </div>
 
 <!-- ══════════════════════════════════════════
-     TELA 2 · TREINOS
+     TELA 1.5 · ESCOLHA DO AMBIENTE
+══════════════════════════════════════════ -->
+<div class="screen" id="s-ambiente">
+  <div class="sbody">
+    <div class="amb-head">
+      <div class="amb-q">Onde você vai<br>correr hoje?</div>
+      <div class="amb-sub">Cada ambiente tem seus próprios treinos, com o ritmo expresso do jeito que você controla: km/h na esteira, min/km na rua.</div>
+    </div>
+    <div class="amb-cards">
+      <div class="amb-card" onclick="escolherAmbiente('esteira')">
+        <i class="amb-ico ti ti-gauge"></i>
+        <div style="flex:1;">
+          <div class="amb-t">Esteira</div>
+          <div class="amb-d">7 treinos · km/h exato · inclinação 1º</div>
+          <div class="amb-d" id="amb-n-esteira" style="color:var(--ink3);margin-top:3px;"></div>
+        </div>
+        <i class="ti ti-chevron-right" style="font-size:14px;color:var(--ink3);"></i>
+      </div>
+      <div class="amb-card" onclick="escolherAmbiente('rua')">
+        <i class="amb-ico ti ti-route"></i>
+        <div style="flex:1;">
+          <div class="amb-t">Rua</div>
+          <div class="amb-d">3 treinos · min/km · sem GPS, com tempo e ritmo de referência</div>
+          <div class="amb-d" id="amb-n-rua" style="color:var(--ink3);margin-top:3px;"></div>
+        </div>
+        <i class="ti ti-chevron-right" style="font-size:14px;color:var(--ink3);"></i>
+      </div>
+    </div>
+    <div style="height:32px;"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TELA 2 · TREINOS (lista do ambiente escolhido)
+     Renderizada por renderTreinos() a partir de SESSOES.
 ══════════════════════════════════════════ -->
 <div class="screen" id="s-treinos">
-  <div class="zone-legend">
-    <div class="zi"><div class="zd base"></div>Base 7–8km/h</div>
-    <div class="zi"><div class="zd mod"></div>Moderado 8,5–9km/h</div>
-    <div class="zi"><div class="zd int"></div>Intenso 9,5–10km/h</div>
+  <div class="amb-seg">
+    <button id="seg-esteira" class="on" onclick="setAmbiente('esteira')">Esteira</button>
+    <button id="seg-rua" onclick="setAmbiente('rua')">Rua</button>
   </div>
+  <div class="zone-legend" id="zone-legend"></div>
   <div class="sbody">
-    <!-- Semana 1 -->
-    <div class="wk-group">
-      <div class="wk-label">Semana 1 — moderado / contínuo</div>
-      <div class="sess-row" onclick="abrirTreino('s1a')">
-        <div class="sess-ico si-future"><i class="ti ti-player-play"></i></div>
-        <div class="sess-info">
-          <div class="sess-name">Treino A · 35min contínuo</div>
-          <div class="sess-desc">8,5–9km/h · ~4,9km</div>
-        </div>
-        <div class="sess-right">
-          <div class="zbadge zb-mod">Moderado</div>
-        </div>
-      </div>
-      <div class="sess-row" onclick="abrirTreino('s1b')">
-        <div class="sess-ico si-future"><i class="ti ti-player-play"></i></div>
-        <div class="sess-info">
-          <div class="sess-name">Treino B · 40min contínuo</div>
-          <div class="sess-desc">9km/h · ~6km</div>
-        </div>
-        <div class="sess-right">
-          <div class="zbadge zb-mod">Moderado</div>
-        </div>
-      </div>
-      <div class="sess-row" onclick="abrirTreino('s1c')">
-        <div class="sess-ico si-future"><i class="ti ti-player-play"></i></div>
-        <div class="sess-info">
-          <div class="sess-name">Treino C · 7km contínuo</div>
-          <div class="sess-desc">7–7,5km/h · zona base</div>
-        </div>
-        <div class="sess-right">
-          <div class="zbadge zb-base">Base</div>
-        </div>
-      </div>
+    <div class="trn-count">
+      <div class="prog-bar"><div class="prog-fill" id="trn-count-bar" style="width:0%"></div></div>
+      <div class="trn-count-txt" id="trn-count-txt"></div>
     </div>
+    <div class="trn-cap" id="trn-cap"></div>
+    <div id="trn-list"></div>
 
-    <!-- Semana 2 -->
-    <div class="wk-group">
-      <div class="wk-label">Semana 2 — intenso / intervalado</div>
-      <div class="sess-row" onclick="abrirTreino('s2a')">
-        <div class="sess-ico si-future"><i class="ti ti-player-play"></i></div>
-        <div class="sess-info">
-          <div class="sess-name">Treino A · 5 tiros de 3min</div>
-          <div class="sess-desc">9,5–10km/h · descanso passivo 1–2min</div>
-        </div>
-        <div class="sess-right">
-          <div class="zbadge zb-int">Intenso</div>
-        </div>
-      </div>
-      <div class="sess-row" onclick="abrirTreino('s2b')">
-        <div class="sess-ico si-future"><i class="ti ti-player-play"></i></div>
-        <div class="sess-info">
-          <div class="sess-name">Treino B · 4 tiros de 1km</div>
-          <div class="sess-desc">10km/h · descanso passivo entre tiros</div>
-        </div>
-        <div class="sess-right">
-          <div class="zbadge zb-int">Intenso</div>
-        </div>
-      </div>
-      <div class="sess-row" onclick="abrirTreino('s2c')">
-        <div class="sess-ico si-future"><i class="ti ti-player-play"></i></div>
-        <div class="sess-info">
-          <div class="sess-name">Treino C · 7–8km contínuo</div>
-          <div class="sess-desc">7,5–8km/h · zona base</div>
-        </div>
-        <div class="sess-right">
-          <div class="zbadge zb-base">Base</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Semana 3 -->
-    <div class="wk-group">
-      <div class="wk-label">Semana 3 — misto</div>
-      <div class="sess-row" onclick="abrirTreino('s3a')">
-        <div class="sess-ico si-future"><i class="ti ti-player-play"></i></div>
-        <div class="sess-info">
-          <div class="sess-name">Treino A · 30min misto</div>
-          <div class="sess-desc">8,5–9km/h + tiros curtos @9,5km/h</div>
-        </div>
-        <div class="sess-right">
-          <div class="zbadge zb-misto">Misto</div>
-        </div>
-      </div>
-      <div class="sess-row" onclick="abrirTreino('s3b')">
-        <div class="sess-ico si-future"><i class="ti ti-player-play"></i></div>
-        <div class="sess-info">
-          <div class="sess-name">Treino B · 4 tiros de 3min</div>
-          <div class="sess-desc">9,5–10km/h · descanso ativo 2min @7km/h</div>
-        </div>
-        <div class="sess-right">
-          <div class="zbadge zb-int">Intenso</div>
-        </div>
-      </div>
-      <div class="sess-row" onclick="abrirTreino('s3c')">
-        <div class="sess-ico si-future"><i class="ti ti-player-play"></i></div>
-        <div class="sess-info">
-          <div class="sess-name">Treino C · 8km contínuo</div>
-          <div class="sess-desc">8km/h · zona base/moderado</div>
-        </div>
-        <div class="sess-right">
-          <div class="zbadge zb-base">Base</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Meta de referência -->
     <div class="sec" style="margin-top:16px;">
       <div class="sec-head"><div class="sec-title">Meta de referência</div><div class="sec-line"></div></div>
       <div class="card" style="padding:14px 16px;">
@@ -556,10 +513,10 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;
       <div style="padding:0 4px;" id="dt-blocks"><!-- injetado via JS --></div>
     </div>
 
-    <div class="dt-note" id="dt-note" style="display:none;"></div>
+    <div class="dt-note" id="dt-note"></div>
 
     <button class="dt-cta" id="dt-cta-primary" onclick="">iniciar sessão</button>
-    <button class="dt-cta secondary" onclick="nav('s-treinos', true)">voltar para treinos</button>
+    <button class="dt-cta secondary" onclick="goBack()">voltar para treinos</button>
     <div style="height:20px;"></div>
   </div>
 </div>
@@ -569,7 +526,7 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;
      Estado: Tiro 2 de 4, 3:24 restantes
 ══════════════════════════════════════════ -->
 <div class="screen" id="s-exec">
-  <div class="exec-topbar-prog"><div class="exec-tpfill" id="exec-prog" style="width:42%"></div></div>
+  <div class="exec-topbar-prog"><div class="exec-tpfill" id="exec-prog" style="width:0%"></div></div>
 
   <div class="exec-block-info">
     <div class="exec-blk-tag" id="blk-tag">Tiro 2 de 4 · Intenso</div>
@@ -579,24 +536,24 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;
 
   <div class="timer-wrap">
     <div class="timer-num" id="timer">3:24</div>
-    <div class="timer-lbl">tempo restante no bloco</div>
+    <div class="timer-lbl" id="timer-lbl">tempo restante no bloco</div>
   </div>
 
   <div class="exec-stats">
     <div class="es">
       <div class="es-lbl">Distância</div>
       <div class="es-val" id="es-dist">1,0</div>
-      <div class="es-unit">km · alvo</div>
+      <div class="es-unit" id="es-dist-unit">km · alvo</div>
     </div>
     <div class="es">
       <div class="es-lbl">Pace alvo</div>
       <div class="es-val" id="es-pace">10,0</div>
-      <div class="es-unit">km/h</div>
+      <div class="es-unit" id="es-pace-unit">km/h</div>
     </div>
     <div class="es">
       <div class="es-lbl">Duração</div>
       <div class="es-val" id="es-dur">6:00</div>
-      <div class="es-unit">bloco</div>
+      <div class="es-unit" id="es-dur-unit">bloco</div>
     </div>
   </div>
 
@@ -621,163 +578,45 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;
 
   <!-- Botões de exceção — sempre visíveis, toque único -->
   <div class="exc-btns">
-    <button class="exc-btn" id="btn-ritmo" onclick="toggleExc(this,'ritmo')">
+    <button class="exc-btn" id="btn-ritmo" data-key="ritmo" onclick="toggleExc(this,'ritmo')">
       <i class="ti ti-trending-down"></i>reduzi o ritmo
     </button>
-    <button class="exc-btn" id="btn-pesado" onclick="toggleExc(this,'pesado')">
+    <button class="exc-btn" id="btn-pesado" data-key="pesado" onclick="toggleExc(this,'pesado')">
       <i class="ti ti-flame"></i>mais pesado que esperado
     </button>
   </div>
 
-  <button class="enc-btn" onclick="nav('s-pos-sessao')">encerrar sessão</button>
+  <button class="enc-btn" onclick="finalizarSessao()">finalizar sessão</button>
 </div>
 
 <!-- ══════════════════════════════════════════
-     TELA 4 · RESUMO PÓS-SESSÃO
-     Treino A · Semana 2 · ontem
-     5 tiros de 3min @ 9,5–10km/h
+     TELA 4 · RESUMO PÓS-SESSÃO (dinâmico)
+     Preenchido por renderResumo() ao finalizar a sessão.
 ══════════════════════════════════════════ -->
 <div class="screen" id="s-pos-sessao">
   <div class="sbody">
     <div class="post-hdr">
-      <div class="post-check"><i class="ti ti-circle-check-filled"></i></div>
-      <div class="post-title">Treino A concluído</div>
-      <div class="post-meta">15/ago · Semana 2 · Intenso · 37min total</div>
+      <div class="post-check"><i class="ti ti-circle-check"></i></div>
+      <div class="post-title" id="post-title">Sessão concluída</div>
+      <div class="post-meta" id="post-meta"></div>
     </div>
 
-    <!-- Comparativo -->
     <div class="cmp-card">
-      <div class="cmp-hdr">Planejado vs. executado</div>
-      <div class="cmp-row">
-        <div class="cmp-label">Distância total (tiros)</div>
-        <div class="cmp-plan">~2,5km</div>
-        <div class="cmp-exec">2,4km</div>
-        <div class="cmp-ok">✓</div>
-      </div>
-      <div class="cmp-row">
-        <div class="cmp-label">Pace médio nos tiros</div>
-        <div class="cmp-plan">9,5–10km/h</div>
-        <div class="cmp-exec">9,6km/h</div>
-        <div class="cmp-ok">✓</div>
-      </div>
-      <div class="cmp-row">
-        <div class="cmp-label">Zona predominante</div>
-        <div class="cmp-plan">Intenso</div>
-        <div class="cmp-exec" style="color:var(--zone-int);">Intenso</div>
-        <div class="cmp-ok">✓</div>
-      </div>
-      <div class="cmp-row">
-        <div class="cmp-label">Tiros no pace-alvo</div>
-        <div class="cmp-plan">5 de 5</div>
-        <div class="cmp-exec" style="color:var(--gold2);">4 de 5</div>
-        <div class="cmp-warn">!</div>
-      </div>
+      <div class="cmp-hdr">Planejado vs. executado · estimado</div>
+      <div id="cmp-body"></div>
     </div>
 
-    <!-- Checklist de blocos -->
     <div class="sec">
-      <div class="sec-head"><div class="sec-title">Blocos da sessão</div><div class="sec-line"></div></div>
-      <div style="padding:0 4px;">
-        <div class="ptl-item">
-          <div class="ptl-dot ptl-ok"><i class="ti ti-check" style="font-size:8px;"></i></div>
-          <div class="ptl-info"><div class="ptl-name">Aquecimento</div><div class="ptl-detail">5min · 7km/h · base</div></div>
-        </div>
-        <div class="ptl-item">
-          <div class="ptl-dot ptl-ok"><i class="ti ti-check" style="font-size:8px;"></i></div>
-          <div class="ptl-info"><div class="ptl-name">Tiro 1 · 3min @ 9,7km/h</div><div class="ptl-detail">conforme plano · PSE 6</div></div>
-        </div>
-        <div class="ptl-item">
-          <div class="ptl-dot ptl-rest">D</div>
-          <div class="ptl-info"><div class="ptl-name">Descanso passivo 1:30</div><div class="ptl-detail">conforme plano</div></div>
-        </div>
-        <div class="ptl-item">
-          <div class="ptl-dot ptl-ok"><i class="ti ti-check" style="font-size:8px;"></i></div>
-          <div class="ptl-info"><div class="ptl-name">Tiro 2 · 3min @ 9,8km/h</div><div class="ptl-detail">conforme plano · PSE 7</div></div>
-        </div>
-        <div class="ptl-item">
-          <div class="ptl-dot ptl-rest">D</div>
-          <div class="ptl-info"><div class="ptl-name">Descanso passivo 1:30</div><div class="ptl-detail">conforme plano</div></div>
-        </div>
-        <div class="ptl-item">
-          <div class="ptl-dot ptl-ok"><i class="ti ti-check" style="font-size:8px;"></i></div>
-          <div class="ptl-info"><div class="ptl-name">Tiro 3 · 3min @ 9,5km/h</div><div class="ptl-detail">conforme plano · PSE 7</div></div>
-        </div>
-        <div class="ptl-item">
-          <div class="ptl-dot ptl-rest">D</div>
-          <div class="ptl-info"><div class="ptl-name">Descanso passivo 1:30</div><div class="ptl-detail">conforme plano</div></div>
-        </div>
-        <div class="ptl-item">
-          <div class="ptl-dot ptl-ok"><i class="ti ti-check" style="font-size:8px;"></i></div>
-          <div class="ptl-info"><div class="ptl-name">Tiro 4 · 3min @ 9,6km/h</div><div class="ptl-detail">conforme plano · PSE 8</div></div>
-        </div>
-        <div class="ptl-item">
-          <div class="ptl-dot ptl-rest">D</div>
-          <div class="ptl-info"><div class="ptl-name">Descanso passivo 2:00</div><div class="ptl-detail">conforme plano</div></div>
-        </div>
-        <div class="ptl-item">
-          <div class="ptl-dot ptl-exc"><i class="ti ti-alert-triangle" style="font-size:8px;"></i></div>
-          <div class="ptl-info">
-            <div class="ptl-name">Tiro 5 · 3min @ 8,8km/h</div>
-            <div class="ptl-detail">meta: 9,5–10km/h · PSE 9</div>
-            <span class="ptl-tag">reduzi o ritmo</span>
-          </div>
-        </div>
-        <div class="ptl-item">
-          <div class="ptl-dot ptl-ok"><i class="ti ti-check" style="font-size:8px;"></i></div>
-          <div class="ptl-info"><div class="ptl-name">Volta</div><div class="ptl-detail">5min · 7km/h</div></div>
-        </div>
-      </div>
+      <div class="sec-head"><div class="sec-title">Sinalizações</div><div class="sec-line"></div></div>
     </div>
+    <div id="sig-wrap"></div>
 
-    <!-- Sinalizações -->
-    <div class="sig-card">
-      <i class="sig-ico ti ti-trending-down"></i>
-      <div>
-        <div class="sig-name">Tiro 5 — reduziu o ritmo</div>
-        <div class="sig-sub">pace exec 8,8km/h · abaixo do alvo 9,5–10km/h</div>
-      </div>
-    </div>
-
-    <!-- PSE por bloco -->
-    <div class="pse-chart-card">
-      <div class="pse-chart-lbl">PSE por bloco (tiros)</div>
-      <div class="pse-bars">
-        <!-- PSE 6,7,7,8,9 → bar height = pse/10 * 50px -->
-        <div class="pse-col">
-          <div class="pse-val">6</div>
-          <div class="pse-colbar-wrap"><div class="pse-colbar" style="height:60%;background:#4a6832;"></div></div>
-          <div class="pse-lbl">T1</div>
-        </div>
-        <div class="pse-col">
-          <div class="pse-val">7</div>
-          <div class="pse-colbar-wrap"><div class="pse-colbar" style="height:70%;background:#6a8840;"></div></div>
-          <div class="pse-lbl">T2</div>
-        </div>
-        <div class="pse-col">
-          <div class="pse-val">7</div>
-          <div class="pse-colbar-wrap"><div class="pse-colbar" style="height:70%;background:#6a8840;"></div></div>
-          <div class="pse-lbl">T3</div>
-        </div>
-        <div class="pse-col">
-          <div class="pse-val">8</div>
-          <div class="pse-colbar-wrap"><div class="pse-colbar" style="height:80%;background:#a07848;"></div></div>
-          <div class="pse-lbl">T4</div>
-        </div>
-        <div class="pse-col">
-          <div class="pse-val">9</div>
-          <div class="pse-colbar-wrap"><div class="pse-colbar" style="height:90%;background:#e07040;"></div></div>
-          <div class="pse-lbl">T5</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Narrativa Layer A -->
     <div class="narr-card">
       <div class="narr-lbl"><div class="narr-dot"></div>Leitura da sessão</div>
-      <div class="narr-text">Manteve o pace alvo em 4 dos 5 tiros. Sinalizou redução no último — possível início de fadiga ao fim do volume. PSE crescente dentro do esperado para sessão de tiros longos.</div>
+      <div class="narr-text" id="narr-text"></div>
     </div>
 
-    <button class="back-home-btn" onclick="nav('s-home', true)">voltar ao início</button>
+    <button class="back-home-btn" onclick="goHome()">voltar ao início</button>
   </div>
 </div>
 
@@ -874,7 +713,7 @@ function nav(id, isBack = false) {
   });
 
   updateTopbar(id);
-  if (id === 's-exec') startTimer(); else stopTimer();
+  if (id === 's-exec') startTimer();   // sair da execução NÃO para a sessão: ela segue rodando
 }
 
 function goBack() {
@@ -882,8 +721,13 @@ function goBack() {
   nav(stack.pop(), true);
 }
 
+function goHome() {
+  stack.length = 0;
+  nav('s-home', true);
+}
+
 function updateTopbar(id) {
-  const titles = {'s-treinos':'Treinos','s-treino-detalhe':'Treino','s-exec':'Em execução','s-pos-sessao':'Resumo','s-progresso':'Progresso'};
+  const titles = {'s-ambiente':'Corrida','s-treinos':'Treinos','s-treino-detalhe':'Treino','s-exec':'Em execução','s-pos-sessao':'Resumo','s-progresso':'Progresso'};
   document.getElementById('tb-left').innerHTML =
     id === 's-home'
       ? '<span class="tb-logo">Momentum</span>'
@@ -894,116 +738,187 @@ function updateTopbar(id) {
       : `<span class="tb-title">${titles[id]||''}</span>`;
 }
 
-// ── DETALHE DE TREINO (qualquer sessão) ──────
+// ── FORMATADORES ─────────────────────────────
+const f1 = n => n.toFixed(1).replace('.', ',');
+const f2 = n => n.toFixed(2).replace('.', ',');
+
+function fmtClock(s) {
+  s = Math.max(0, Math.floor(s));
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), ss = s % 60;
+  return h ? `${h}:${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`
+           : `${m}:${String(ss).padStart(2,'0')}`;
+}
+function fmtMin(sec) { return sec % 60 === 0 ? `${sec/60}min` : fmtClock(sec); }
+function fmtPace(kmh) {                       // km/h → m:ss por km
+  const p = 60 / kmh;
+  let m = Math.floor(p), s = Math.round((p - m) * 60);
+  if (s === 60) { m++; s = 0; }
+  return `${m}:${String(s).padStart(2,'0')}`;
+}
+
+// ── CONSTRUTORES DE BLOCO ────────────────────
+// kmh: velocidade usada pra estimar distância (null = não medida, sem GPS)
+// open: bloco sem fim automático (rua "direto") — conta tempo decorrido
+const E = {   // esteira
+  aq: () => ({tag:'Aquecimento', name:'4min · 7 → 8,5km/h', meta:'inclinação 1º · +0,5km/h a cada minuto', tipo:'aq', lbl:'aq', dur:240, kmh:7.75, pace:'7,0–8,5', unit:'km/h'}),
+  vt: () => ({tag:'Volta', name:'3min @ 7,0km/h', meta:'zona base · desaceleração', tipo:'vt', lbl:'vt', dur:180, kmh:7, pace:'7,0', unit:'km/h'}),
+  co: (min, kmh, zona) => ({tag:`Contínuo · ${zona}`, name:`${min}min @ ${f1(kmh)}km/h`, meta:`pace-alvo constante · ${fmtPace(kmh)}/km`, tipo:'co', lbl:'contínuo', dur:min*60, kmh, pace:f1(kmh), unit:'km/h'}),
+  ti: (n, tot, dur, kmh) => ({tag:`Tiro ${n} de ${tot} · Intenso`, name:`${fmtMin(dur)} @ ${f1(kmh)}km/h`, meta:`pace-alvo · ${fmtPace(kmh)}/km`, tipo:'ti', lbl:'T'+n, dur, kmh, pace:f1(kmh), unit:'km/h'}),
+  dp: dur => ({tag:'Descanso passivo', name:fmtMin(dur), meta:'caminhando · recuperação entre tiros', tipo:'de', lbl:'', dur, kmh:0, pace:'—', unit:''}),
+  da: (dur, kmh) => ({tag:'Descanso ativo', name:`${fmtMin(dur)} @ ${f1(kmh)}km/h`, meta:'trote leve · recuperação entre tiros', tipo:'de', lbl:'', dur, kmh, pace:f1(kmh), unit:'km/h'}),
+};
+function intervalado(n, durTi, kmhTi, rest) {
+  const out = [E.aq()];
+  for (let i = 1; i <= n; i++) { out.push(E.ti(i, n, durTi, kmhTi)); if (i < n) out.push(rest()); }
+  out.push(E.vt());
+  return out;
+}
+
+const R = {   // rua (sem GPS)
+  aq: () => ({tag:'Aquecimento', name:'4min · trote leve', meta:'aumente aos poucos a cada minuto', tipo:'aq', lbl:'aq', dur:240, kmh:null, pace:'leve', unit:''}),
+  bloco: (n, tot, min, paceTxt) => ({tag:`Bloco ${n} de ${tot} · Moderado`, name:`${min}min @ ${paceTxt}/km`, meta:'sem GPS · siga a percepção de ritmo', tipo:'co', lbl:'B'+n, dur:min*60, kmh:null, pace:paceTxt, unit:'min/km'}),
+  cam: dur => ({tag:'Caminhada', name:fmtMin(dur), meta:'recuperação entre blocos', tipo:'de', lbl:'', dur, kmh:0, pace:'—', unit:''}),
+  direto: (km, refMin, refMax, paceTxt, zona) => ({tag:`Contínuo · ${zona}`, name:`${km}km @ ${paceTxt}/km`, meta:`referência ${refMin}–${refMax}min · sem GPS`, tipo:'co', lbl:km+'km', dur:refMax*60, open:true, refMin, refMax, km, kmh:null, pace:paceTxt, unit:'min/km'}),
+};
+
+function distOf(b) {
+  if (b.open) return b.km;
+  if (b.kmh == null) return null;
+  return b.kmh * b.dur / 3600;
+}
+
+// ── DADOS DAS SESSÕES ────────────────────────
+// Fonte de dados provisória — sem Firestore ainda. Editar à mão:
+//   amb: 'esteira' | 'rua'
+//   status: 'futuro' | 'feito'   ·   data: null ou texto ('ontem', '14/ago') quando feito
+//   perfil: rótulo curto mostrado na lista (longo / curto / blocos / direto)
+//   zona: 'base' | 'mod' | 'int'
+//   distTxt: opcional — sobrescreve a distância calculada (usado na rua, sem GPS)
+//   execBlocks: sequência real do timer. Distância da esteira é calculada
+//     (velocidade × tempo); descanso passivo (caminhando) não conta distância.
+const SESSOES = {
+  // ── ESTEIRA · 7 treinos, ondulando longo / curto · teto 10km/h · máx. ~5km ──
+  e1:{amb:'esteira',status:'futuro',data:null,perfil:'longo',zona:'mod',pace:'9,0km/h',
+    nome:'Treino 1 · 25min contínuo',
+    blocos:['Aquecimento · 4min, 7 → 8,5km/h','Contínuo · 25min @ 9,0km/h','Volta · 3min @ 7,0km/h'],
+    execBlocks:[E.aq(), E.co(25, 9, 'Moderado'), E.vt()]},
+  e2:{amb:'esteira',status:'futuro',data:null,perfil:'curto',zona:'int',pace:'10,0km/h',
+    nome:'Treino 2 · 10 tiros de 1min',
+    blocos:['Aquecimento · 4min, 7 → 8,5km/h','10 tiros de 1min @ 10,0km/h','Descanso ativo 2min @ 7,5km/h entre tiros','Volta · 3min @ 7,0km/h'],
+    execBlocks:intervalado(10, 60, 10, () => E.da(120, 7.5))},
+  e3:{amb:'esteira',status:'futuro',data:null,perfil:'longo',zona:'int',pace:'9,5km/h',
+    nome:'Treino 3 · 4 tiros de 5min',
+    blocos:['Aquecimento · 4min, 7 → 8,5km/h','4 tiros de 5min @ 9,5km/h','Descanso passivo 1:30 entre tiros','Volta · 3min @ 7,0km/h'],
+    execBlocks:intervalado(4, 300, 9.5, () => E.dp(90))},
+  e4:{amb:'esteira',status:'futuro',data:null,perfil:'curto',zona:'int',pace:'10,0km/h',
+    nome:'Treino 4 · 7 tiros de 2min',
+    blocos:['Aquecimento · 4min, 7 → 8,5km/h','7 tiros de 2min @ 10,0km/h','Descanso ativo 1:30 @ 7,0km/h entre tiros','Volta · 3min @ 7,0km/h'],
+    execBlocks:intervalado(7, 120, 10, () => E.da(90, 7))},
+  e5:{amb:'esteira',status:'futuro',data:null,perfil:'longo',zona:'int',pace:'9,5km/h',
+    nome:'Treino 5 · 4 tiros de 6min',
+    blocos:['Aquecimento · 4min, 7 → 8,5km/h','4 tiros de 6min @ 9,5km/h','Descanso passivo 1:30 entre tiros','Volta · 3min @ 7,0km/h'],
+    execBlocks:intervalado(4, 360, 9.5, () => E.dp(90))},
+  e6:{amb:'esteira',status:'futuro',data:null,perfil:'curto',zona:'int',pace:'10,0km/h',
+    nome:'Treino 6 · 12 tiros de 1min',
+    blocos:['Aquecimento · 4min, 7 → 8,5km/h','12 tiros de 1min @ 10,0km/h','Descanso ativo 1:30 @ 7,0km/h entre tiros','Volta · 3min @ 7,0km/h'],
+    execBlocks:intervalado(12, 60, 10, () => E.da(90, 7))},
+  e7:{amb:'esteira',status:'futuro',data:null,perfil:'longo',zona:'int',pace:'9,5km/h',
+    nome:'Treino 7 · 3 tiros de 8min',
+    blocos:['Aquecimento · 4min, 7 → 8,5km/h','3 tiros de 8min @ 9,5km/h','Descanso passivo 2min entre tiros','Volta · 3min @ 7,0km/h'],
+    execBlocks:intervalado(3, 480, 9.5, () => E.dp(120))},
+
+  // ── RUA · 3 treinos · sem GPS · pace em min/km ──
+  r1:{amb:'rua',status:'futuro',data:null,perfil:'blocos',zona:'mod',pace:'7:04–6:40/km',distTxt:'~4,9km (ref.)',
+    nome:'Rua 1 · 3 blocos de 10min',
+    blocos:['Aquecimento · 4min, trote leve','3 blocos de 10min @ 7:04–6:40/km','Caminhada 2min entre blocos'],
+    execBlocks:[R.aq(), R.bloco(1,3,10,'7:04–6:40'), R.cam(120), R.bloco(2,3,10,'7:04–6:40'), R.cam(120), R.bloco(3,3,10,'7:04–6:40')]},
+  r2:{amb:'rua',status:'futuro',data:null,perfil:'direto',zona:'mod',pace:'7:04–6:40/km',distTxt:'5km (+ aquecimento)',
+    nome:'Rua 2 · 5km direto',
+    blocos:['Aquecimento · 4min, trote leve','5km contínuo @ 7:04–6:40/km (~33–35min)'],
+    execBlocks:[R.aq(), R.direto(5, 33, 35, '7:04–6:40', 'Moderado')]},
+  r3:{amb:'rua',status:'futuro',data:null,perfil:'direto',zona:'base',pace:'8:00–7:30/km',distTxt:'6km (+ aquecimento)',
+    nome:'Rua 3 · 6km direto',
+    blocos:['Aquecimento · 4min, trote leve','6km contínuo @ 8:00–7:30/km (~45–48min)'],
+    execBlocks:[R.aq(), R.direto(6, 45, 48, '8:00–7:30', 'Base')]},
+};
+
 const ZONE_META = {
   base:{label:'Base',cls:'zb-base',color:'var(--zone-base)'},
   mod:{label:'Moderado',cls:'zb-mod',color:'var(--zone-mod)'},
   int:{label:'Intenso',cls:'zb-int',color:'var(--zone-int)'},
-  misto:{label:'Misto',cls:'zb-misto',color:'var(--copper2)'},
+};
+const LEGENDA = {
+  esteira:['Base 7–8km/h','Moderado 8,5–9km/h','Intenso 9,5–10km/h'],
+  rua:['Base 8:34–7:30/km','Moderado 7:04–6:40/km','Intenso 6:19–6:00/km'],
+};
+const AMB_LABEL = {esteira:'Esteira', rua:'Rua'};
+const NOTAS = {
+  esteira:'Esteira com inclinação de 1º. Em caso de cansaço, reduza o pace e sinalize na tela.',
+  blocos:'Sem GPS: a distância não é medida. Siga o ritmo de referência em min/km pela percepção de esforço.',
+  direto:'Sem GPS: o app mostra o tempo decorrido. Ao finalizar, o pace médio é estimado a partir da distância prescrita, assumindo que você completou o percurso.',
 };
 
-// Fonte de dados provisória — sem Firestore ainda.
-// Editar à mão conforme sessões forem acontecendo:
-//   status: 'futuro' | 'hoje' | 'feito'
-//   data: null enquanto não aconteceu, ou string tipo 'ontem' / '14/ago' quando concluída
-//   resumoCompleto: true só quando o resumo pós-sessão (dados executados por bloco,
-//     PSE, sinalizações) tiver sido preenchido na tela s-pos-sessao — sem isso,
-//     a sessão concluída aparece como "registrada, sem resumo detalhado ainda".
-//   execBlocks: estrutura real de blocos que alimenta o timer e a barra de
-//     progressão na tela de Execução — cada sessão tem a sua, nada é genérico.
-//     Campos: tag (rótulo), name (valor principal), meta (linha secundária),
-//     tipo ('aq'|'co'|'ti'|'de'|'vt' — controla a cor/estilo do segmento),
-//     dur (segundos), dist (string), pace (string, sem unidade).
-const SESSOES = {
-  s1a:{semana:'Semana 1',status:'futuro',data:null,nome:'Treino A · 35min contínuo',zona:'mod',pace:'8,5–9km/h',dist:'~4,9km',
-    blocos:['Aquecimento · 4min, subindo até 7,5km/h','Contínuo · 35min @ 8,5–9km/h'],
-    execBlocks:[
-      {tag:'Aquecimento', name:'4min · até 7,5km/h', meta:'zona base · preparação', tipo:'aq', dur:240, dist:'~0,4', pace:'7,0'},
-      {tag:'Contínuo · Moderado', name:'~4,9km @ 8,5–9km/h', meta:'pace-alvo constante', tipo:'co', dur:2100, dist:'~4,9', pace:'8,5–9,0'},
-    ]},
-  s1b:{semana:'Semana 1',status:'futuro',data:null,nome:'Treino B · 40min contínuo',zona:'mod',pace:'9km/h',dist:'~6km',
-    blocos:['Aquecimento · 4min','Contínuo · 40min @ 9km/h'],
-    execBlocks:[
-      {tag:'Aquecimento', name:'4min · até 7,5km/h', meta:'zona base · preparação', tipo:'aq', dur:240, dist:'~0,4', pace:'7,0'},
-      {tag:'Contínuo · Moderado', name:'~6,0km @ 9km/h', meta:'pace-alvo constante', tipo:'co', dur:2400, dist:'~6,0', pace:'9,0'},
-    ]},
-  s1c:{semana:'Semana 1',status:'futuro',data:null,nome:'Treino C · 7km contínuo',zona:'base',pace:'7–7,5km/h',dist:'7km',
-    blocos:['Aquecimento · 4min','Contínuo · 7km @ 7–7,5km/h'],
-    execBlocks:[
-      {tag:'Aquecimento', name:'4min · até 7km/h', meta:'zona base · preparação', tipo:'aq', dur:240, dist:'~0,4', pace:'7,0'},
-      {tag:'Contínuo · Base', name:'7km @ 7–7,5km/h', meta:'pace-alvo constante', tipo:'co', dur:3480, dist:'7,0', pace:'7,0–7,5'},
-    ]},
-  s2a:{semana:'Semana 2',status:'futuro',data:null,nome:'Treino A · 5 tiros de 3min',zona:'int',pace:'9,5–10km/h',dist:'~2,5km (tiros)',
-    blocos:['Aquecimento · 5min','5 tiros de 3min @ 9,5–10km/h','Descanso passivo 1–2min entre tiros'],
-    execBlocks:[
-      {tag:'Aquecimento', name:'5min · até 7km/h', meta:'zona base · preparação', tipo:'aq', dur:300, dist:'~0,5', pace:'7,0'},
-      {tag:'Tiro 1 de 5 · Intenso', name:'~0,5km @ 9,5–10km/h', meta:'pace-alvo · 3:00', tipo:'ti', dur:180, dist:'~0,5', pace:'9,5–10,0'},
-      {tag:'Descanso passivo', name:'1:30', meta:'recuperação entre tiros', tipo:'de', dur:90, dist:'—', pace:'—'},
-      {tag:'Tiro 2 de 5 · Intenso', name:'~0,5km @ 9,5–10km/h', meta:'pace-alvo · 3:00', tipo:'ti', dur:180, dist:'~0,5', pace:'9,5–10,0'},
-      {tag:'Descanso passivo', name:'1:30', meta:'recuperação entre tiros', tipo:'de', dur:90, dist:'—', pace:'—'},
-      {tag:'Tiro 3 de 5 · Intenso', name:'~0,5km @ 9,5–10km/h', meta:'pace-alvo · 3:00', tipo:'ti', dur:180, dist:'~0,5', pace:'9,5–10,0'},
-      {tag:'Descanso passivo', name:'1:30', meta:'recuperação entre tiros', tipo:'de', dur:90, dist:'—', pace:'—'},
-      {tag:'Tiro 4 de 5 · Intenso', name:'~0,5km @ 9,5–10km/h', meta:'pace-alvo · 3:00', tipo:'ti', dur:180, dist:'~0,5', pace:'9,5–10,0'},
-      {tag:'Descanso passivo', name:'1:30', meta:'recuperação entre tiros', tipo:'de', dur:90, dist:'—', pace:'—'},
-      {tag:'Tiro 5 de 5 · Intenso', name:'~0,5km @ 9,5–10km/h', meta:'pace-alvo · 3:00', tipo:'ti', dur:180, dist:'~0,5', pace:'9,5–10,0'},
-      {tag:'Volta', name:'5min @ 7km/h', meta:'zona base · desaceleração', tipo:'vt', dur:300, dist:'~0,6', pace:'7,0'},
-    ]},
-  s2b:{semana:'Semana 2',status:'futuro',data:null,nome:'Treino B · 4 tiros de 1km',zona:'int',pace:'10km/h',dist:'~5,4km',
-    blocos:['Aquecimento · 5min','4 tiros de 1km @ 10km/h','Descanso passivo entre tiros','Volta · 5min @ 7km/h'],
-    execBlocks:[
-      {tag:'Aquecimento', name:'5min · até 7km/h', meta:'zona base · preparação', tipo:'aq', dur:300, dist:'~0,5', pace:'7,0'},
-      {tag:'Tiro 1 de 4 · Intenso', name:'1km @ 10km/h', meta:'pace-alvo · 6:00', tipo:'ti', dur:360, dist:'1,0', pace:'10,0'},
-      {tag:'Descanso passivo', name:'1:30', meta:'recuperação entre tiros', tipo:'de', dur:90, dist:'—', pace:'—'},
-      {tag:'Tiro 2 de 4 · Intenso', name:'1km @ 10km/h', meta:'pace-alvo · 6:00', tipo:'ti', dur:360, dist:'1,0', pace:'10,0'},
-      {tag:'Descanso passivo', name:'1:30', meta:'recuperação entre tiros', tipo:'de', dur:90, dist:'—', pace:'—'},
-      {tag:'Tiro 3 de 4 · Intenso', name:'1km @ 10km/h', meta:'pace-alvo · 6:00', tipo:'ti', dur:360, dist:'1,0', pace:'10,0'},
-      {tag:'Descanso passivo', name:'1:30', meta:'recuperação entre tiros', tipo:'de', dur:90, dist:'—', pace:'—'},
-      {tag:'Tiro 4 de 4 · Intenso', name:'1km @ 10km/h', meta:'pace-alvo · 6:00', tipo:'ti', dur:360, dist:'1,0', pace:'10,0'},
-      {tag:'Volta', name:'5min @ 7km/h', meta:'zona base · desaceleração', tipo:'vt', dur:300, dist:'~0,6', pace:'7,0'},
-    ]},
-  s2c:{semana:'Semana 2',status:'futuro',data:null,nome:'Treino C · 7-8km contínuo',zona:'base',pace:'7,5–8km/h',dist:'7-8km',
-    blocos:['Aquecimento · 4min','Contínuo · 7-8km @ 7,5–8km/h'],
-    execBlocks:[
-      {tag:'Aquecimento', name:'4min · até 7km/h', meta:'zona base · preparação', tipo:'aq', dur:240, dist:'~0,4', pace:'7,0'},
-      {tag:'Contínuo · Base', name:'~7,5km @ 7,5–8km/h', meta:'pace-alvo constante', tipo:'co', dur:3480, dist:'~7,5', pace:'7,5–8,0'},
-    ]},
-  s3a:{semana:'Semana 3',status:'futuro',data:null,nome:'Treino A · 30min misto',zona:'misto',pace:'8,5–9,5km/h',dist:'~4,5km',
-    blocos:['Aquecimento · 4min','Contínuo · 20min @ 8,5–9km/h','Tiros curtos intercalados @ 9,5km/h'],
-    execBlocks:[
-      {tag:'Aquecimento', name:'4min · até 7km/h', meta:'zona base · preparação', tipo:'aq', dur:240, dist:'~0,4', pace:'7,0'},
-      {tag:'Contínuo · Moderado', name:'~2,9km @ 8,5–9km/h', meta:'pace-alvo constante', tipo:'co', dur:1200, dist:'~2,9', pace:'8,5–9,0'},
-      {tag:'Tiro curto 1 de 3 · Intenso', name:'~0,16km @ 9,5km/h', meta:'pace-alvo · 1:00', tipo:'ti', dur:60, dist:'~0,16', pace:'9,5'},
-      {tag:'Descanso ativo', name:'1:00 @ 7km/h', meta:'recuperação entre tiros', tipo:'de', dur:60, dist:'~0,12', pace:'7,0'},
-      {tag:'Tiro curto 2 de 3 · Intenso', name:'~0,16km @ 9,5km/h', meta:'pace-alvo · 1:00', tipo:'ti', dur:60, dist:'~0,16', pace:'9,5'},
-      {tag:'Descanso ativo', name:'1:00 @ 7km/h', meta:'recuperação entre tiros', tipo:'de', dur:60, dist:'~0,12', pace:'7,0'},
-      {tag:'Tiro curto 3 de 3 · Intenso', name:'~0,16km @ 9,5km/h', meta:'pace-alvo · 1:00', tipo:'ti', dur:60, dist:'~0,16', pace:'9,5'},
-      {tag:'Volta', name:'3min @ 7km/h', meta:'zona base · desaceleração', tipo:'vt', dur:180, dist:'~0,35', pace:'7,0'},
-    ]},
-  s3b:{semana:'Semana 3',status:'futuro',data:null,nome:'Treino B · 4 tiros de 3min',zona:'int',pace:'9,5–10km/h',dist:'~3,2km',
-    blocos:['Aquecimento · 5min','4 tiros de 3min @ 9,5–10km/h','Descanso ativo 2min @ 7km/h entre tiros'],
-    execBlocks:[
-      {tag:'Aquecimento', name:'5min · até 7km/h', meta:'zona base · preparação', tipo:'aq', dur:300, dist:'~0,5', pace:'7,0'},
-      {tag:'Tiro 1 de 4 · Intenso', name:'~0,5km @ 9,5–10km/h', meta:'pace-alvo · 3:00', tipo:'ti', dur:180, dist:'~0,5', pace:'9,5–10,0'},
-      {tag:'Descanso ativo', name:'2:00 @ 7km/h', meta:'recuperação entre tiros', tipo:'de', dur:120, dist:'~0,23', pace:'7,0'},
-      {tag:'Tiro 2 de 4 · Intenso', name:'~0,5km @ 9,5–10km/h', meta:'pace-alvo · 3:00', tipo:'ti', dur:180, dist:'~0,5', pace:'9,5–10,0'},
-      {tag:'Descanso ativo', name:'2:00 @ 7km/h', meta:'recuperação entre tiros', tipo:'de', dur:120, dist:'~0,23', pace:'7,0'},
-      {tag:'Tiro 3 de 4 · Intenso', name:'~0,5km @ 9,5–10km/h', meta:'pace-alvo · 3:00', tipo:'ti', dur:180, dist:'~0,5', pace:'9,5–10,0'},
-      {tag:'Descanso ativo', name:'2:00 @ 7km/h', meta:'recuperação entre tiros', tipo:'de', dur:120, dist:'~0,23', pace:'7,0'},
-      {tag:'Tiro 4 de 4 · Intenso', name:'~0,5km @ 9,5–10km/h', meta:'pace-alvo · 3:00', tipo:'ti', dur:180, dist:'~0,5', pace:'9,5–10,0'},
-      {tag:'Volta', name:'5min @ 7km/h', meta:'zona base · desaceleração', tipo:'vt', dur:300, dist:'~0,6', pace:'7,0'},
-    ]},
-  s3c:{semana:'Semana 3',status:'futuro',data:null,nome:'Treino C · 8km contínuo',zona:'base',pace:'8km/h',dist:'8km',
-    blocos:['Aquecimento · 4min','Contínuo · 8km @ 8km/h'],
-    execBlocks:[
-      {tag:'Aquecimento', name:'4min · até 7km/h', meta:'zona base · preparação', tipo:'aq', dur:240, dist:'~0,4', pace:'7,0'},
-      {tag:'Contínuo · Base', name:'8km @ 8km/h', meta:'pace-alvo constante', tipo:'co', dur:3600, dist:'8,0', pace:'8,0'},
-    ]},
-};
+// ── CONTADORES / AMBIENTE ────────────────────
+let ambiente = 'esteira';
 
-function iconeBloco(txt){
+function listaDe(amb) { return Object.entries(SESSOES).filter(([, s]) => s.amb === amb); }
+
+function updateContadores() {
+  const all = Object.values(SESSOES);
+  const feitos = all.filter(s => s.status === 'feito').length;
+  document.getElementById('home-count').textContent = `${feitos} de ${all.length} treinos`;
+  document.getElementById('home-bar').style.width = (feitos / all.length * 100) + '%';
+  ['esteira','rua'].forEach(a => {
+    const l = listaDe(a), f = l.filter(([, s]) => s.status === 'feito').length;
+    document.getElementById('amb-n-' + a).textContent = `${f} de ${l.length} concluídos`;
+  });
+}
+
+function escolherAmbiente(a) { setAmbiente(a); nav('s-treinos'); }
+
+function setAmbiente(a) {
+  ambiente = a;
+  document.getElementById('seg-esteira').classList.toggle('on', a === 'esteira');
+  document.getElementById('seg-rua').classList.toggle('on', a === 'rua');
+  renderTreinos();
+}
+
+function renderTreinos() {
+  document.getElementById('zone-legend').innerHTML = LEGENDA[ambiente].map((t, i) =>
+    `<div class="zi"><div class="zd ${['base','mod','int'][i]}"></div>${t}</div>`).join('');
+
+  const lista = listaDe(ambiente);
+  const feitos = lista.filter(([, s]) => s.status === 'feito').length;
+  document.getElementById('trn-count-txt').textContent = `${feitos} de ${lista.length} concluídos`;
+  document.getElementById('trn-count-bar').style.width = (feitos / lista.length * 100) + '%';
+  document.getElementById('trn-cap').textContent = ambiente === 'esteira'
+    ? 'Ordem sugerida, alternando treinos longos e curtos. Qualquer um pode ser aberto.'
+    : 'Sem GPS: tempo e ritmo de referência. Qualquer treino pode ser aberto.';
+
+  document.getElementById('trn-list').innerHTML = lista.map(([id, s]) => {
+    const zm = ZONE_META[s.zona];
+    const feito = s.status === 'feito';
+    const dist = s.distTxt || ('~' + f1(s.execBlocks.reduce((a, b) => a + (distOf(b) || 0), 0)) + 'km');
+    return `
+      <div class="sess-row ${feito ? 'done' : ''}" onclick="abrirTreino('${id}')">
+        <div class="sess-ico ${feito ? 'si-done' : 'si-future'}"><i class="ti ${feito ? 'ti-check' : 'ti-player-play'}"></i></div>
+        <div class="sess-info">
+          <div class="sess-name">${s.nome}</div>
+          <div class="sess-desc">${s.perfil} · ${s.pace} · ${dist}</div>
+        </div>
+        <div class="sess-right">
+          ${feito && s.data ? `<div class="sess-date">${s.data}</div>` : ''}
+          <div class="zbadge ${zm.cls}">${zm.label}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ── DETALHE DE TREINO ────────────────────────
+function iconeBloco(txt) {
   const t = txt.toLowerCase();
   if (t.includes('aquecimento')) return 'ti-flame';
-  if (t.includes('descanso') || t.includes('volta')) return 'ti-hourglass';
+  if (t.includes('descanso') || t.includes('volta') || t.includes('caminhada')) return 'ti-hourglass';
   if (t.includes('tiro')) return 'ti-bolt';
   return 'ti-circle';
 }
@@ -1012,98 +927,94 @@ function abrirTreino(id) {
   const s = SESSOES[id];
   if (!s) return;
   const zm = ZONE_META[s.zona];
+  const dist = s.distTxt || ('~' + f1(s.execBlocks.reduce((a, b) => a + (distOf(b) || 0), 0)) + 'km');
 
   document.getElementById('dt-status').textContent =
-    s.status === 'hoje' ? `${s.semana} · hoje` :
-    s.status === 'feito' ? `${s.semana} · concluído ${s.data}` :
-    `${s.semana} · a fazer`;
+    `${AMB_LABEL[s.amb]} · ` + (s.status === 'feito' ? `concluído${s.data ? ' ' + s.data : ''}` : 'a fazer');
   document.getElementById('dt-title').textContent = s.nome;
   document.getElementById('dt-meta').innerHTML =
-    `<span style="color:${zm.color}">${zm.label}</span> · ${s.pace}`;
+    `<span style="color:${zm.color}">${zm.label}</span> · ${s.perfil}`;
   document.getElementById('dt-pace').textContent = s.pace;
-  document.getElementById('dt-dist').textContent = s.dist;
+  document.getElementById('dt-dist').textContent = dist;
   document.getElementById('dt-zona').textContent = zm.label;
 
-  const blocksEl = document.getElementById('dt-blocks');
-  blocksEl.innerHTML = s.blocos.map(b => `
+  document.getElementById('dt-blocks').innerHTML = s.blocos.map(b => `
     <div class="ptl-item">
       <div class="ptl-dot ptl-rest"><i class="ti ${iconeBloco(b)}" style="font-size:9px;"></i></div>
       <div class="ptl-info"><div class="ptl-name">${b}</div></div>
     </div>`).join('');
 
   const noteEl = document.getElementById('dt-note');
+  noteEl.style.display = '';
+  noteEl.textContent = s.amb === 'esteira' ? NOTAS.esteira : (s.perfil === 'direto' ? NOTAS.direto : NOTAS.blocos);
+
   const ctaEl = document.getElementById('dt-cta-primary');
-
-  if (s.status === 'hoje' || s.status === 'futuro') {
-    ctaEl.textContent = 'iniciar sessão';
-    ctaEl.style.display = '';
-    ctaEl.onclick = () => {
-      if (timerInt) { clearInterval(timerInt); timerInt = null; }
-      BLOCKS = s.execBlocks;
-      blockIdx = 0;
-      timerSec = BLOCKS[0].dur;
-      Object.keys(excState).forEach(k => excState[k] = false);
-      document.querySelectorAll('.exc-btn').forEach(b => b.classList.remove('on'));
-      nav('s-exec');
-    };
-    noteEl.style.display = 'none';
-  } else if (s.resumoCompleto) {
-    noteEl.style.display = 'none';
-    ctaEl.textContent = 'ver resumo completo';
-    ctaEl.style.display = '';
-    ctaEl.onclick = () => nav('s-pos-sessao');
-  } else {
+  if (s.status === 'feito') {
     ctaEl.style.display = 'none';
-    noteEl.style.display = '';
-    noteEl.textContent = 'Sessão registrada. Resumo detalhado com dados executados ainda não foi preenchido pra essa sessão.';
+  } else {
+    ctaEl.style.display = '';
+    ctaEl.textContent = sessaoAtiva(id) ? 'retomar sessão' : 'iniciar sessão';
+    ctaEl.onclick = () => iniciarSessao(id);
   }
-
   nav('s-treino-detalhe');
 }
 
-// ── TIMER ────────────────────────────────────
-// BLOCKS é reatribuído em abrirTreino() com o execBlocks da sessão clicada —
-// cada treino tem sua própria sequência real, nada genérico. Este array serve
-// só como valor inicial antes de qualquer sessão ser aberta.
-let BLOCKS = SESSOES.s2b.execBlocks;
-
+// ── EXECUÇÃO · TIMER POR HORÁRIO DE INÍCIO ───
+// O tempo é sempre calculado por Date.now() − startedAt, nunca por contagem
+// de ticks: se a tela bloquear e o navegador atrasar o setInterval, ao voltar
+// a tela já aparece no ponto certo.
+let run = null;      // sessão em execução
 let timerInt = null;
-let timerSec = BLOCKS[0].dur;
-let blockIdx = 0;
+let blockIdx = -1;
 
-function fmtTime(s) {
-  return Math.floor(s/60) + ':' + String(s%60).padStart(2,'0');
+function sessaoAtiva(id) { return !!run && !run.closed && (id === undefined || run.id === id); }
+
+function iniciarSessao(id) {
+  if (sessaoAtiva(id)) { nav('s-exec'); return; }   // retomar: não zera nada
+  const s = SESSOES[id];
+  stopTimer();
+  const blocks = s.execBlocks;
+  const starts = [];
+  let acc = 0;
+  blocks.forEach(b => { starts.push(acc); acc += b.dur; });
+  run = {id, sessao:s, blocks, starts, total:acc, startedAt:null, finished:false, elapsed:0, excLog:[]};
+  blockIdx = -1;
+  document.querySelectorAll('.exc-btn').forEach(b => b.classList.remove('on'));
+  document.getElementById('dt-cta-primary').textContent = 'retomar sessão';
+  nav('s-exec');
 }
 
 function renderTimeline(blocks) {
-  const track = document.getElementById('tl-track');
-  track.innerHTML = blocks.map((b, i) => {
-    const num = (b.tag.match(/(\d+)/) || [])[1];
-    const label = b.tipo === 'ti' ? 'T' + (num || '')
-      : b.tipo === 'aq' ? 'aq' : b.tipo === 'vt' ? 'vt' : b.tipo === 'co' ? 'contínuo' : '';
-    return `<div class="tls ${b.tipo}" style="flex:${Math.max(b.dur / 60, 0.6)}" data-idx="${i}">${label}</div>`;
-  }).join('');
+  document.getElementById('tl-track').innerHTML = blocks.map((b, i) =>
+    `<div class="tls ${b.tipo}" style="flex:${Math.max(b.dur / 60, 0.6)}" data-idx="${i}">${b.lbl}</div>`).join('');
 }
 
 function applyBlock(idx) {
-  const b = BLOCKS[idx];
-  const next = BLOCKS[idx + 1];
+  const b = run.blocks[idx];
+  const next = run.blocks[idx + 1];
+  const lastOpen = !!run.blocks[run.blocks.length - 1].open;
 
   document.getElementById('blk-tag').textContent  = b.tag;
   document.getElementById('blk-name').textContent = b.name;
   document.getElementById('blk-meta').textContent = b.meta;
   document.getElementById('next-info').innerHTML  = next
     ? `<strong>${next.tag.split('·')[0].trim()}</strong> · ${next.name}`
-    : '<strong>Sessão concluída</strong>';
-  document.getElementById('es-dist').textContent  = b.dist;
-  document.getElementById('es-pace').textContent  = b.pace;
-  document.getElementById('es-dur') && (document.getElementById('es-dur').textContent = fmtTime(b.dur));
+    : (lastOpen ? '<strong>Finalizar</strong> · ao completar o percurso' : '<strong>Sessão concluída</strong>');
 
-  const totalSec = BLOCKS.reduce((s, bl) => s + bl.dur, 0);
-  const elapsedSec = BLOCKS.slice(0, idx).reduce((s, bl) => s + bl.dur, 0);
-  document.getElementById('exec-prog').style.width = Math.round((elapsedSec / totalSec) * 100) + '%';
+  const d = distOf(b);
+  let distVal, distUnit;
+  if (b.open) { distVal = f1(b.km); distUnit = 'km · alvo'; }
+  else if (b.kmh === 0) { distVal = '—'; distUnit = 'km'; }
+  else if (d == null) { distVal = '—'; distUnit = 'sem GPS'; }
+  else { distVal = '~' + f2(d); distUnit = 'km · alvo'; }
+  document.getElementById('es-dist').textContent = distVal;
+  document.getElementById('es-dist-unit').textContent = distUnit;
+  document.getElementById('es-pace').textContent = b.pace;
+  document.getElementById('es-pace-unit').textContent = b.unit || '';
+  document.getElementById('es-dur').textContent = b.open ? `${b.refMin}–${b.refMax}min` : fmtClock(b.dur);
+  document.getElementById('es-dur-unit').textContent = b.open ? 'referência' : 'bloco';
+  document.getElementById('timer-lbl').textContent = b.open ? 'tempo decorrido' : 'tempo restante no bloco';
 
-  // timeline: mark done up to current
   document.querySelectorAll('#tl-track > div').forEach(el => {
     const i = Number(el.dataset.idx);
     el.classList.remove('done-s', 'act');
@@ -1111,38 +1022,63 @@ function applyBlock(idx) {
     else if (i === idx) el.classList.add('act');
   });
 
-  // style tag by type
-  const tagEl = document.getElementById('blk-tag');
-  tagEl.style.color = b.tipo === 'ti' ? 'var(--zone-int)'
-    : b.tipo === 'de' ? 'var(--ink3)'
-    : b.tipo === 'co' ? 'var(--zone-mod)'
-    : 'var(--zone-base)';
+  document.getElementById('blk-tag').style.color =
+    b.tipo === 'ti' ? 'var(--zone-int)' : b.tipo === 'de' ? 'var(--ink3)' :
+    b.tipo === 'co' ? 'var(--zone-mod)' : 'var(--zone-base)';
 
-  timerSec = b.dur;
-  document.getElementById('timer').textContent = fmtTime(timerSec);
+  // sinalizações valem por bloco: ao trocar de bloco o botão volta ao estado "não sinalizado"
+  document.querySelectorAll('.exc-btn').forEach(btn => {
+    const key = btn.dataset.key;
+    btn.classList.toggle('on', run.excLog.some(e => e.key === key && e.idx === idx));
+  });
+}
+
+function tick() {
+  if (!run || !run.startedAt) return;
+  const elapsed = Math.floor((Date.now() - run.startedAt) / 1000);
+  run.elapsed = elapsed;
+  const last = run.blocks.length - 1;
+  const lastOpen = !!run.blocks[last].open;
+  const timerEl = document.getElementById('timer');
+
+  if (!lastOpen && elapsed >= run.total) {
+    run.finished = true;
+    run.elapsed = run.total;
+    if (blockIdx !== last) { blockIdx = last; applyBlock(last); }
+    document.querySelectorAll('#tl-track > div').forEach(el => { el.classList.remove('act'); el.classList.add('done-s'); });
+    timerEl.textContent = fmtClock(0);
+    timerEl.className = 'timer-num';
+    document.getElementById('next-info').innerHTML = '<strong>Sessão concluída</strong> · toque em finalizar';
+    document.getElementById('exec-prog').style.width = '100%';
+    stopTimer();
+    return;
+  }
+
+  let idx = 0;
+  for (let i = 0; i < run.blocks.length; i++) if (elapsed >= run.starts[i]) idx = i;
+  if (idx !== blockIdx) { blockIdx = idx; applyBlock(idx); }
+
+  const b = run.blocks[idx];
+  const inBlock = elapsed - run.starts[idx];
+  if (b.open) {
+    timerEl.textContent = fmtClock(inBlock);
+    timerEl.className = 'timer-num';
+  } else {
+    const rem = b.dur - inBlock;
+    timerEl.textContent = fmtClock(rem);
+    timerEl.className = 'timer-num' + (rem <= 10 ? ' warn' : '');
+  }
+  document.getElementById('exec-prog').style.width = Math.min(100, elapsed / run.total * 100) + '%';
 }
 
 function startTimer() {
-  if (timerInt) return;
-  renderTimeline(BLOCKS);
-  applyBlock(blockIdx);
-  timerInt = setInterval(() => {
-    timerSec--;
-    if (timerSec < 0) {
-      if (blockIdx >= BLOCKS.length - 1) {
-        stopTimer();
-        document.getElementById('timer').textContent = fmtTime(0);
-        document.getElementById('next-info').innerHTML = '<strong>Sessão concluída</strong>';
-        document.getElementById('exec-prog').style.width = '100%';
-        return;
-      }
-      blockIdx++;
-      applyBlock(blockIdx);
-    }
-    const el = document.getElementById('timer');
-    el.textContent = fmtTime(Math.max(0, timerSec));
-    el.className = 'timer-num' + (timerSec <= 10 ? ' warn' : '');
-  }, 1000);
+  if (!run) return;
+  const novo = !run.startedAt;
+  if (novo) { run.startedAt = Date.now(); run.finished = false; }
+  blockIdx = -1;                       // força redesenhar o bloco atual
+  renderTimeline(run.blocks);
+  tick();
+  if (!timerInt && !run.finished) timerInt = setInterval(tick, 250);
 }
 
 function stopTimer() {
@@ -1150,12 +1086,100 @@ function stopTimer() {
   timerInt = null;
 }
 
-// ── EXCEPTION BUTTONS ────────────────────────
-const excState = {};
+document.addEventListener('visibilitychange', () => { if (!document.hidden && timerInt) tick(); });
+
+// ── SINALIZAÇÕES (RN25-corrida · toque único, por bloco) ──
 function toggleExc(btn, key) {
-  excState[key] = !excState[key];
-  btn.classList.toggle('on', excState[key]);
+  if (!run || blockIdx < 0) return;
+  const i = run.excLog.findIndex(e => e.key === key && e.idx === blockIdx);
+  if (i >= 0) { run.excLog.splice(i, 1); btn.classList.remove('on'); }
+  else { run.excLog.push({key, idx:blockIdx, bloco:run.blocks[blockIdx].tag}); btn.classList.add('on'); }
 }
+
+// ── FINALIZAR · RESUMO DINÂMICO ──────────────
+function finalizarSessao() {
+  if (!run) { goHome(); return; }
+  if (!run.finished && run.startedAt) {
+    const el = Math.floor((Date.now() - run.startedAt) / 1000);
+    const lastOpen = !!run.blocks[run.blocks.length - 1].open;
+    run.elapsed = lastOpen ? el : Math.min(el, run.total);
+  }
+  stopTimer();
+  run.closed = true;
+  renderResumo(run);
+  nav('s-pos-sessao');
+}
+
+const FLAG_INFO = {
+  ritmo:{label:'Reduziu o ritmo', curto:'redução de ritmo', ico:'ti-trending-down', sub:'registrado por você · o pace real pode ter ficado abaixo do alvo'},
+  pesado:{label:'Mais pesado que esperado', curto:'esforço acima do esperado', ico:'ti-flame', sub:'registrado por você · esforço acima do previsto neste bloco'},
+};
+
+function renderResumo(r) {
+  const s = r.sessao, el = r.elapsed;
+  const openIdx = r.blocks.findIndex(b => b.open);
+  const rows = [];
+  let narr;
+
+  if (openIdx >= 0) {
+    const b = r.blocks[openIdx];
+    const t = Math.max(0, el - r.starts[openIdx]);
+    const kmh = t > 0 ? b.km / (t / 3600) : 0;
+    rows.push(['Tempo de corrida', `${b.refMin}–${b.refMax}min`, fmtClock(t)]);
+    rows.push(['Distância', `${b.km}km`, `${b.km}km (assumida)`]);
+    rows.push(['Pace médio (estimado)', `${b.pace}/km`, t > 0 ? `${fmtPace(kmh)}/km · ${f1(kmh)}km/h` : '—']);
+    narr = `Correu ${fmtClock(t)} no percurso de ${b.km}km. O pace médio vem da distância prescrita: sem GPS, o app não confirma que o percurso foi completo.`;
+  } else {
+    const n = r.blocks.length;
+    const done = r.blocks.filter((b, i) => r.starts[i] + b.dur <= el).length;
+    rows.push(['Tempo da sessão', fmtClock(r.total), fmtClock(Math.min(el, r.total))]);
+    rows.push(['Blocos cumpridos', `${n} de ${n}`, `${done} de ${n}`]);
+    if (s.amb === 'esteira') {
+      let dist = 0, mov = 0, pd = 0, pmov = 0;
+      r.blocks.forEach((b, i) => {
+        const ti = Math.min(b.dur, Math.max(0, el - r.starts[i]));
+        if (b.kmh > 0) { dist += b.kmh * ti / 3600; mov += ti; pd += b.kmh * b.dur / 3600; pmov += b.dur; }
+      });
+      rows.push(['Distância (estimada)', `~${f1(pd)}km`, `~${f1(dist)}km`]);
+      rows.push(['Velocidade média em movimento', `${f1(pd / (pmov / 3600))}km/h`, mov > 0 ? `${f1(dist / (mov / 3600))}km/h` : '—']);
+    } else {
+      rows.push(['Distância', '—', 'não medida (sem GPS)']);
+    }
+    narr = `Cumpriu ${done} de ${n} blocos em ${fmtClock(Math.min(el, r.total))}.`;
+  }
+
+  const flags = r.excLog.slice().sort((a, b) => a.idx - b.idx);
+  if (flags.length) {
+    narr += ' Sinalizou ' + flags.map(f => `${FLAG_INFO[f.key].curto} (${f.bloco.split('·')[0].trim()})`).join(', ') + '.';
+  } else {
+    narr += ' Nenhuma sinalização: pace e esforço seguem o plano.';
+  }
+
+  document.getElementById('post-title').textContent =
+    (r.finished || openIdx >= 0) ? 'Sessão concluída' : 'Sessão encerrada';
+  document.getElementById('post-meta').textContent = `${s.nome} · ${AMB_LABEL[s.amb]}`;
+  document.getElementById('cmp-body').innerHTML = rows.map(([l, p, x]) => `
+    <div class="cmp-row">
+      <div class="cmp-label">${l}</div>
+      <div class="cmp-plan">${p}</div>
+      <div class="cmp-exec">${x}</div>
+    </div>`).join('');
+  document.getElementById('sig-wrap').innerHTML = flags.length
+    ? flags.map(f => `
+      <div class="sig-card">
+        <i class="sig-ico ti ${FLAG_INFO[f.key].ico}"></i>
+        <div><div class="sig-name">${FLAG_INFO[f.key].label} — ${f.bloco}</div><div class="sig-sub">${FLAG_INFO[f.key].sub}</div></div>
+      </div>`).join('')
+    : `<div class="sig-card">
+        <i class="sig-ico ti ti-info-circle"></i>
+        <div><div class="sig-name">Sem sinalizações</div><div class="sig-sub">pace e esforço herdam o plano (fonte: inferido)</div></div>
+      </div>`;
+  document.getElementById('narr-text').textContent = narr;
+}
+
+// ── INIT (depois de SESSOES e dos helpers existirem) ──
+updateContadores();
+renderTreinos();
 </script>
 </body>
 </html>
